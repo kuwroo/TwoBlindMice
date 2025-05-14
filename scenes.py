@@ -74,36 +74,25 @@ class IntroScene(Scene):
 
 class GameplayScene(Scene):
     def __init__(self, screen):
-        super().__init__(screen)
-        # Initialize the gameplay elements like player, environment, etc.
-    
-    def handle_event(self, event):
-        # Handle player input during gameplay
-        pass
-    
-    def update(self):
-        # Update game elements like player movement, physics, etc.
-        pass
-    
-    def draw(self):
-        self.screen.fill((0, 0, 0))  # Black background for gameplay
-        # Draw gameplay elements like the player, environment, etc.
-        pass
+        # ... init player, cheese count, world
+        self.trash_bin = TrashBin((tile_x, tile_y))
+        self.cheese_count = 1
 
-
-class SceneManager:
-    def __init__(self, screen):
-        self.screen = screen
-        self.current_scene = StartMenu(screen)  # Set initial scene to Start Menu
-    
-    def change_scene(self, new_scene):
-        self.current_scene = new_scene  # Change to the new scene
-    
-    def handle_event(self, event):
-        self.current_scene.handle_event(event)
-    
     def update(self):
-        self.current_scene.update()
-    
+        keys = pygame.key.get_pressed()
+        self.player.handle_input(keys)
+        self.player.update()
+
+        if keys[pygame.K_e]:
+            if self.player.rect.colliderect(self.trash_bin.rect):
+                self.start_quest()
+
     def draw(self):
-        self.current_scene.draw()
+        screen.fill((0, 0, 0))
+        self.player_group.draw(screen)
+        screen.blit(self.trash_bin.image, self.trash_bin.rect)
+        draw_cheese_counter(screen, self.cheese_count)
+
+    def start_quest(self):
+        print("Quest started! Find the second cheese...")
+        # Trigger a scene/dialogue/quest marker/etc.
