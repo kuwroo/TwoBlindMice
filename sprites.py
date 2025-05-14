@@ -1,0 +1,1 @@
+# store sprite classes eg. mouse, cheese, NPC, enemy
