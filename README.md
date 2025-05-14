@@ -30,13 +30,19 @@ cd 2-blind-mice
 python main.py
 
 📁 Folder Structure
-2-blind-mice/
-├── assets/         # Art, sounds, animations
-├── main.py         # Game loop and setup
-├── sprites.py      # Sprite classes (Mouse, Cheese, etc.)
-├── misc.py         # Utility functions (darkness, helpers)
-├── README.md       # Game info
-└── .gitignore      # Files Git should ignore
+/project-root
+│
+├── main.py                 # Game runner
+├── scenes.py               # Scene controller
+├── player.py               # Player movement + light radius
+├── npc.py                  # Interactions
+├── quest.py                # Handles quests/cheese collection
+├── dialogue.py             # Dialogue system (text box + cutscene handling)
+├── misc.py                 # Misc helpers
+├── assets/                 # Sprites, audio, etc.
+│   ├── sprites/
+│   ├── fonts/
+│   └── sfx/
 
 📌 Possible Improvements
 Converting into a web game: Currently, this is a desktop game, but you could explore converting it into a web game in the future.
