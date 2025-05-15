@@ -7,6 +7,7 @@ from dialogue import Dialogue
 import pygame_gui
 from maploader import *
 
+
 pygame.init()
 
 # --- Setup ---
