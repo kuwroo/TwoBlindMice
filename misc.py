@@ -11,3 +11,4 @@ def draw_cheese_counter(screen, count):
     screen.blit(cheese_icon, (20, 20))
     text = font.render(f"x {count}", True, (255, 255, 255))
     screen.blit(text, (60, 25))
+

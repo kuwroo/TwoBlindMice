@@ -3,6 +3,7 @@ import random
 import time
 import math
 from misc import *
+from spritesheet_loader import SpriteSheet
 
 
 # Contains abstract classes for all sprites (Player, NPC, Cheese, etc.)
@@ -13,8 +14,22 @@ from misc import TILE_SIZE
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
-        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
-        self.image.fill((200, 200, 255))  # Placeholder: light blue square for now
+        # Load the movement spritesheet
+        self.movement_sprite_sheet = SpriteSheet("resources/MOUSE.png")
+        self.movement_frames = [self.movement_sprite_sheet.get_frame(i, 32, 32) for i in range(8)]
+
+        # Load the idle spritesheet
+        self.idle_sprite_sheet = SpriteSheet("resources/IDLE.png")
+        self.idle_frames = [self.idle_sprite_sheet.get_frame(i, 32, 32) for i in range(4)]
+
+        # Animation attributes
+        self.current_frames = self.idle_frames  # Start with idle frames
+        self.current_frame = 0
+        self.frame_timer = 0
+        self.frame_delay = 100  # Milliseconds between frames
+
+        # Set initial image and rect
+        self.image = self.frames[self.current_frame]
         self.rect = self.image.get_rect(topleft=pos)
 
         self.direction = pygame.math.Vector2(0, 0)
@@ -52,9 +67,34 @@ class Player(pygame.sprite.Sprite):
         if self.direction.length_squared() != 0:
             self.move()
             self.last_move_time = current_time
-
+        else:
+            self.set_idle_animation()
+    
     def move(self):
         self.rect.x += self.direction.x * self.speed
+        self.set_movement_animation()  # Trigger movement animation
+        self.animate()  # Update the animation frame
+
+    def set_movement_animation(self):
+        """Switch to movement animation frames."""
+        if self.current_frames != self.movement_frames:
+            self.current_frames = self.movement_frames
+            self.current_frame = 0  # Reset to the first frame
+
+    def set_idle_animation(self):
+        """Switch to idle animation frames."""
+        if self.current_frames != self.idle_frames:
+            self.current_frames = self.idle_frames
+            self.current_frame = 0  # Reset to the first frame
+        self.animate()  # Update the animation frame
+
+    def animate(self):
+        """Update the current frame for animation."""
+        self.frame_timer += pygame.time.get_ticks() % 1000
+        if self.frame_timer >= self.frame_delay:
+            self.frame_timer = 0
+            self.current_frame = (self.current_frame + 1) % len(self.current_frames)
+            self.image = self.current_frames[self.current_frame]
 
     def apply_gravity(self):
         self.velocity_y += self.gravity
