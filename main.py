@@ -5,14 +5,14 @@ from player import *
 from quest import *
 from dialogue import Dialogue
 import pygame_gui
-from map_loader import TiledMap
-
+from maploader import *
 
 pygame.init()
-tiled_map = TiledMap("level1_beginning.tmx")  # Replace with your map filename
 
 # --- Setup ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.mouse.set_pos(64*3, 64*3)
+background = pygame.image.load("sewermap.png").convert()
 pygame.display.set_caption("2 Blind Mice")
 clock = pygame.time.Clock()
 manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -21,10 +21,10 @@ manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
 dialogue = Dialogue(screen, manager)  # Initialize the Dialogue class
 
 # --- Player ---
-player = Player(start_pos=(TILE_SIZE * 2, TILE_SIZE * 2))
+player = Player((TILE_SIZE * 2, TILE_SIZE * 2))
 
 # --- Trash Bin Setup ---
-trash_bin = TrashBin(pos=(TILE_SIZE * 11, TILE_SIZE * 20))  # Placed rightward
+trash_bin = TrashBin((TILE_SIZE * 11, TILE_SIZE * 20))  # Placed rightward
 
 # --- Sprite Groups ---
 all_sprites = pygame.sprite.Group()
@@ -45,13 +45,12 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-            
-            # Pass events to pygame_gui
+        # Pass events to pygame_gui
         manager.process_events(event)
 
     # --- Movement Input ---
     keys = pygame.key.get_pressed()
-    player.handle_input(keys)
+    player.handle_input(keys, pygame.time.get_ticks())
 
     # --- Interact with E ---
     if keys[pygame.K_e]:
@@ -63,7 +62,7 @@ while running:
 
     # --- Draw ---
     screen.fill((30, 30, 30))  # Clear the screen
-    tiled_map.draw(screen)
+    screen.blit(background, (0, 0))
     all_sprites.draw(screen)
     dialogue.draw()  # Draw the dialogue box
     pygame.display.flip()
