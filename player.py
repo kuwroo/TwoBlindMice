@@ -72,19 +72,11 @@ class Player(pygame.sprite.Sprite):
 
 # first quest 
 class TrashBin(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, pos, size=(32, 64)):
         super().__init__()
-        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
-        self.image.fill((100, 100, 100))  # Gray placeholder for trash bin
+        # Make the sprite invisible but interactive
+        self.image = pygame.Surface(size, pygame.SRCALPHA)
         self.rect = self.image.get_rect(topleft=pos)
-        self.interacted = False
 
     def interact(self, player_rect):
-        # Check collision and if not already interacted
-        if self.rect.colliderect(player_rect) and not self.interacted:
-            self.interacted = True
-            return True  # Signal that the quest should start
-        return False
-
-    def reset(self):
-        self.interacted = False
+        return self.rect.colliderect(player_rect)

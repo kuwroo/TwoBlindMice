@@ -1,5 +1,6 @@
 import pygame
-from game_assets import *
+from misc import *
+from player import *
 
 class Scene:
     def __init__(self, screen):

@@ -9,7 +9,7 @@ from map_loader import TiledMap
 
 
 pygame.init()
-tiled_map = TiledMap("map.tmx")  # Replace with your map filename
+tiled_map = TiledMap("C:\Users\jacel\Documents\level1_beginning.tmx")  # Replace with your map filename
 
 # --- Setup ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -24,7 +24,7 @@ dialogue = Dialogue(screen, manager)  # Initialize the Dialogue class
 player = Player(start_pos=(TILE_SIZE * 2, TILE_SIZE * 2))
 
 # --- Trash Bin Setup ---
-trash_bin = TrashBin(pos=(TILE_SIZE * 6, TILE_SIZE * 2))  # Placed rightward
+trash_bin = TrashBin(pos=(TILE_SIZE * 11, TILE_SIZE * 20))  # Placed rightward
 
 # --- Sprite Groups ---
 all_sprites = pygame.sprite.Group()
