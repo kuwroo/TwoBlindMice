@@ -4,6 +4,7 @@ from misc import *
 from player import *
 from quest import *
 from dialogue import Dialogue
+import pygame_gui
 
 pygame.init()
 
