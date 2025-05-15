@@ -9,7 +9,7 @@ from map_loader import TiledMap
 
 
 pygame.init()
-tiled_map = TiledMap("C:\Users\jacel\Documents\level1_beginning.tmx")  # Replace with your map filename
+tiled_map = TiledMap("level1_beginning.tmx")  # Replace with your map filename
 
 # --- Setup ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))

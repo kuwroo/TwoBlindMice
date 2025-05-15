@@ -2,82 +2,77 @@ import pygame
 from misc import *
 from player import *
 
-class Scene:
+class SceneManager:
     def __init__(self, screen):
         self.screen = screen
-    
-    def handle_event(self, event):
-        pass
-    
-    def update(self):
-        pass
-    
-    def draw(self):
-        pass
+        self.current_scene = None
 
-class StartMenu(Scene):
-    def __init__(self, screen):
-        super().__init__(screen)
-        self.font = pygame.font.Font(None, 48)
-        self.title_text = self.font.render("2 Blind Mice", True, (255, 255, 255))
-        self.start_text = self.font.render("Press Enter to Start", True, (255, 255, 255))
-    
+    def change_scene(self, new_scene):
+        self.current_scene = new_scene
+
+    def handle_event(self, event):
+        if self.current_scene:
+            self.current_scene.handle_event(event)
+
+    def update(self):
+        if self.current_scene:
+            self.current_scene.update()
+
+    def draw(self):
+        if self.current_scene:
+            self.current_scene.draw()
+
+class StartMenu:
+    def __init__(self, screen, scene_manager):
+        self.screen = screen
+        self.scene_manager = scene_manager
+        self.font = pygame.font.Font(None, 64)
+        self.text = self.font.render("Press SPACE to Start", True, (255, 255, 255))
+
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:  # Player presses Enter to start game
-                self.start_game()
-
-    def start_game(self):
-        # Transition to Intro Scene (you can replace this with your animation file)
-        scene_manager.change_scene(IntroScene(self.screen))  # Scene transition
+            if event.key == pygame.K_SPACE:
+                self.scene_manager.change_scene(IntroScene(self.screen, self.scene_manager))
 
     def update(self):
         pass
 
     def draw(self):
-        self.screen.fill((0, 0, 0))  # Fill screen with black
-        self.screen.blit(self.title_text, (SCREEN_WIDTH // 2 - self.title_text.get_width() // 2, 100))
-        self.screen.blit(self.start_text, (SCREEN_WIDTH // 2 - self.start_text.get_width() // 2, 300))
+        self.screen.fill((0, 0, 0))
+        self.screen.blit(self.text, (SCREEN_WIDTH // 2 - self.text.get_width() // 2, SCREEN_HEIGHT // 2))
 
+class IntroScene:
+    def __init__(self, screen, scene_manager):
+        self.screen = screen
+        self.scene_manager = scene_manager
+        self.timer = 0  # For a fake animation duration
 
-class IntroScene(Scene):
-    def __init__(self, screen):
-        super().__init__(screen)
-        self.animation_completed = False  # Flag to track if animation is finished
-    
     def handle_event(self, event):
-        pass  # No events during the intro animation
-
-    def update(self):
-        if not self.animation_completed:
-            self.play_intro_animation()  # Play the animation
-        else:
-            # Transition to gameplay after animation
-            scene_manager.change_scene(GameplayScene(self.screen))  # Scene transition to gameplay
-
-    def play_intro_animation(self):
-        # Here you will add your animation code or call external files (as per your design)
-        # This could call functions from an external file (e.g., intro_animation.py)
         pass
 
+    def update(self):
+        self.timer += 1
+        if self.timer > 180:  # 3 seconds at 60fps
+            self.scene_manager.change_scene(GameplayScene(self.screen, self.scene_manager))
+
     def draw(self):
-        # Draw animation or the loading screen
-        if not self.animation_completed:
-            # Here you can display a placeholder while the animation is running
-            self.screen.fill((0, 0, 0))
-            font = pygame.font.Font(None, 36)
-            text = font.render("Loading Intro Animation...", True, (255, 255, 255))
-            self.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2))
-        else:
-            # Once animation is complete, the game proceeds to gameplay
-            pass
+        self.screen.fill((0, 0, 0))
+        font = pygame.font.Font(None, 48)
+        text = font.render("Intro Animation Playing...", True, (255, 255, 255))
+        self.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2))
 
+class GameplayScene:
+    def __init__(self, screen, scene_manager):
+        self.screen = screen
+        self.scene_manager = scene_manager
+        self.background = pygame.image.load("sprites/background.png").convert()
+        self.player = Player((TILE_SIZE * 2, TILE_SIZE * 2))
+        self.trash_bin = TrashBin((TILE_SIZE * 11, TILE_SIZE * 8))  # Adjust position
 
-class GameplayScene(Scene):
-    def __init__(self, screen):
-        # ... init player, cheese count, world
-        self.trash_bin = TrashBin((tile_x, tile_y))
-        self.cheese_count = 1
+        self.player_group = pygame.sprite.Group(self.player)
+
+    def handle_event(self, event):
+        pass  # You can add other interactions later
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -86,14 +81,9 @@ class GameplayScene(Scene):
 
         if keys[pygame.K_e]:
             if self.player.rect.colliderect(self.trash_bin.rect):
-                self.start_quest()
+                print("Quest started from trash bin!")
 
     def draw(self):
-        screen.fill((0, 0, 0))
-        self.player_group.draw(screen)
-        screen.blit(self.trash_bin.image, self.trash_bin.rect)
-        draw_cheese_counter(screen, self.cheese_count)
-
-    def start_quest(self):
-        print("Quest started! Find the second cheese...")
-        # Trigger a scene/dialogue/quest marker/etc.
+        self.screen.blit(self.background, (0, 0))
+        self.screen.blit(self.trash_bin.image, self.trash_bin.rect)
+        self.player_group.draw(self.screen)
