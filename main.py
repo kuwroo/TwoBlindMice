@@ -11,7 +11,6 @@ pygame.init()
 
 # --- Setup ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.mouse.set_pos(64*3, 64*3)
 background = pygame.image.load("sewermap.png").convert()
 pygame.display.set_caption("2 Blind Mice")
 clock = pygame.time.Clock()
@@ -21,7 +20,7 @@ manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
 dialogue = Dialogue(screen, manager)  # Initialize the Dialogue class
 
 # --- Player ---
-player = Player((TILE_SIZE * 2, TILE_SIZE * 2))
+player = Player((TILE_SIZE, TILE_SIZE))
 
 # --- Trash Bin Setup ---
 trash_bin = TrashBin((TILE_SIZE * 11, TILE_SIZE * 20))  # Placed rightward
