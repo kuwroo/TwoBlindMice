@@ -22,21 +22,32 @@ class Player(pygame.sprite.Sprite):
         self.move_cooldown = 150  # milliseconds
         self.last_move_time = 0
 
+        # Jump-related attributes
+        self.velocity_y = 0
+        self.gravity = 0.5
+        self.jump_strength = -10
+        self.on_ground = True
+
     def handle_input(self, keys, current_time):
         if current_time - self.last_move_time < self.move_cooldown:
             return
 
         self.direction.x = 0
-        self.direction.y = 0
 
-        if keys[pygame.K_w]:
-            self.direction.y = -1
-        elif keys[pygame.K_s]:
+        # Vertical movement (optional, if needed for other mechanics)
+        if keys[pygame.K_s]:
             self.direction.y = 1
-        elif keys[pygame.K_a]:
+
+        # Horizontal movement
+        if keys[pygame.K_a]:
             self.direction.x = -1
         elif keys[pygame.K_d]:
             self.direction.x = 1
+
+        # Jump with space bar or W key
+        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
+            self.velocity_y = self.jump_strength
+            self.on_ground = False
 
         if self.direction.length_squared() != 0:
             self.move()
@@ -44,10 +55,20 @@ class Player(pygame.sprite.Sprite):
 
     def move(self):
         self.rect.x += self.direction.x * self.speed
-        self.rect.y += self.direction.y * self.speed
+
+    def apply_gravity(self):
+        self.velocity_y += self.gravity
+        self.rect.y += self.velocity_y
+
+        # Simulate ground collision (example: ground at y = 300)
+        if self.rect.bottom >= 300:  # Replace 300 with your ground level
+            self.rect.bottom = 300
+            self.velocity_y = 0
+            self.on_ground = True
 
     def update(self, keys, current_time):
         self.handle_input(keys, current_time)
+        self.apply_gravity()
 
 # first quest 
 class TrashBin(pygame.sprite.Sprite):
