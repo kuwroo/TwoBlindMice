@@ -5,8 +5,11 @@ from player import *
 from quest import *
 from dialogue import Dialogue
 import pygame_gui
+from map_loader import TiledMap
+
 
 pygame.init()
+tiled_map = TiledMap("map.tmx")  # Replace with your map filename
 
 # --- Setup ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -60,6 +63,7 @@ while running:
 
     # --- Draw ---
     screen.fill((30, 30, 30))  # Clear the screen
+    tiled_map.draw(screen)
     all_sprites.draw(screen)
     dialogue.draw()  # Draw the dialogue box
     pygame.display.flip()
