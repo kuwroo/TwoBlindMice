@@ -21,7 +21,7 @@ manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
 dialogue = Dialogue(screen, manager)  # Initialize the Dialogue class
 
 # --- Player ---
-player = Player((TILE_SIZE, TILE_SIZE))
+player = Player((TILE_SIZE*5, TILE_SIZE*6.1))
 
 # --- Trash Bin Setup ---
 trash_bin = TrashBin((TILE_SIZE * 11, TILE_SIZE * 20))  # Placed rightward

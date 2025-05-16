@@ -29,7 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_delay = 100  # Milliseconds between frames
 
         # Set initial image and rect
-        self.image = self.frames[self.current_frame]
+        self.image = self.current_frames[self.current_frame]
         self.rect = self.image.get_rect(topleft=pos)
 
         self.direction = pygame.math.Vector2(0, 0)
