@@ -40,7 +40,7 @@ cheese_count = 1
 # --- Game Loop ---
 running = True
 while running:
-    time_delta = clock.tick(60) / 1000.0  # Time in seconds since last frame
+    time_delta = clock.tick(60) / 1000.0  # Amount of seconds since last frame
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -50,7 +50,7 @@ while running:
 
     # --- Movement Input ---
     keys = pygame.key.get_pressed()
-    player.handle_input(keys, pygame.time.get_ticks())
+    player.update(keys, pygame.time.get_ticks())
 
     # --- Interact with E ---
     if keys[pygame.K_e]:

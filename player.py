@@ -48,10 +48,7 @@ class Player(pygame.sprite.Sprite):
             return
 
         self.direction.x = 0
-
-        # Vertical movement (optional, if needed for other mechanics)
-        if keys[pygame.K_s]:
-            self.direction.y = 1
+        self.direction.y = 0 
 
         # Horizontal movement
         if keys[pygame.K_a]:
@@ -59,12 +56,12 @@ class Player(pygame.sprite.Sprite):
         elif keys[pygame.K_d]:
             self.direction.x = 1
 
-        # Jump with space bar or W key
+        # Vertical movement
         if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
             self.velocity_y = self.jump_strength
             self.on_ground = False
 
-        if self.direction.length_squared() != 0:
+        if self.direction.x != 0:
             self.move()
             self.last_move_time = current_time
         else:
@@ -72,8 +69,9 @@ class Player(pygame.sprite.Sprite):
     
     def move(self):
         self.rect.x += self.direction.x * self.speed
-        self.set_movement_animation()  # Trigger movement animation
-        self.animate()  # Update the animation frame
+        self.rect.y += self.direction.y * self.speed  # Add this line for vertical movement
+        self.set_movement_animation()
+        self.animate()
 
     def set_movement_animation(self):
         """Switch to movement animation frames."""
