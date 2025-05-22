@@ -14,15 +14,15 @@ def play_first_quest():
     player_size = 30
     player = pygame.Rect(WIDTH//2, 50, player_size, player_size)
     player_speed = 5
-    fall_speed = 2
+    fall_speed = 3
 
     obstacles = []
-    obstacle_width = 100
     obstacle_height = 20
     gap = 200
     start_offset = 400
 
     for i in range(10):
+        obstacle_width = random.randint(100, 150)
         x = random.randint(0, WIDTH - obstacle_width)
         y = i * gap + start_offset
         obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))
