@@ -31,6 +31,8 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * self.SCALE_FACTOR, self.PLAYER_HEIGHT * self.SCALE_FACTOR)) for frame in self.idle_frames]
         self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * self.SCALE_FACTOR, self.PLAYER_HEIGHT * self.SCALE_FACTOR)) for frame in self.movement_frames]
 
+        super().__init__()  # Properly initialize the pygame.sprite.Sprite base class
+
 # Set initial image and rect for compatibility with sprite groups
         self.image = self.idle_frames[0]
         self.rect = self.image.get_rect()
@@ -49,11 +51,11 @@ class PlayerMovement(pygame.sprite.Sprite):
         if keys[pygame.K_a]:  # Change to 'A' for left
             self.player_velocity_x = -self.PLAYER_SPEED
             self.last_direction_left = True
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             self.player_velocity_x = self.PLAYER_SPEED
             self.last_direction_left = False
 
-        if keys[pygame.K_SPACE] and self.on_ground:
+        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:  # Allow both Space and W for jump
             self.player_velocity_y = -self.JUMP_POWER
             self.is_jumping = True
             self.on_ground = False
@@ -72,7 +74,7 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.on_ground = True
 
     def update_animation(self, keys):
-        if self.on_ground and not (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]):
+        if self.on_ground and not (keys[pygame.K_a] or keys[pygame.K_d]):  # Fixed mismatched parenthesis
             if self.current_frame >= len(self.idle_frames):
                 self.current_frame = 0
             self.frame_timer += 1
@@ -88,14 +90,14 @@ class PlayerMovement(pygame.sprite.Sprite):
                 self.current_frame = (self.current_frame + 1) % len(self.movement_frames)
 
     def draw(self, screen, keys):
-        if self.on_ground and not (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]):
+        if self.on_ground and not (keys[pygame.K_a] or keys[pygame.K_d]):
             if self.last_direction_left:
                 flipped_idle_frame = pygame.transform.flip(self.idle_frames[self.current_frame], True, False)
                 screen.blit(flipped_idle_frame, (self.player_x, self.player_y))
             else:
                 screen.blit(self.idle_frames[self.current_frame], (self.player_x, self.player_y))
         else:
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_a]:
                 flipped_frame = pygame.transform.flip(self.movement_frames[self.current_frame], True, False)
                 screen.blit(flipped_frame, (self.player_x, self.player_y))
             else:
