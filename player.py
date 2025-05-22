@@ -56,7 +56,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=pos)  # Update the rect to match the new size
 
         self.direction = pygame.math.Vector2(0, 0)
-        self.speed = TILE_SIZE/15  # Grid-based, move one tile at a time
+        self.speed = TILE_SIZE/10  # Grid-based, move one tile at a time
         self.move_cooldown = 50  # milliseconds
         self.last_move_time = 0
 
@@ -74,32 +74,21 @@ class Player(pygame.sprite.Sprite):
             return
 
         self.direction.x = 0
-
-# Vertical movement (optional, if needed for other mechanics)
-        if keys[pygame.K_s]:
-            self.direction.y = 1
+        self.direction.y = 0  # Keep local vertical movement initialization
 
         # Horizontal movement
         if keys[pygame.K_a]:
-            self.facing_left = True
             self.direction.x = -3
+            self.facing_left = True
         elif keys[pygame.K_d]:
-            self.facing_left = False
             self.direction.x = 3
-            
-            
+            self.facing_left = False
 
-        # Jump with space bar or W key
+        # Vertical movement
         if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
             print("Jump triggered")  # Debugging
             self.velocity_y = self.jump_strength
             self.on_ground = False
-
-        #Update facing direction
-        # if self.direction.x < 0:
-        #     self.facing_left = True
-        # elif self.direction.x >= 0:
-        #     self.facing_left = False
 
         # Update current frames based on direction without overwriting original frames
         if self.facing_left:
@@ -117,12 +106,12 @@ class Player(pygame.sprite.Sprite):
         else:
             self.set_idle_animation()
 
-      
     def move(self):
         """Move the player based on the current direction."""
         self.rect.x += self.direction.x * self.speed
-        self.set_movement_animation()  # Trigger movement animation
-        self.animate()  # Update the animation frame
+        self.rect.y += self.direction.y * self.speed  # Add this line for vertical movement
+        self.set_movement_animation()
+        self.animate()
 
     def set_movement_animation(self):
         """Switch to movement animation frames."""

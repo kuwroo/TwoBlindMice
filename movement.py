@@ -54,7 +54,7 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.player_velocity_x = self.PLAYER_SPEED
             self.last_direction_left = False
 
-        if keys[pygame.K_w] and self.on_ground:  # Change to 'W' for jump
+        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:  # Allow both Space and W for jump
             self.player_velocity_y = -self.JUMP_POWER
             self.is_jumping = True
             self.on_ground = False
