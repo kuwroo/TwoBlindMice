@@ -56,7 +56,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=pos)  # Update the rect to match the new size
 
         self.direction = pygame.math.Vector2(0, 0)
-        self.speed = TILE_SIZE/10  # Grid-based, move one tile at a time
+        self.speed = TILE_SIZE/15  # Grid-based, move one tile at a time
         self.move_cooldown = 50  # milliseconds
         self.last_move_time = 0
 
@@ -81,11 +81,12 @@ class Player(pygame.sprite.Sprite):
 
         # Horizontal movement
         if keys[pygame.K_a]:
-            self.direction.x = -3
             self.facing_left = True
+            self.direction.x = -3
         elif keys[pygame.K_d]:
-            self.direction.x = 3
             self.facing_left = False
+            self.direction.x = 3
+            
             
 
         # Jump with space bar or W key
@@ -94,19 +95,20 @@ class Player(pygame.sprite.Sprite):
             self.velocity_y = self.jump_strength
             self.on_ground = False
 
-        # Update facing direction
-        if self.direction.x < 0:
-            self.facing_left = True
-        elif self.direction.x >= 0:
-            self.facing_left = False
+        #Update facing direction
+        # if self.direction.x < 0:
+        #     self.facing_left = True
+        # elif self.direction.x >= 0:
+        #     self.facing_left = False
 
-        # Update current frames based on direction
+        # Update current frames based on direction without overwriting original frames
         if self.facing_left:
-            self.movement_frames = self.movement_frames_flipped 
-            self.idle_frames = self.idle_frames_flipped
+            if self.direction.x == 0:
+                self.current_frames = self.idle_frames_flipped  
+            else:
+                self.current_frames = self.movement_frames_flipped 
         else:
-            self.movement_frames = self.movement_frames
-            self.idle_frames = self.idle_frames
+            self.current_frames = self.movement_frames if self.direction.x != 0 else self.idle_frames
     
 
         if self.direction.length_squared() != 0:
@@ -115,11 +117,7 @@ class Player(pygame.sprite.Sprite):
         else:
             self.set_idle_animation()
 
-       
-        self.rect.x += self.direction.x * self.speed
-        self.set_movement_animation()  # Trigger movement animation
-        self.animate()  # Update the animation frame
-
+      
     def move(self):
         """Move the player based on the current direction."""
         self.rect.x += self.direction.x * self.speed
@@ -157,8 +155,8 @@ class Player(pygame.sprite.Sprite):
         print(f"Velocity Y: {self.velocity_y}, Rect Y: {self.rect.y}, On Ground: {self.on_ground}")
 
         # Simulate ground collision (example: ground at y = 300)
-        if self.rect.bottom >= 300:  # Replace 300 with your ground level
-            self.rect.bottom = 300
+        if self.rect.bottom >= 250:  # Replace 300 with your ground level
+            self.rect.bottom = 250
             self.velocity_y = 0
             self.on_ground = True
 

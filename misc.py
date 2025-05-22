@@ -3,6 +3,8 @@ import pygame
 TILE_SIZE = 64  # or whatever size you're using
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+GROUND_HEIGHT = 240
+
 FPS = 60
 
 def draw_cheese_counter(screen, count):
