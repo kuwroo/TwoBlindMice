@@ -4,6 +4,7 @@ TILE_SIZE = 64  # or whatever size you're using
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 FPS = 60
+GROUND_HEIGHT = 240  # Set the ground height for the game
 
 def draw_cheese_counter(screen, count):
     font = pygame.font.Font(None, 36)
