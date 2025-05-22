@@ -66,7 +66,7 @@ while running:
     # --- Draw ---
     screen.fill((30, 30, 30))  # Clear the screen
     map_loader.draw_map(screen)  # Draw the map background
-    all_#sprites.draw(screen)
+    #all_#sprites.draw(screen)
     
     # Draw player
     player.draw(screen, keys)
