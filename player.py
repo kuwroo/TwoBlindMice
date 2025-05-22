@@ -56,7 +56,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=pos)  # Update the rect to match the new size
 
         self.direction = pygame.math.Vector2(0, 0)
-        self.speed = TILE_SIZE/10  # Grid-based, move one tile at a time
+        self.speed = TILE_SIZE/15  # Grid-based, move one tile at a time
         self.move_cooldown = 50  # milliseconds
         self.last_move_time = 0
 
@@ -78,19 +78,25 @@ class Player(pygame.sprite.Sprite):
 
         # Horizontal movement
         if keys[pygame.K_a]:
-            self.direction.x = -3
             self.facing_left = True
+            self.direction.x = -3
         elif keys[pygame.K_d]:
-            self.direction.x = 3
             self.facing_left = False
+            
 
-        # Vertical movement
+        # Jump with space bar or W key
         if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
             print("Jump triggered")  # Debugging
             self.velocity_y = self.jump_strength
             self.on_ground = False
 
-        # Update current frames based on direction without overwriting original frames
+        # Update facing direction
+        if self.direction.x < 0:
+            self.facing_left = True
+        elif self.direction.x >= 0:
+            self.facing_left = False
+
+        # Update current frames based on direction
         if self.facing_left:
             if self.direction.x == 0:
                 self.current_frames = self.idle_frames_flipped  
@@ -105,6 +111,11 @@ class Player(pygame.sprite.Sprite):
             self.last_move_time = current_time
         else:
             self.set_idle_animation()
+
+       
+        self.rect.x += self.direction.x * self.speed
+        self.set_movement_animation()  # Trigger movement animation
+        self.animate()  # Update the animation frame
 
     def move(self):
         """Move the player based on the current direction."""
