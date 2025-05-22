@@ -1,4 +1,5 @@
 import pygame
+#from camera import Camera  # Import the Camera class
 
 class PlayerMovement(pygame.sprite.Sprite):
     def __init__(self, screen_width, screen_height, ground_height, scale_factor=3):
@@ -37,6 +38,8 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (self.player_x, self.player_y)
 
+       #self.camera = Camera()  # Initialize the Camera class
+
     def load_spritesheet(self, image_path, frame_count, frame_width, frame_height):
         spritesheet = pygame.image.load(image_path)
         frames = []
@@ -71,8 +74,7 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.player_y = self.SCREEN_HEIGHT - self.PLAYER_HEIGHT - self.GROUND_HEIGHT
             self.player_velocity_y = 0
             self.on_ground = True
-
-        # Update the rect position for the sprite
+        # Adjust the rect position for the sprite
         self.rect.topleft = (self.player_x, self.player_y)
 
     def update_animation(self, keys):
