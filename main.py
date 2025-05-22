@@ -7,6 +7,8 @@ from quest import *
 # import pygame_gui  # Commented out for testing
 from maploader import MapLoader
 from player import TrashBin  # Import TrashBin class
+from quest import play_first_quest  # for quests
+
 
 
 pygame.init()
@@ -38,6 +40,8 @@ interactables.add(trash_bin)
 
 # --- Cheese Count ---
 cheese_count = 1
+# --- 1st quest ---
+e_pressed_last_frame = False
 
 # --- Game Loop ---
 running = True
@@ -54,14 +58,16 @@ while running:
     player.apply_gravity()
     player.update_position()
     player.update_animation(keys)
+    just_pressed_e = keys[pygame.K_e] and not e_pressed_last_frame
+
 
     # --- Interact with E ---
-    if keys[pygame.K_e]:
-        if trash_bin.interact(player.rect):
-            print("First Quest Starts!")  # Placeholder for dialogue
-
-    # --- Update ---
-    # dialogue.update(time_delta)  # Update the dialogue box  # Commented out for testing
+    if just_pressed_e:
+        print("First Quest Starts!")
+        result = play_first_quest()
+        print("Quest result:", result)
+        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("2 Blind Mice")
 
     # --- Draw ---
     screen.fill((30, 30, 30))  # Clear the screen
@@ -77,6 +83,8 @@ while running:
 
     # Cap the frame rate
     clock.tick(60)
+    e_pressed_last_frame = keys[pygame.K_e]
+
 
 
 pygame.quit()
