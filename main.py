@@ -63,13 +63,19 @@ while running:
     # --- Interact with E ---
     if just_pressed_e:
         for interactable in tile_map.interactables:
-            if player.rect.colliderect(interactable["rect"]):
+            player_rect_map = player.rect.copy()
+            player_rect_map.x += camera_offset.x
+            player_rect_map.y += camera_offset.y
+
+            if player_rect_map.colliderect(interactable["rect"]):
                 print(f"Interacted with: {interactable['name']}")
                 if interactable["type"] == "bin":
                     print("First Quest Starts!")
                     result = play_first_quest()
-                    play_first_quest()
                     print("Quest result:", result)
+                    # Re-create the main game window
+                    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+                    pygame.display.set_caption("2 Blind Mice")
                     
     # Center camera
     center_camera_on_player(player)
@@ -79,7 +85,6 @@ while running:
     # map_loader.draw_map(screen, camera_offset)
     tile_map.draw(screen, camera_offset)
 
-    
     # Draw player
     player.draw(screen, keys)
 

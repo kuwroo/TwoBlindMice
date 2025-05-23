@@ -87,5 +87,4 @@ def play_first_quest():
         pygame.draw.rect(win, PLAYER_COLOR, player)
         pygame.display.update()
 
-    pygame.display.quit()
     return quest_result
