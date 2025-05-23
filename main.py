@@ -5,9 +5,9 @@ from movement import *
 from quest import *
 # from dialogue import Dialogue  # Commented out for testing
 # import pygame_gui  # Commented out for testing
-from maploader import MapLoader
-from player import TrashBin  # Import TrashBin class
-from quest import play_first_quest  # for quests
+from maploader import *
+from player import *  # Import TrashBin class
+from quest import *  # for quests
 
 
 
@@ -17,31 +17,29 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("2 Blind Mice")
 clock = pygame.time.Clock()
-# manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))  # Commented out for testing
-
 
 # Initialize MapLoader
 map_loader = MapLoader("sewermap.png")
 map_loader.load_map()
 
-# Create an instance of PlayerMovement
+# Create Player
 player = PlayerMovement(SCREEN_WIDTH, SCREEN_HEIGHT, GROUND_HEIGHT)
 
-# --- Trash Bin Setup ---
-trash_bin = TrashBin((TILE_SIZE * 11, TILE_SIZE * 20))  # Placed rightward
-
-# --- Sprite Groups ---
+# Sprite Groups 
 all_sprites = pygame.sprite.Group()
-interactables = pygame.sprite.Group()
-
 all_sprites.add(player)
-all_sprites.add(trash_bin)
-interactables.add(trash_bin)
 
-# --- Cheese Count ---
+# Cheese Count
 cheese_count = 1
-# --- 1st quest ---
+
+# Quest State 
 e_pressed_last_frame = False
+
+# Camera Offset 
+camera_offset = pygame.Vector2(0, 0)
+def center_camera_on_player(player_rect):
+    camera_offset.x = player.rect.x - SCREEN_WIDTH // 2
+    camera_offset.y = player.rect.y - SCREEN_HEIGHT // 2
 
 # --- Game Loop ---
 running = True
@@ -49,9 +47,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        # Pass events to pygame_gui
-        # manager.process_events(event)  # Commented out for testing
-
+        
     # --- Movement Input ---
     keys = pygame.key.get_pressed()
     player.handle_input(keys)
@@ -68,16 +64,18 @@ while running:
         print("Quest result:", result)
         screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("2 Blind Mice")
+    
+    # Center camera
+    center_camera_on_player(player)
 
-    # --- Draw ---
-    screen.fill((30, 30, 30))  # Clear the screen
-    map_loader.draw_map(screen)  # Draw the map background
+    # Draw background and map
+    screen.fill((30, 30, 30))
+    map_loader.draw_map(screen, camera_offset)
     
     # Draw player
     player.draw(screen, keys)
-    # dialogue.draw()  # Draw the dialogue box  # Commented out for testing
 
-        # Update display
+    # Update display
     pygame.display.flip()
 
     # Cap the frame rate
