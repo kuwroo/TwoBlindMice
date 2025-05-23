@@ -13,3 +13,4 @@ class MapLoader:
         """Draw the map background onto the screen."""
         if self.background:
             screen.blit(self.background, (0, 0))
+

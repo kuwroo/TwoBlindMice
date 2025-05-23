@@ -13,9 +13,11 @@ def play_first_quest():
     GREEN = (0, 200, 0)
 
     player_size = 30
-    player = pygame.Rect(WIDTH // 2, 50, player_size, player_size)
+    player_x = WIDTH // 2
+    player_y = HEIGHT // 2  # Fixed vertical position (center screen)
+    player = pygame.Rect(player_x, player_y, player_size, player_size)
     player_speed = 5
-    fall_speed = 3
+    scroll_speed = 3  # how fast we scroll obstacles and ground up
 
     obstacles = []
     obstacle_height = 20
@@ -24,7 +26,7 @@ def play_first_quest():
     num_obstacles = 5
 
     for i in range(num_obstacles):
-        obstacle_width = random.randint(100, 150)
+        obstacle_width = random.randint(100, 200)
         x = random.randint(0, WIDTH - obstacle_width)
         y = i * gap + start_offset
         obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))
@@ -33,6 +35,7 @@ def play_first_quest():
     ground_y = num_obstacles * gap + start_offset
     ground = pygame.Rect(0, ground_y, WIDTH, ground_height)
 
+    camera_offset = 0
     clock = pygame.time.Clock()
     run = True
     quest_result = None
@@ -53,31 +56,34 @@ def play_first_quest():
         if keys[pygame.K_d] and player.right < WIDTH:
             player.x += player_speed
 
+        # Scroll everything up until the ground reaches player's y
         if not on_ground:
-            # Check if player's bottom after falling will hit or pass the ground top
-            if player.bottom + fall_speed >= ground.top:
-                player.bottom = ground.top  # Snap player exactly on top of the ground
+            if ground.top - camera_offset <= player.bottom:
                 on_ground = True
                 print("You landed safely! Press E to return.")
             else:
-                player.y += fall_speed
+                camera_offset += scroll_speed  # simulate falling by scrolling scene up
 
+        # Draw obstacles with camera offset
         for obs in obstacles:
-            obs.y -= fall_speed
-            pygame.draw.rect(win, RED, obs)
-            if player.colliderect(obs):
+            draw_rect = obs.copy()
+            draw_rect.y -= camera_offset
+            pygame.draw.rect(win, RED, draw_rect)
+            if player.colliderect(draw_rect):
                 print("Game Over!")
                 quest_result = "lose"
                 run = False
 
-        ground.y -= fall_speed
-        if ground.y < HEIGHT:
-            pygame.draw.rect(win, GREEN, ground)
+        # Draw ground with offset
+        draw_ground = ground.copy()
+        draw_ground.y -= camera_offset
+        pygame.draw.rect(win, GREEN, draw_ground)
 
         if on_ground and keys[pygame.K_e]:
             quest_result = "win"
             run = False
 
+        # Draw player
         pygame.draw.rect(win, PLAYER_COLOR, player)
         pygame.display.update()
 

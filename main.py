@@ -77,11 +77,6 @@ while running:
     player.draw(screen, keys)
     # dialogue.draw()  # Draw the dialogue box  # Commented out for testing
 
-    # Draw trash bin
-    trash_bin_image = pygame.Surface((trash_bin.rect.width, trash_bin.rect.height))
-    trash_bin_image.fill((139, 69, 19))  # Brown color for the trash bin
-    screen.blit(trash_bin_image, trash_bin.rect.topleft)
-
         # Update display
     pygame.display.flip()
 
