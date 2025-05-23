@@ -5,9 +5,10 @@ from movement import *
 from quest import *
 # from dialogue import Dialogue  # Commented out for testing
 # import pygame_gui  # Commented out for testing
-from maploader import *
+# from maploader import *
 from player import *  # Import TrashBin class
 from quest import *  # for quests
+from tilemap import *
 
 
 
@@ -19,8 +20,10 @@ pygame.display.set_caption("2 Blind Mice")
 clock = pygame.time.Clock()
 
 # Initialize MapLoader
-map_loader = MapLoader("sewermap.png")
-map_loader.load_map()
+# map_loader = MapLoader("sewermap.png")
+# map_loader.load_map()
+tile_map = TileMap("sewermap.tmx")  # Or the correct TMX filename
+
 
 # Create Player
 player = PlayerMovement(SCREEN_WIDTH, SCREEN_HEIGHT, GROUND_HEIGHT)
@@ -59,18 +62,23 @@ while running:
 
     # --- Interact with E ---
     if just_pressed_e:
-        print("First Quest Starts!")
-        result = play_first_quest()
-        print("Quest result:", result)
-        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("2 Blind Mice")
-    
+        for interactable in tile_map.interactables:
+            if player.rect.colliderect(interactable["rect"]):
+                print(f"Interacted with: {interactable['name']}")
+                if interactable["type"] == "bin":
+                    print("First Quest Starts!")
+                    result = play_first_quest()
+                    play_first_quest()
+                    print("Quest result:", result)
+                    
     # Center camera
     center_camera_on_player(player)
 
     # Draw background and map
     screen.fill((30, 30, 30))
-    map_loader.draw_map(screen, camera_offset)
+    # map_loader.draw_map(screen, camera_offset)
+    tile_map.draw(screen, camera_offset)
+
     
     # Draw player
     player.draw(screen, keys)
