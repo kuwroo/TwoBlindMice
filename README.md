@@ -1,50 +1,66 @@
-# 🐭 2 Blind Mice
+# Two Blind Mice 
 
-**2 Blind Mice** is a 2D pixel RPG game built with Python and Pygame.
+## Proposed Level of Achievement:
+Apollo 11
 
-You play as a mouse who wakes up in a dark world. Your mission is to explore, complete quests, and find pieces of cheese to slowly bring light back into the world.
+## Motivation 
+<!-- The reason behind starting the project -->
+Two students who want to further their interest in coding by making a game as a summer passion project. The game name is a play on the meme “the blind leading the blind”, a humorous jab at how we live. The inspiration for the game takes root from the short attention spans of this generation, prioritizing short cooperative puzzles and intuitive gameplay.
 
-Playable by running `python main.py` in a terminal.
+## Aim 
+<!-- The intended purpose of the game\ desired eefect on players -->
 
----
+## User stories 
+1. As a player, I want to play a game with nostalgic gentle art and game style.
+2. As a player, I want to play a game that offers me a sense of escape from the stressful reality.
+3. As a player, I want to play a game that I can pick up intuitively without needing to use too much brain power.
+4. As a player, I want to play a game with an interesting yet not too complicated storyline.
 
-## 🎮 Gameplay Goals
+## Scope of Project 
+<!-- Boundaries of the project -- what will and wn't be included --> 
+Two Blind Mice is a single-player RPG desktop game ran using Python and Pygame. It is set in a post-apocalyptic world with a 2D 32-bit retro pixel art style, where players aim to complete quests to fulfill and explore its storyline. 
 
-- 🧀 Find cheese to light up the world
-- 🗣️ Talk to NPCs and complete quests to get cheese or tools
-- 🌌 Navigate through darkness with limited vision
-- 🔍 Discover hidden areas and secrets
+Players can navigate through the levels using a simple mini map. The storyline gradually unfolds as players progress. In each grid-based level, players interact with specific tiles to unlock and complete quests.
 
----
+Players gain Golden Cheese(method of counting experience points) upon completing quests for the first time. By gaining Golden Cheese, players can get closer to revealing the truth behind the storyline. 
 
-## 🛠️ How to Run
+2 Blind Mice's features are outlined in the following sections, organised by the following tags:
 
-1. **Install Python** (version 3.9 or above).
-2. **Install Pygame** by running:
-   ```bash
-   pip install pygame
+**[Proposed]** - features for Minimum Viable Product (MVP) by MS 1\
+**[Current Progress]** - elaboration on current progress of specific feature\
+**[Additional Features]** - Add-on features to improve product after MVP is completed. 
 
-git clone https://github.com/kuwroo/TwoBlindMice.git
-cd 2-blind-mice
+## Features 
+> RPG Point-and-Click adventure game system
 
-python main.py
+**[Proposed]**
 
-📁 Folder Structure
-/project-root
-│
-├── main.py                 # Game runner
-├── scenes.py               # Scene controller
-├── player.py               # Player movement + light radius
-├── npc.py                  # Interactions
-├── quest.py                # Handles quests/cheese collection
-├── dialogue.py             # Dialogue system (text box + cutscene handling)
-├── misc.py                 # Misc helpers
-├── assets/                 # Sprites, audio, etc.
-│   ├── sprites/
-│   ├── fonts/
-│   └── sfx/
+Our proposed RPG Point-and-Click adventure game system is inspired by Doodle Champion Island Games and Refind Self: The Personality Test Game.
 
-📌 Possible Improvements
-Converting into a web game: Currently, this is a desktop game, but you could explore converting it into a web game in the future.
+In the main game setting, players freely explore a world and complete quests in mini-games to collect Golden Cheese and progress with world-building. To access these quests, players interact with tiles in the form of items or characters. 
 
-Release as a downloadable PC game: Consider releasing it on platforms like Itch.io or Steam.
+In the quests, players play minigames, which take inspiration from classic video games such as Pac-man, Street-fighter, Pong and Endless Falling. Upon completing each quest for the first time, players will be awarded with 1 Golden Cheese. These minigames are replayable, so players can revisit them whenever they want. 
+
+**[Current Progress]**
+
+Our proof-of-concept is built using a basic **Interaction system** with the first minigame implemented in the game. Players can navigate the open world using WASD and press E near interactables to trigger a quest. Upon completing the minigame, players then press E again to exit the minigame. Between transitions in the game, eg. from the Start Menu to the Main game and from the Main game to the Minigame, animated cutscenes to set up and introduce the upcoming phase will be played. For Milestone 1, the basic UI elements for displaying collected Golden Cheese count has yet to be implemented. 
+
+**[Additional Features]**
+
+1. Visibility progression as Golden Cheese are completed -- Visibility in terms of ability to identify objects further from them. Or could also be protrayed as the extent of explorability in the world, for eg. players are unable to enter certain places without completing a quest.
+
+> Quest types
+
+**[Proposed]**
+
+For the MVP, 2 Blind Mice will have only 1 minigame with simple win/loss conditions. This minigame takes inspiration from Endless Falling, such that players must free fall down a certain distance without colliding with any obstacles. 
+
+**[Current Progress]**
+
+Currently, the minigame can be accessed by interacting with a specific tile in the world. However, the game graphics for the game have yet to be implemented, so the player and the objects are displayed as pixels in the screen. 
+
+**[Additional Features]**
+
+
+
+
