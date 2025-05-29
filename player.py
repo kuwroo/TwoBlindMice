@@ -1,177 +1,125 @@
 import pygame
-import random
-import time
-import math
 from misc import *
-from spritesheet_loader import SpriteSheet
+
+class PlayerMovement(pygame.sprite.Sprite):
+    def __init__(self, screen_width, screen_height, ground_height, map_width):
+        super().__init__() 
+
+        # Initialize the Sprite class
+        self.SCREEN_WIDTH = screen_width
+        self.SCREEN_HEIGHT = screen_height
+        self.GROUND_HEIGHT = ground_height
+        self.TILE_SIZE = 32
+        self.MAP_WIDTH_IN_TILES = MAP_WIDTH_IN_TILES  # Or pass this from outside
+        self.WORLD_WIDTH = map_width  
 
 
-# Contains abstract classes for all sprites (Player, NPC, Cheese, etc.)
+        # Player details 
+        self.PLAYER_WIDTH = 50
+        self.PLAYER_HEIGHT = 50
+        self.PLAYER_SPEED = 5
+        self.JUMP_POWER = 15
+        self.GRAVITY = 1
 
-import pygame
-from misc import TILE_SIZE
-
-class Player(pygame.sprite.Sprite):
-    def __init__(self, pos):
-        super().__init__()
-        # Load the movement spritesheet
-        self.movement_sprite_sheet = SpriteSheet("resources/MOUSE.png")
-        self.movement_frames = [self.movement_sprite_sheet.get_frame(i, 32, 32) for i in range(8)]
-
-        # Load the idle spritesheet
-        self.idle_sprite_sheet = SpriteSheet("resources/IDLE.png")
-        self.idle_frames = [self.idle_sprite_sheet.get_frame(i, 32, 32) for i in range(4)]
-
-        # Scale all movement and idle frames to make them larger
-        scale_factor = 3  # Adjust this factor as needed
-        self.movement_frames = [
-            pygame.transform.scale(frame, (frame.get_width() * scale_factor, frame.get_height() * scale_factor))
-            for frame in self.movement_frames
-        ]
-        self.idle_frames = [
-            pygame.transform.scale(frame, (frame.get_width() * scale_factor, frame.get_height() * scale_factor))
-            for frame in self.idle_frames
-        ]
-
-        # Precompute flipped frames
-        self.movement_frames_flipped = [
-            pygame.transform.flip(frame, True, False) for frame in self.movement_frames
-        ]
-        self.idle_frames_flipped = [
-            pygame.transform.flip(frame, True, False) for frame in self.idle_frames
-        ]
-
-        # Animation attributes
-        self.current_frames = self.idle_frames  # Start with idle frames
-        self.current_frame = 0
-        self.frame_timer = 0
-        self.frame_delay = 1000  # Milliseconds between frames
-
-        # Set initial image and rect
-        self.image = self.current_frames[self.current_frame]
-        self.rect = self.image.get_rect(topleft=pos)
-
-        # Update the initial image and rect to match the new size
-        self.image = pygame.transform.scale(self.image, (self.image.get_width() * scale_factor, self.image.get_height() * scale_factor))
-        self.rect = self.image.get_rect(topleft=pos)  # Update the rect to match the new size
-
-        self.direction = pygame.math.Vector2(0, 0)
-        self.speed = TILE_SIZE/15  # Grid-based, move one tile at a time
-        self.move_cooldown = 50  # milliseconds
-        self.last_move_time = 0
-
-        # Jump-related attributes
-        self.velocity_y = 0
-        self.gravity = 0.5
-        self.jump_strength = -50
+        # Initial player position and velocity
+        self.player_x = 300
+        self.player_y = screen_height - self.PLAYER_HEIGHT - ground_height
+        self.player_velocity_x = 0
+        self.player_velocity_y = 0
+        self.is_jumping = False
         self.on_ground = True
 
-        # Initialize facing direction
-        self.facing_left = False
+        self.current_frame = 0
+        self.frame_timer = 0
+        self.frame_delay = 5
+        self.last_direction_left = False
 
-    def handle_input(self, keys, current_time):
-        if current_time - self.last_move_time < self.move_cooldown:
-            return
+        self.idle_frames = self.load_spritesheet('resources/idle.png', 4, 32, 32)
+        self.movement_frames = self.load_spritesheet('resources/MOUSE.png', 8, 32, 32)
 
-        self.direction.x = 0
-        self.direction.y = 0  # Keep local vertical movement initialization
+        self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH* 3 , self.PLAYER_HEIGHT* 3 )) for frame in self.idle_frames]
+        self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH* 3 , self.PLAYER_HEIGHT* 3 )) for frame in self.movement_frames]
 
-        # Horizontal movement
-        if keys[pygame.K_a]:
-            self.facing_left = True
-            self.direction.x = -3
-        elif keys[pygame.K_d]:
-            self.facing_left = False
-            
+        # Set initial image and rect for compatibility with sprite groups
+        self.image = self.idle_frames[0]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (self.player_x, self.player_y)
 
-        # Jump with space bar or W key
-        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
-            print("Jump triggered")  # Debugging
-            self.velocity_y = self.jump_strength
+       #self.camera = Camera()  # Initialize the Camera class
+
+    def load_spritesheet(self, image_path, frame_count, frame_width, frame_height):
+        spritesheet = pygame.image.load(image_path)
+        frames = []
+        for i in range(frame_count):
+            frame = spritesheet.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height))
+            frames.append(frame)
+        return frames
+
+    def handle_input(self, keys):
+        self.player_velocity_x = 0
+        if keys[pygame.K_a] and self.player_x > self.PLAYER_SPEED:  # Change to 'A' for left
+            self.player_velocity_x = -self.PLAYER_SPEED
+            self.last_direction_left = True
+        if keys[pygame.K_d] and self.player_x < self.WORLD_WIDTH - self.PLAYER_WIDTH - self.PLAYER_SPEED:  # Change to 'D' for right
+            self.player_velocity_x = self.PLAYER_SPEED
+            self.last_direction_left = False
+
+        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:  # Allow both Space and W for jump
+            self.player_velocity_y = -self.JUMP_POWER
+            self.is_jumping = True
             self.on_ground = False
 
-        # Update facing direction
-        if self.direction.x < 0:
-            self.facing_left = True
-        elif self.direction.x >= 0:
-            self.facing_left = False
-
-        # Update current frames based on direction
-        if self.facing_left:
-            if self.direction.x == 0:
-                self.current_frames = self.idle_frames_flipped  
-            else:
-                self.current_frames = self.movement_frames_flipped 
-        else:
-            self.current_frames = self.movement_frames if self.direction.x != 0 else self.idle_frames
-    
-
-        if self.direction.length_squared() != 0:
-            self.move()
-            self.last_move_time = current_time
-        else:
-            self.set_idle_animation()
-
-       
-        self.rect.x += self.direction.x * self.speed
-        self.set_movement_animation()  # Trigger movement animation
-        self.animate()  # Update the animation frame
-
-    def move(self):
-        """Move the player based on the current direction."""
-        self.rect.x += self.direction.x * self.speed
-        self.rect.y += self.direction.y * self.speed  # Add this line for vertical movement
-        self.set_movement_animation()
-        self.animate()
-
-    def set_movement_animation(self):
-        """Switch to movement animation frames."""
-        if self.current_frames != self.movement_frames:
-            self.current_frames = self.movement_frames
-            self.current_frame = 0  # Reset to the first frame
-        self.animate()  # Revert to previous logic
-
-    def set_idle_animation(self):
-        """Switch to idle animation frames."""
-        if self.current_frames != self.idle_frames:
-            self.current_frames = self.idle_frames
-            self.current_frame = 0  # Reset to the first frame
-            self.frame_delay = 1000  # Set frame delay for idle animation
-        self.animate()  # Update the animation frame
-
-    def animate(self):
-        """Update the current frame for animation."""
-        self.frame_timer += pygame.time.get_ticks() % 1000  # Revert to previous logic
-        if self.frame_timer >= self.frame_delay:
-            self.frame_timer = 0
-            self.current_frame = (self.current_frame + 1) % len(self.current_frames)
-            self.image = self.current_frames[self.current_frame]
-
     def apply_gravity(self):
-        self.velocity_y += self.gravity
-        self.rect.y += self.velocity_y
+        if not self.on_ground:
+            self.player_velocity_y += self.GRAVITY
 
-        # Debugging: Print gravity-related values
-        print(f"Velocity Y: {self.velocity_y}, Rect Y: {self.rect.y}, On Ground: {self.on_ground}")
+    def update_position(self):
+        self.player_x += self.player_velocity_x
+        self.player_y += self.player_velocity_y
 
-        # Simulate ground collision (example: ground at y = 300)
-        if self.rect.bottom >= 250:  # Replace 300 with your ground level
-            self.rect.bottom = 250
-            self.velocity_y = 0
+        # Horizontal boundaries (WORLD-BASED, not screen-based)
+        if self.player_x < 0:
+            self.player_x = 0
+        if self.player_x > self.WORLD_WIDTH - self.PLAYER_WIDTH:
+            self.player_x = self.WORLD_WIDTH - self.PLAYER_WIDTH
+
+        if self.player_y >= self.SCREEN_HEIGHT - self.PLAYER_HEIGHT - self.GROUND_HEIGHT:
+            self.player_y = self.SCREEN_HEIGHT - self.PLAYER_HEIGHT - self.GROUND_HEIGHT
+            self.player_velocity_y = 0
             self.on_ground = True
 
-    def update(self, keys, current_time):
-        self.handle_input(keys, current_time)
-        self.apply_gravity()
-        self.animate()  # Revert to previous logic
+        # Adjust the rect position for the sprite
+        self.rect.topleft = (self.player_x, self.player_y)
 
-# first quest 
-class TrashBin(pygame.sprite.Sprite):
-    def __init__(self, pos, size=(32, 64)):
-        super().__init__()
-        # Make the sprite invisible but interactive
-        self.image = pygame.Surface(size, pygame.SRCALPHA)
-        self.rect = self.image.get_rect(topleft=pos)
+    def update_animation(self, keys):
+        if self.on_ground and not (keys[pygame.K_a] or keys[pygame.K_d]):
+            if self.current_frame >= len(self.idle_frames):
+                self.current_frame = 0
+            self.frame_timer += 1
+            if self.frame_timer >= self.frame_delay:
+                self.frame_timer = 0
+                self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
+        else:
+            if self.current_frame >= len(self.movement_frames):
+                self.current_frame = 0
+            self.frame_timer += 1
+            if self.frame_timer >= self.frame_delay:
+                self.frame_timer = 0
+                self.current_frame = (self.current_frame + 1) % len(self.movement_frames)
 
-    def interact(self, player_rect):
-        return self.rect.colliderect(player_rect)
+    def draw(self, screen, keys, camera_offset):
+        draw_x = self.player_x - camera_offset.x
+        draw_y = self.player_y - camera_offset.y
+
+        if self.on_ground and not (keys[pygame.K_a] or keys[pygame.K_d]):
+            frame = self.idle_frames[self.current_frame]
+            if self.last_direction_left:
+                frame = pygame.transform.flip(frame, True, False)
+        else:
+            frame = self.movement_frames[self.current_frame]
+            if keys[pygame.K_a]:
+                frame = pygame.transform.flip(frame, True, False)
+        
+        screen.blit(frame, (draw_x, draw_y))
+
+
