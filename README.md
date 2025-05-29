@@ -43,11 +43,15 @@ In the quests, players play minigames, which take inspiration from classic video
 
 **[Current Progress]**
 
-Our proof-of-concept is built using a basic **Interaction system** with the first minigame implemented in the game. Players can navigate the open world using WASD and press E near interactables to trigger a quest. Upon completing the minigame, players then press E again to exit the minigame. Between transitions in the game, eg. from the Start Menu to the Main game and from the Main game to the Minigame, animated cutscenes to set up and introduce the upcoming phase will be played. For Milestone 1, the basic UI elements for displaying collected Golden Cheese count has yet to be implemented. 
+Our proof-of-concept is built using a basic **Interaction system** with the first minigame implemented in the game. Players can navigate the open world using WASD and press E near interactables to trigger a quest. Upon completing the minigame, players then press E again to exit the minigame. The player movement chart is shown below. For Milestone 1, the basic UI elements for displaying collected Golden Cheese count has yet to be implemented. 
+
+![image](https://github.com/user-attachments/assets/b70e762b-c6a1-4b61-ba41-a6c7a99c2c74)
+
 
 **[Additional Features]**
 
 1. Visibility progression as Golden Cheese are completed -- Visibility in terms of ability to identify objects further from them. Or could also be protrayed as the extent of explorability in the world, for eg. players are unable to enter certain places without completing a quest.
+2. Animated cutscenes to set up and introduce the upcoming phase. Can be played between transitions in the game, eg. from the Start Menu to the Main game and from the Main game to the Minigame.
 
 > Quest types
 
