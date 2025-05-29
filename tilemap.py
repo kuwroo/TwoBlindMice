@@ -13,7 +13,7 @@ class TileMap:
         interactables = []
         for obj in self.tmx_data.objects:
             print(f"Found object: {obj.name} {obj.type}")
-            if obj.type == "bin":  # Make sure this matches Type in Tiled
+            if obj.type == "Bin":  # Make sure this matches Type in Tiled
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
                 interactables.append({
                     "rect": rect,
