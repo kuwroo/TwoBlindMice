@@ -8,9 +8,8 @@ from quest import *
 # from maploader import *
 from player import *  # Import TrashBin class
 from quest import *  # for quests
-from tilemap import *
-
-
+# from tilemap import *
+from camera import *
 
 pygame.init()
 
@@ -27,6 +26,11 @@ tile_map = TileMap("sewermap.tmx")  # Or the correct TMX filename
 
 # Create Player
 player = PlayerMovement(SCREEN_WIDTH, SCREEN_HEIGHT, GROUND_HEIGHT)
+camera = Camera(player)
+follow = Follow(camera,player)
+border = Border(camera,player)
+auto = Auto(camera,player)
+camera.setmethod(follow)
 
 # Sprite Groups 
 all_sprites = pygame.sprite.Group()
@@ -37,12 +41,6 @@ cheese_count = 1
 
 # Quest State 
 e_pressed_last_frame = False
-
-# Camera Offset 
-camera_offset = pygame.Vector2(0, 0)
-def center_camera_on_player(player_rect):
-    camera_offset.x = player.rect.x - SCREEN_WIDTH // 2
-    camera_offset.y = player.rect.y - SCREEN_HEIGHT // 2
 
 # --- Game Loop ---
 running = True
@@ -58,6 +56,7 @@ while running:
     player.update_position()
     player.update_animation(keys)
     just_pressed_e = keys[pygame.K_e] and not e_pressed_last_frame
+    camera.scroll()
 
 
     # --- Interact with E ---
@@ -77,9 +76,7 @@ while running:
                     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
                     pygame.display.set_caption("2 Blind Mice")
                     
-    # Center camera
-    center_camera_on_player(player)
-
+    
     # Draw background and map
     screen.fill((30, 30, 30))
     # map_loader.draw_map(screen, camera_offset)
