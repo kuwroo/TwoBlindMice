@@ -53,14 +53,35 @@ Our proof-of-concept is built using a basic **Interaction system** with the firs
 
 **[Proposed]**
 
-For the MVP, 2 Blind Mice will have only 1 minigame with simple win/loss conditions. This minigame takes inspiration from Endless Falling, such that players must free fall down a certain distance without colliding with any obstacles. 
+For the MVP, 2 Blind Mice will have 1 minigame with simple win/loss conditions. Additional add-on minigames are also listed below. 
+
+| Minigame | Description | 
+| --- | :--- |
+| Endless Freefall (MVP) | Players freefall down a certain distance and must reach the bottom without colliding into any obstacles |
+| Avoid the Cat (Add-on) | Taking inspo from Pac-Man |
+| Lengthy Snake (Add-on) | Taking inspo from the Snake Nokia phone game |
+| Fight for the Cheese (Add-on) | Taking inspo from Street Fighters|
 
 **[Current Progress]**
 
-Currently, the minigame can be accessed by interacting with a specific tile in the world. However, the game graphics for the game have yet to be implemented, so the player and the objects are displayed as pixels in the screen. 
+Currently, the minigame can be accessed by interacting with a specific tile in the world. However, the game graphics for the game have yet to be implemented, so the player and the objects are displayed as pixels.
 
 **[Additional Features]**
 
+## Timeline and Development Plan ## 
+<!-- make table -->
+
+## Class Diagram ##
+<!-- make picture diagrams -->
+
+
+## Proof-of-Concept ##
+<!-- make video -->
+Refer to video demonstration:
+
+## Work Log ##
+<!-- spreadsheet to record how long we do work etc. -->
+Refer to attached spreadsheet
 
 
 
