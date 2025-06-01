@@ -82,10 +82,12 @@ Currently, the minigame can be accessed by interacting with a specific tile in t
 ## Proof-of-Concept ##
 <!-- make video -->
 Refer to video demonstration:
+https://youtu.be/U0KX2dnne00
 
 ## Work Log ##
 <!-- spreadsheet to record how long we do work etc. -->
 Refer to attached spreadsheet
+https://docs.google.com/spreadsheets/d/1P33ckL-DrVosnxSF5SpMOJVcz_ajs3mXGDqgvIiaf3s/edit?usp=sharing
 
 
 
