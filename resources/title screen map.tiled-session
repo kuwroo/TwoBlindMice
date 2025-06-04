@@ -1,0 +1,87 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "C:/Users/jacel/Downloads/start.tsx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "C:/Users/jacel/Documents/sewer.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/jacel/Downloads/71d2baa8ee45a03911aab0d811ea1936.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/jacel/Downloads/fan.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/jacel/Downloads/fann.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/jacel/Downloads/start.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
+        },
+        "C:/Users/jacel/Downloads/tite.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/jacel/Downloads/titlefont.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/jacel/Downloads/twt.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "title.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": -375,
+                "y": -175.5
+            }
+        },
+        "title.tmx#sewer": {
+            "scaleInDock": 1
+        }
+    },
+    "frame.defaultDuration": 120,
+    "last.externalTilesetPath": "C:/Users/jacel/Downloads",
+    "last.imagePath": "C:/Users/jacel/Downloads/Telegram Desktop",
+    "map.fixedSize": false,
+    "map.height": 19,
+    "map.lastUsedFormat": "tmx",
+    "map.width": 25,
+    "openFiles": [
+        "title.tmx",
+        "C:/Users/jacel/Downloads/fann.tsx",
+        "C:/Users/jacel/Downloads/start.tsx"
+    ],
+    "project": "title screen map.tiled-project",
+    "recentFiles": [
+        "title.tmx",
+        "C:/Users/jacel/Downloads/fann.tsx",
+        "C:/Users/jacel/Downloads/start.tsx",
+        "C:/Users/jacel/Downloads/titlefont.tsx",
+        "C:/Users/jacel/Downloads/tite.tsx",
+        "C:/Users/jacel/Downloads/fan.tsx",
+        "C:/Users/jacel/Downloads/twt.tsx",
+        "C:/Users/jacel/Downloads/71d2baa8ee45a03911aab0d811ea1936.tsx"
+    ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 32,
+        "width": 32
+    }
+}
