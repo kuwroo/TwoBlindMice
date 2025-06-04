@@ -17,7 +17,7 @@ pygame.display.set_caption("2 Blind Mice")
 clock = pygame.time.Clock()
 
 # Load TileMap
-tile_map = TileMap("sewermap.tmx") 
+tile_map = TileMap("resources/sewermap.tmx")
 
 WORLD_WIDTH = tile_map.width  
 
@@ -98,4 +98,4 @@ while running:
 
 
 pygame.quit()
-sys.exit()
+# sys.exit() so that it can be used in a larger application without exiting the interpreter
