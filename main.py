@@ -1,5 +1,5 @@
 import pygame
-import sys
+import asyncio, sys
 from misc import *
 # from movement import *
 # from dialogue import Dialogue  # Commented out for testing
@@ -44,58 +44,60 @@ def center_camera_on_player(player):
     camera_offset.x = max(0, min(camera_offset.x, tile_map.width - SCREEN_WIDTH))
     camera_offset.y = max(0, min(camera_offset.y, tile_map.height - SCREEN_HEIGHT))
 
-# --- Game Loop ---
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        
-    # --- Movement Input ---
-    keys = pygame.key.get_pressed()
-    player.handle_input(keys)
-    player.apply_gravity()
-    player.update_position()
-    center_camera_on_player(player)
-    player.update_animation(keys)
-    just_pressed_e = keys[pygame.K_e] and not e_pressed_last_frame
+async def main():
+    global e_pressed_last_frame
+    # --- Game Loop ---
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            
+        # --- Movement Input ---
+        keys = pygame.key.get_pressed()
+        player.handle_input(keys)
+        player.apply_gravity()
+        player.update_position()
+        center_camera_on_player(player)
+        player.update_animation(keys)
+        just_pressed_e = keys[pygame.K_e] and not e_pressed_last_frame
 
 
-    # --- Interact with E ---
-    if just_pressed_e:
-        for interactable in tile_map.interactables:
-            player_rect_map = player.rect.copy()
-            player_rect_map.x += camera_offset.x
-            player_rect_map.y += camera_offset.y
+        # --- Interact with E ---
+        if just_pressed_e:
+            for interactable in tile_map.interactables:
+                player_rect_map = player.rect.copy()
+                player_rect_map.x += camera_offset.x
+                player_rect_map.y += camera_offset.y
 
-            if player_rect_map.colliderect(interactable["rect"]):
-                print(f"Interacted with: {interactable['name']}")
-                if interactable["type"] == "Bin":
-                    print("First Quest Starts!")
-                    result = play_first_quest()
-                    print("Quest result:", result)
-                    # Re-create the main game window
-                    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-                    pygame.display.set_caption("2 Blind Mice")
-                    
-    # Center camera
-    center_camera_on_player(player)
+                if player_rect_map.colliderect(interactable["rect"]):
+                    print(f"Interacted with: {interactable['name']}")
+                    if interactable["type"] == "Bin":
+                        print("First Quest Starts!")
+                        result = play_first_quest()
+                        print("Quest result:", result)
+                        # Re-create the main game window
+                        global screen
+                        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+                        pygame.display.set_caption("2 Blind Mice")
+                        
+        # Center camera
+        center_camera_on_player(player)
 
-    # Draw background and map
-    screen.fill((30, 30, 30))
-    tile_map.draw(screen, camera_offset)
+        # Draw background and map
+        screen.fill((30, 30, 30))
+        tile_map.draw(screen, camera_offset)
 
-    # Draw player
-    player.draw(screen, keys, camera_offset)
+        # Draw player
+        player.draw(screen, keys, camera_offset)
 
-    # Update display
-    pygame.display.flip()
+        # Update display
+        pygame.display.flip()
 
-    # Cap the frame rate
-    clock.tick(60)
-    e_pressed_last_frame = keys[pygame.K_e]
+        # Cap the frame rate
+        clock.tick(60)
+        e_pressed_last_frame = keys[pygame.K_e]
 
+        await asyncio.sleep(0)  # Yield control to the event loop
 
-
-pygame.quit()
-# sys.exit() so that it can be used in a larger application without exiting the interpreter
+asyncio.run(main())
