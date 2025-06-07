@@ -81,6 +81,8 @@ Currently, the minigame can be accessed by interacting with a specific tile in t
 
 ## Proof-of-Concept ##
 <!-- make video -->
+Github Repo:
+https://github.com/kuwroo/TwoBlindMice.git
 Refer to video demonstration:
 https://youtu.be/U0KX2dnne00
 
