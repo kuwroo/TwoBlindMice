@@ -1,0 +1,32 @@
+@startuml
+class Main {
+    +main()
+    +setup()
+    +gameLoop()
+    +handleInput()
+    +update()
+    +render()
+}
+
+class PlayerMovement {
+    +handle_input(keys)
+    +apply_gravity()
+    +update_position()
+    +update_animation(keys)
+    +draw(screen, keys)
+}
+
+class Camera {
+    +scroll()
+    +setmethod(method)
+}
+
+class Quest {
+    +play_first_quest()
+}
+
+Main --> PlayerMovement
+Main --> Camera
+Main --> Quest
+@enduml
+
