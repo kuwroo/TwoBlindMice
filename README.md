@@ -83,8 +83,9 @@ Currently, the minigame can be accessed by interacting with a specific tile in t
 <!-- make video -->
 Github Repo:
 https://github.com/kuwroo/TwoBlindMice.git
-enter main.py, run the code. If it does not run, manually run it using "python3 [filelocation]/TwoBlindMice/main.py" depending on where you download it
-Refer to video demonstration:
+enter main.py, run the code. If it does not run, manually run it using "python3 [filelocation]/TwoBlindMice/main.py" depending on where you download it. For example "python3 /Users/chloe/Desktop/2blindmice/TwoBlindMice/main.py"
+
+Video demonstration of gameplay:
 https://youtu.be/U0KX2dnne00
 
 ## Work Log ##
