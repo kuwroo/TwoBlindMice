@@ -1,5 +1,6 @@
 import pygame
 from misc import *
+from tilemap import resource_path
 
 class PlayerMovement(pygame.sprite.Sprite):
     def __init__(self, screen_width, screen_height, ground_height, map_width):
@@ -34,8 +35,8 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.frame_delay = 5
         self.last_direction_left = False
 
-        self.idle_frames = self.load_spritesheet('resources/idle.png', 4, 32, 32)
-        self.movement_frames = self.load_spritesheet('resources/MOUSE.png', 8, 32, 32)
+        self.idle_frames = self.load_spritesheet(resource_path('resources/idle.png'), 4, 32, 32)
+        self.movement_frames = self.load_spritesheet(resource_path('resources/MOUSE.png'), 8, 32, 32)
 
         self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH* 3 , self.PLAYER_HEIGHT* 3 )) for frame in self.idle_frames]
         self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH* 3 , self.PLAYER_HEIGHT* 3 )) for frame in self.movement_frames]
