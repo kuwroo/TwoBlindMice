@@ -74,6 +74,81 @@ Currently, the minigame can be accessed by interacting with a specific tile in t
 
 ## Timeline and Development Plan ## 
 <!-- make table -->
+## Milestone 1 – Technical Proof of Concept  
+**Goal**: Build a minimal working system integrating core mechanics  
+**Deadline**: 2 June
+
+| Tasks                      | Description                                                                 | In-Charge | Date             |
+|---------------------------|-----------------------------------------------------------------------------|-----------|------------------|
+| Player Movement System    | WASD + arrow key controls, grid-based movement                             | Chloe     | 15 - 18 May      |
+| Collision Detection       | Basic collision with world elements (walls, bins, etc.)                    | Chloe     | 18 - 20 May      |
+| First Mini-game           | Implement first mini-game (e.g., cheese grab or trash sort)                | Jacelyn   | 20 - 26 May      |
+| Integrate and Test        | Connect all systems together                                               | Chloe     | 26 May - 1 June  |
+
+✅ **Milestone 1 Outcome (2 June):**  
+- Navigable open world  
+- Working movement + collisions  
+- First mini-game with win/loss  
+
+---
+
+## Milestone 2 – Prototype  
+**Goal**: Implement core gameplay features and flow, basic UI cheese count
+**Deadline**: 30 June
+
+| Tasks                          | Description                                                                       | In-Charge | Date             |
+|-------------------------------|-----------------------------------------------------------------------------------|-----------|------------------|
+| Add More Mini-games           | Avoid the Cat, Escape the Maze                                                    | Jacelyn   | 3 - 9 June       |
+| UI cheese count               | Cheese counter at the top of the screen to track progress                         | Chloe     | 5 - 10 June      |
+| Visibility Progression        | Implement light radius that increases with cheese                                 | Chloe     | 11 - 14 June     |
+| Transition System             | Seamless movement between main world and mini-games                              | Chloe     | 15 - 19 June     |
+| UI Improvements               | Pop-up prompts, cheese effects, game over/win screens                            | Jacelyn   | 20 - 25 June     |
+| System Integration & Testing  | Playtesting, bug fixes, internal feedback                                         | Chloe + Jacelyn | 26 - 29 June |
+
+✅ **Milestone 2 Outcome (30 June):**  
+- Multiple working mini-games  
+- Basic NPCs and door logic  
+- Light grows as cheese is collected  
+- Smooth transitions between zones and games  
+
+---
+
+## Milestone 3 – Extended System  
+**Goal**: Expand with polish, replayability, and additional features  
+**Deadline**: 28 July
+
+| Tasks                             | Description                                                               | In-Charge | Date             |
+|----------------------------------|---------------------------------------------------------------------------|-----------|------------------|
+| Full Set of Mini-games           | Complete remaining games, allow replay                                    | Jacelyn   | 1 - 6 July       |
+| Dynamic World Features           | Obstacles that move or unlock, hidden areas revealed by light             | Chloe     | 3 - 9 July       |
+| SFX + Audio Integration          | Background music, sound cues for actions, mouse SFX                       | Jacelyn   | 10 - 13 July     |
+| Polish and QA                    | Bug fixes, smoother transitions, UI polish                                | Chloe     | 14 - 20 July     |
+| Final Integration & Balancing   | Connect all elements, balance difficulty                                  | Jacelyn + Chloe | 21 - 27 July |
+
+✅ **Milestone 3 Outcome (28 July):**  
+- All mini-games complete and replayable  
+- Dynamic interactions in the world  
+- Sound effects and music integrated  
+- Polished and playable end-to-end build  
+
+---
+
+## Splashdown – Final Release  
+**Goal**: MVP + Add-ons  
+**Deadline**: 27 August
+
+| Tasks                          | Description                                                             | In-Charge | Date             |
+|--------------------------------|-------------------------------------------------------------------------|-----------|------------------|
+| Advanced Enemy Behavior        | Smarter AI decision-making (if applicable)                              | Chloe     | 29 July - 5 Aug  |
+| Mini-game & Character Expansions | Add new characters, cutscenes, game variations                          | Jacelyn   | 6 - 12 Aug       |
+| Progression & Leveling System | Implement progression logic, pacing, difficulty scaling                 | Chloe     | 13 - 19 Aug      |
+| Polish, Playtesting & UX      | Final playtests, user feedback, camera and UI polish                    | Jacelyn + Chloe | 20 - 26 Aug |
+
+✅ **Splashdown (27 August):**  
+- Full MVP with extra content  
+- Final balancing and UX improvements  
+- All core and additional features complete  
+
 
 ## Class Diagram ##
 <!-- make picture diagrams -->
