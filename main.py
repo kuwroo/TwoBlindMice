@@ -7,12 +7,13 @@ from misc import *
 from player import *  # Import PlayerMovement and Camera class
 from quest import *  # for quests
 from tilemap import *
+from visibility import FogOfWar  # Import the new FogOfWar class
 
 
 pygame.init()
 
 # --- Setup ---
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT], pygame.SRCALPHA, 32)
 pygame.display.set_caption("2 Blind Mice")
 clock = pygame.time.Clock()
 
@@ -23,6 +24,9 @@ WORLD_WIDTH = tile_map.width
 
 # Create Player
 player = PlayerMovement(SCREEN_WIDTH, SCREEN_HEIGHT, GROUND_HEIGHT, WORLD_WIDTH)
+
+# Create Fog of War
+fog = FogOfWar(visibility_radius=150, fog_image_path=resource_path("resources/fog.png"))
 
 # Sprite Groups 
 all_sprites = pygame.sprite.Group()
@@ -90,6 +94,10 @@ async def main():
 
         # Draw player
         player.draw(screen, keys, camera_offset)
+
+        # Update and draw fog of war
+        fog.update((player.rect.centerx, player.rect.centery), camera_offset)
+        fog.draw(screen)
 
         # Update display
         pygame.display.flip()
