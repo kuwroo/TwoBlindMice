@@ -38,7 +38,7 @@ def play_first_quest():
     num_obstacles = 10
 
     for i in range(num_obstacles):
-        obstacle_width = random.randint(50, 200)
+        obstacle_width = random.randint(70, 200)
         x = random.randint(0, WIDTH - obstacle_width)
         y = i * gap + start_offset
         obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))

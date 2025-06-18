@@ -21,6 +21,7 @@ class TileMap:
         self.width = self.tmx_data.width * self.tmx_data.tilewidth
         self.height = self.tmx_data.height * self.tmx_data.tileheight
         self.interactables = self.load_interactables()
+        self.font = pygame.font.SysFont(None, 24)  # Create a font for text drawing
 
     def load_interactables(self):
         interactables = []
@@ -47,3 +48,13 @@ class TileMap:
                             (x * self.tmx_data.tilewidth - camera_offset.x,
                              y * self.tmx_data.tileheight - camera_offset.y)
                         )
+    
+    def draw_texts(self, surface, camera_offset):
+        for obj in self.tmx_data.objects:
+            if hasattr(obj, 'text') and obj.text:
+                # Render the text
+                text_surface = self.font.render(obj.text, True, (255, 255, 255))
+                # Position adjusted by camera offset, slightly above the object's position
+                x = obj.x - camera_offset.x
+                y = obj.y - camera_offset.y - text_surface.get_height()
+                surface.blit(text_surface, (x, y))
