@@ -1,9 +1,9 @@
 import pygame
 import random
+from misc import SCREEN_WIDTH as WIDTH, SCREEN_HEIGHT as HEIGHT
 
 def play_first_quest():
     pygame.init()
-    WIDTH, HEIGHT = 400, 600
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Fall Without Hitting")
 
@@ -11,22 +11,34 @@ def play_first_quest():
     RED = (255, 0, 0)
     PLAYER_COLOR = (0, 0, 255)
     GREEN = (0, 200, 0)
+    BROWN = (139, 69, 19)
 
     player_size = 30
     player_x = WIDTH // 2
-    player_y = HEIGHT // 2  # Fixed vertical position (center screen)
+    player_y = HEIGHT // 2
     player = pygame.Rect(player_x, player_y, player_size, player_size)
-    player_speed = 5
-    scroll_speed = 3  # how fast we scroll obstacles and ground up
+    player_speed = 7
+    scroll_speed = 8
 
+    # --- STARTING PLATFORM ---
+    platform_width = WIDTH
+    platform_height = 20
+    platform_x = player_x - platform_width // 2
+    platform_y = player_y + player_size  # just below player
+    platform = pygame.Rect(platform_x, platform_y, platform_width, platform_height)
+
+    # Adjust player to stand directly on the platform
+    player.bottom = platform.top
+
+    # --- OBSTACLES ---
     obstacles = []
     obstacle_height = 20
     gap = 200
-    start_offset = 400
-    num_obstacles = 5
+    start_offset = 750  # moved further down
+    num_obstacles = 10
 
     for i in range(num_obstacles):
-        obstacle_width = random.randint(100, 200)
+        obstacle_width = random.randint(50, 200)
         x = random.randint(0, WIDTH - obstacle_width)
         y = i * gap + start_offset
         obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))
@@ -40,6 +52,7 @@ def play_first_quest():
     run = True
     quest_result = None
     on_ground = False
+    falling = False  # player must press SPACE to start falling
 
     while run:
         clock.tick(60)
@@ -56,15 +69,17 @@ def play_first_quest():
         if keys[pygame.K_d] and player.right < WIDTH:
             player.x += player_speed
 
-        # Scroll everything up until the ground reaches player's y
-        if not on_ground:
+        if not falling and keys[pygame.K_SPACE]:
+            falling = True  # start fall when SPACE is pressed 
+
+        if falling and not on_ground:
             if ground.top - camera_offset <= player.bottom:
                 on_ground = True
                 print("You landed safely! Press E to return.")
             else:
-                camera_offset += scroll_speed  # simulate falling by scrolling scene up
+                camera_offset += scroll_speed
 
-        # Draw obstacles with camera offset
+        # --- DRAW OBSTACLES ---
         for obs in obstacles:
             draw_rect = obs.copy()
             draw_rect.y -= camera_offset
@@ -74,16 +89,22 @@ def play_first_quest():
                 quest_result = "lose"
                 run = False
 
-        # Draw ground with offset
+        # --- DRAW GROUND ---
         draw_ground = ground.copy()
         draw_ground.y -= camera_offset
         pygame.draw.rect(win, GREEN, draw_ground)
 
+        # --- DRAW STARTING PLATFORM ---
+        draw_platform = platform.copy()
+        draw_platform.y -= camera_offset
+        pygame.draw.rect(win, BROWN, draw_platform)
+
+        # --- INTERACT AFTER LANDING ---
         if on_ground and keys[pygame.K_e]:
             quest_result = "win"
             run = False
 
-        # Draw player
+        # --- DRAW PLAYER ---
         pygame.draw.rect(win, PLAYER_COLOR, player)
         pygame.display.update()
 
