@@ -3,11 +3,23 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "C:/Users/jacel/Downloads/start.tsx",
+    "activeFile": "title.tmx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
         "": {
+            "scaleInDock": 1
+        },
+        "/Users/chloe/Desktop/Downloads/fann.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/chloe/Desktop/Downloads/start.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/chloe/Desktop/Downloads/titlefont.tsx": {
+            "scaleInDock": 1
+        },
+        "/Users/chloe/Desktop/Downloads/twt.tsx": {
             "scaleInDock": 1
         },
         "C:/Users/jacel/Documents/sewer.tsx": {
@@ -43,12 +55,15 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "dank.tsx": {
+            "scaleInDock": 1
+        },
         "title.tmx": {
-            "scale": 1,
+            "scale": 0.5855,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -375,
-                "y": -175.5
+                "x": 1464.5602049530316,
+                "y": 853.9709649871904
             }
         },
         "title.tmx#sewer": {
@@ -58,16 +73,15 @@
     "frame.defaultDuration": 120,
     "last.externalTilesetPath": "C:/Users/jacel/Downloads",
     "last.imagePath": "C:/Users/jacel/Downloads/Telegram Desktop",
-    "map.fixedSize": false,
-    "map.height": 19,
+    "map.fixedSize": true,
+    "map.height": 42,
     "map.lastUsedFormat": "tmx",
-    "map.width": 25,
+    "map.width": 60,
     "openFiles": [
-        "title.tmx",
-        "C:/Users/jacel/Downloads/fann.tsx",
-        "C:/Users/jacel/Downloads/start.tsx"
+        "title.tmx"
     ],
     "project": "title screen map.tiled-project",
+    "property.type": "string",
     "recentFiles": [
         "title.tmx",
         "C:/Users/jacel/Downloads/fann.tsx",
