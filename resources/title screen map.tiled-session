@@ -58,16 +58,35 @@
         "dank.tsx": {
             "scaleInDock": 1
         },
+        "sewermap.tmx": {
+            "scale": 0.439375,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1192.6031294452346,
+                "y": 343.6699857752489
+            }
+        },
         "title.tmx": {
             "scale": 0.5855,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1464.5602049530316,
+                "x": 1518.3603757472247,
                 "y": 853.9709649871904
             }
         },
         "title.tmx#sewer": {
             "scaleInDock": 1
+        },
+        "titleTEST.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 0.3771,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 784.937682312384,
+                "y": 1028.9047997878547
+            }
         }
     },
     "frame.defaultDuration": 120,

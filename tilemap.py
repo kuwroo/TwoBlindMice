@@ -35,7 +35,7 @@ class TileMap:
                 # Get the object type if available, fallback to group name
                 obj_type = getattr(obj, 'type', group_name)
                 
-                if obj_type in ["bin", "start", "floor"]:
+                if obj_type in ["bin", "start", "floor", "door"]:
                     rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
                     # Use object type as name if no name is set
                     obj_name = getattr(obj, 'name', obj_type)

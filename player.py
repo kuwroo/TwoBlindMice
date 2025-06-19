@@ -20,15 +20,18 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.PLAYER_HEIGHT = 50
         self.PLAYER_SPEED = 5
         self.JUMP_POWER = 15
-        self.GRAVITY = 1
+
+        # Physics constants
+        self.GRAVITY = 0.5
+        self.TERMINAL_VELOCITY = 10
+        self.is_jumping = False
+        self.on_ground = False
 
         # Initial player position and velocity
         self.player_x = 300
         self.player_y = screen_height - self.PLAYER_HEIGHT - ground_height
         self.player_velocity_x = 0
         self.player_velocity_y = 0
-        self.is_jumping = False
-        self.on_ground = True
 
         self.current_frame = 0
         self.frame_timer = 0
@@ -65,31 +68,43 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.player_velocity_x = self.PLAYER_SPEED
             self.last_direction_left = False
 
-        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:  # Allow both Space and W for jump
+        if keys[pygame.K_SPACE] and self.on_ground:  # Allow both Space and W for jump
             self.player_velocity_y = -self.JUMP_POWER
             self.is_jumping = True
             self.on_ground = False
 
     def apply_gravity(self):
         if not self.on_ground:
-            self.player_velocity_y += self.GRAVITY
+            self.player_velocity_y = min(self.player_velocity_y + self.GRAVITY, self.TERMINAL_VELOCITY)
 
-    def update_position(self):
+    def check_floor_collision(self, floor_rects):
+        next_y = self.player_y + self.player_velocity_y
+        player_rect = pygame.Rect(self.player_x, next_y, self.PLAYER_WIDTH, self.PLAYER_HEIGHT)
+        
+        for floor in floor_rects:
+            if player_rect.colliderect(floor):
+                if self.player_velocity_y > 0:  # Moving down
+                    self.player_y = floor.top - self.PLAYER_HEIGHT
+                    self.player_velocity_y = 0
+                    self.on_ground = True
+                    self.is_jumping = False
+                    return True
+                elif self.player_velocity_y < 0:  # Moving up
+                    self.player_y = floor.bottom
+                    self.player_velocity_y = 0
+                    return True
+        return False
+
+    def update_position(self, floor_rects):
+        # Update horizontal position
         self.player_x += self.player_velocity_x
-        self.player_y += self.player_velocity_y
-
-        # Horizontal boundaries (WORLD-BASED, not screen-based)
-        if self.player_x < 0:
-            self.player_x = 0
-        if self.player_x > self.WORLD_WIDTH - self.PLAYER_WIDTH:
-            self.player_x = self.WORLD_WIDTH - self.PLAYER_WIDTH
-
-        if self.player_y >= self.SCREEN_HEIGHT - self.PLAYER_HEIGHT - self.GROUND_HEIGHT:
-            self.player_y = self.SCREEN_HEIGHT - self.PLAYER_HEIGHT - self.GROUND_HEIGHT
-            self.player_velocity_y = 0
-            self.on_ground = True
-
-        # Adjust the rect position for the sprite
+        
+        # Apply gravity and check floor collisions
+        if not self.check_floor_collision(floor_rects):
+            self.on_ground = False
+            self.player_y += self.player_velocity_y
+        
+        # Update sprite rect position
         self.rect.topleft = (self.player_x, self.player_y)
 
     def update_animation(self, keys):

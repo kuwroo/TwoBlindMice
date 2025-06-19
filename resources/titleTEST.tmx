@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="60" height="42" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="25">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="60" height="42" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="26">
  <tileset firstgid="1" source="dank.tsx"/>
  <layer id="1" name="Tile Layer 1" width="60" height="42">
   <data encoding="csv">
@@ -50,7 +50,6 @@
  <objectgroup id="2" name="floor">
   <object id="1" x="160" y="896" width="415.569" height="39.8072"/>
   <object id="2" x="576" y="896" width="64" height="32"/>
-  <object id="3" x="599.946" y="971.018"/>
   <object id="4" x="704" y="832" width="64" height="32"/>
   <object id="9" x="800" y="800" width="64" height="64"/>
   <object id="11" x="928" y="768" width="64" height="448"/>
@@ -59,10 +58,11 @@
   <object id="14" x="1728" y="1024" width="96" height="160"/>
   <object id="15" x="0" y="576" width="160" height="352"/>
   <object id="17" x="640" y="928" width="320" height="96"/>
-  <object id="19" x="228.463" y="1370.78"/>
-  <object id="20" x="1075.68" y="-190.386"/>
  </objectgroup>
  <objectgroup id="3" name="start">
   <object id="22" x="64" y="64" width="1088" height="352"/>
+ </objectgroup>
+ <objectgroup id="4" name="door">
+  <object id="25" x="1664" y="1120" width="32" height="64"/>
  </objectgroup>
 </map>
