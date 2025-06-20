@@ -33,6 +33,9 @@ all_sprites.add(player)
 # Cheese Count Tracker
 cheese_count = 1
 quest1_completed = False  # Flag to ensure cheese only increases once
+# Load cheese sprite AFTER display is initialized
+cheese_sprite = pygame.image.load(resource_path("resources/cheese.png"))
+cheese_sprite = pygame.transform.scale(cheese_sprite, (24, 24))
 
 # Quest State 
 e_pressed_last_frame = False
@@ -106,8 +109,10 @@ async def main():
         fog.draw(screen)
 
         # Draw cheese count tracker
-        cheese_text = font.render(f"🧀: {cheese_count}", True, (255, 255, 0))
-        screen.blit(cheese_text, (10, 10))
+        screen.blit(cheese_sprite, (10, 10))  # Draw the cheese image
+        cheese_count_text = font.render(f"x {cheese_count}", True, (255, 255, 255))  # White count
+        screen.blit(cheese_count_text, (40, 10))  # Position next to cheese sprite
+
 
         # Update display
         pygame.display.flip()
