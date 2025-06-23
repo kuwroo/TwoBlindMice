@@ -3,13 +3,12 @@ from misc import *
 from tilemap import resource_path
 
 class PlayerMovement(pygame.sprite.Sprite):
-    def __init__(self, screen_width, screen_height, ground_height, map_width):
+    def __init__(self, screen_width, screen_height, map_width):
         super().__init__() 
 
         # Initialize the Sprite class
         self.SCREEN_WIDTH = screen_width
         self.SCREEN_HEIGHT = screen_height
-        self.GROUND_HEIGHT = ground_height
         self.TILE_SIZE = 32
         self.MAP_WIDTH_IN_TILES = MAP_WIDTH_IN_TILES  # Or pass this from outside
         self.WORLD_WIDTH = map_width  
@@ -29,7 +28,7 @@ class PlayerMovement(pygame.sprite.Sprite):
 
         # Initial player position and velocity
         self.player_x = 300
-        self.player_y = screen_height - self.PLAYER_HEIGHT - ground_height
+        self.player_y = screen_height // 2  # Start in middle of screen, will fall to floor
         self.player_velocity_x = 0
         self.player_velocity_y = 0
 
@@ -37,14 +36,19 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.frame_timer = 0
         self.frame_delay = 5
         self.last_direction_left = False
-
+        
+        # Load and scale animation frames
         self.idle_frames = self.load_spritesheet(resource_path('resources/idle.png'), 4, 32, 32)
         self.movement_frames = self.load_spritesheet(resource_path('resources/MOUSE.png'), 8, 32, 32)
-
-        self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH* 3 , self.PLAYER_HEIGHT* 3 )) for frame in self.idle_frames]
-        self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH* 3 , self.PLAYER_HEIGHT* 3 )) for frame in self.movement_frames]
-
-        # Set initial image and rect for compatibility with sprite groups
+        
+        # Ensure current_frame is within bounds of both animations
+        self.idle_frame_count = len(self.idle_frames)
+        self.movement_frame_count = len(self.movement_frames)
+        
+        self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.idle_frames]
+        self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.movement_frames]
+        
+        # Set initial image and rect
         self.image = self.idle_frames[0]
         self.rect = self.image.get_rect()
         self.rect.topleft = (self.player_x, self.player_y)
@@ -68,7 +72,7 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.player_velocity_x = self.PLAYER_SPEED
             self.last_direction_left = False
 
-        if keys[pygame.K_SPACE] and self.on_ground:  # Allow both Space and W for jump
+        if keys[pygame.K_SPACE] and self.on_ground or keys[pygame.K_w] and self.on_ground:  # Allow both Space and W for jump
             self.player_velocity_y = -self.JUMP_POWER
             self.is_jumping = True
             self.on_ground = False
@@ -79,12 +83,12 @@ class PlayerMovement(pygame.sprite.Sprite):
 
     def check_floor_collision(self, floor_rects):
         next_y = self.player_y + self.player_velocity_y
-        player_rect = pygame.Rect(self.player_x, next_y, self.PLAYER_WIDTH, self.PLAYER_HEIGHT)
+        player_rect = pygame.Rect(self.player_x, next_y, self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)
         
         for floor in floor_rects:
             if player_rect.colliderect(floor):
                 if self.player_velocity_y > 0:  # Moving down
-                    self.player_y = floor.top - self.PLAYER_HEIGHT
+                    self.player_y = floor.top - (self.PLAYER_HEIGHT * 3)
                     self.player_velocity_y = 0
                     self.on_ground = True
                     self.is_jumping = False
@@ -108,32 +112,37 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.rect.topleft = (self.player_x, self.player_y)
 
     def update_animation(self, keys):
-        if self.on_ground and not (keys[pygame.K_a] or keys[pygame.K_d]):
-            if self.current_frame >= len(self.idle_frames):
-                self.current_frame = 0
-            self.frame_timer += 1
-            if self.frame_timer >= self.frame_delay:
-                self.frame_timer = 0
-                self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
-        else:
-            if self.current_frame >= len(self.movement_frames):
-                self.current_frame = 0
-            self.frame_timer += 1
-            if self.frame_timer >= self.frame_delay:
-                self.frame_timer = 0
-                self.current_frame = (self.current_frame + 1) % len(self.movement_frames)
+        # Check if we should use idle animation
+        is_idle = self.on_ground and self.player_velocity_x == 0
+        
+        self.frame_timer += 1
+        if self.frame_timer >= self.frame_delay:
+            self.frame_timer = 0
+            if is_idle:
+                self.current_frame = (self.current_frame + 1) % self.idle_frame_count
+            else:
+                self.current_frame = (self.current_frame + 1) % self.movement_frame_count
 
     def draw(self, screen, keys, camera_offset):
         draw_x = self.player_x - camera_offset.x
         draw_y = self.player_y - camera_offset.y
 
-        if self.on_ground and not (keys[pygame.K_a] or keys[pygame.K_d]):
-            frame = self.idle_frames[self.current_frame]
+        # Check if we should use idle animation
+        is_idle = self.on_ground and self.player_velocity_x == 0
+        
+        if is_idle:
+            # Ensure current_frame is within idle frames bounds
+            frame_index = self.current_frame % self.idle_frame_count
+            frame = self.idle_frames[frame_index]
             if self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)
         else:
-            frame = self.movement_frames[self.current_frame]
-            if keys[pygame.K_a]:
+            # Ensure current_frame is within movement frames bounds
+            frame_index = self.current_frame % self.movement_frame_count
+            frame = self.movement_frames[frame_index]
+            if self.player_velocity_x < 0:  # Moving left
+                frame = pygame.transform.flip(frame, True, False)
+            elif self.player_velocity_x == 0 and self.last_direction_left:  # Not moving but was facing left
                 frame = pygame.transform.flip(frame, True, False)
         
         screen.blit(frame, (draw_x, draw_y))
