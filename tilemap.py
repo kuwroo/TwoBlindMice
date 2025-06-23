@@ -27,13 +27,14 @@ class TileMap:
         interactables = []
         for obj in self.tmx_data.objects:
             print(f"Found object: {obj.name} {obj.type}")
-            if obj.type == "Bin":  # Make sure this matches Type in Tiled
+            if obj.type:  # Only include objects with a type
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
                 interactables.append({
                     "rect": rect,
                     "type": obj.type,
                     "name": obj.name
                 })
+
         print("Loaded interactables:", interactables)
         return interactables
 
@@ -58,3 +59,20 @@ class TileMap:
                 x = obj.x - camera_offset.x
                 y = obj.y - camera_offset.y - text_surface.get_height()
                 surface.blit(text_surface, (x, y))
+                
+    def get_interaction_prompt(self, player_rect, camera_offset):
+        # Adjust player rect to world coordinates (if needed, or expect player_rect already in world coords)
+        # Here, assume player_rect is in world coords (no offset)
+        for interactable in self.interactables:
+            # Inflate interactable rect a bit for easier detection
+            interact_rect = interactable["rect"].inflate(10, 10)
+            if player_rect.colliderect(interact_rect):
+                # You can customize prompt text here by type or name
+                if interactable["type"].lower() == "Bin":
+                    return "Press E to start first quest!"
+                elif interactable["type"].lower() == "Hole":
+                    return "Press E to start second quest!"
+                else:
+                    return "Press E to interact!"
+        return ""  # no prompt if no nearby interactable
+

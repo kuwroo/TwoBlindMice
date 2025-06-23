@@ -33,6 +33,7 @@ all_sprites.add(player)
 # Cheese Count Tracker
 cheese_count = 1
 quest1_completed = False  # Flag to ensure cheese only increases once
+quest2_completed = False  # Initialize quest2_completed
 # Load cheese sprite AFTER display is initialized
 cheese_sprite = pygame.image.load(resource_path("resources/cheese.png"))
 cheese_sprite = pygame.transform.scale(cheese_sprite, (24, 24))
@@ -79,6 +80,7 @@ async def main():
 
                 if player_rect_map.colliderect(interactable["rect"]):
                     print(f"Interacted with: {interactable['name']}")
+                    
                     if interactable["type"] == "Bin":
                         print("First Quest Starts!")
                         result = play_first_quest()
@@ -88,6 +90,20 @@ async def main():
                         if result == "win" and not quest1_completed:
                             cheese_count += 1
                             quest1_completed = True
+
+                        # Re-create the main game window
+                        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+                        pygame.display.set_caption("2 Blind Mice")
+
+                    if interactable["type"] == "Hole":
+                        print("Second Quest Starts!")
+                        result = play_second_quest()
+                        print("Quest result:", result)
+
+                        # Only increment cheese count if won AND not already completed
+                        if result == "win" and not quest2_completed:
+                            cheese_count += 1
+                            quest2_completed = True
 
                         # Re-create the main game window
                         screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -112,6 +128,13 @@ async def main():
         screen.blit(cheese_sprite, (10, 10))  # Draw the cheese image
         cheese_count_text = font.render(f"x {cheese_count}", True, (255, 255, 255))  # White count
         screen.blit(cheese_count_text, (40, 10))  # Position next to cheese sprite
+
+        prompt_text = tile_map.get_interaction_prompt(player.rect, camera_offset)
+        if prompt_text:
+            prompt_surface = tile_map.font.render(prompt_text, True, (255, 255, 255))
+            prompt_pos = (SCREEN_WIDTH // 2 - prompt_surface.get_width() // 2, SCREEN_HEIGHT - 50)
+            screen.blit(prompt_surface, prompt_pos)
+
 
 
         # Update display
