@@ -3,14 +3,20 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "title.tmx",
+    "activeFile": "titleTEST.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
         "": {
             "scaleInDock": 1
         },
+        "/Users/chloe/Desktop/ sew.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.2471
+        },
         "/Users/chloe/Desktop/Downloads/fann.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "/Users/chloe/Desktop/Downloads/start.tsx": {
@@ -56,37 +62,39 @@
             "scaleInEditor": 1
         },
         "dank.tsx": {
+            "dynamicWrapping": true,
             "scaleInDock": 1
         },
-        "sewermap.tmx": {
-            "scale": 0.439375,
-            "selectedLayer": 2,
-            "viewCenter": {
-                "x": 1192.6031294452346,
-                "y": 343.6699857752489
-            }
+        "sewer.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "sewermap.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.3235,
+            "scaleInEditor": 0.54
         },
         "title.tmx": {
-            "scale": 0.5855,
+            "scale": 0.4049,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1518.3603757472247,
-                "y": 853.9709649871904
+                "x": 1284.2677204247962,
+                "y": 491.47937762410476
             }
         },
         "title.tmx#sewer": {
             "scaleInDock": 1
         },
         "titleTEST.tmx": {
-            "expandedObjectLayers": [
-                3
-            ],
-            "scale": 0.3771,
-            "selectedLayer": 3,
+            "scale": 0.4798,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 784.937682312384,
-                "y": 1028.9047997878547
+                "x": 1375.5731554814506,
+                "y": 791.9966652771989
             }
+        },
+        "titleTEST.tmx#dank": {
+            "dynamicWrapping": true
         }
     },
     "frame.defaultDuration": 120,
@@ -97,12 +105,18 @@
     "map.lastUsedFormat": "tmx",
     "map.width": 60,
     "openFiles": [
-        "title.tmx"
+        "title.tmx",
+        "titleTEST.tmx",
+        "sewermap.tsx",
+        "sewer.tsx"
     ],
     "project": "title screen map.tiled-project",
     "property.type": "string",
     "recentFiles": [
         "title.tmx",
+        "sewer.tsx",
+        "sewermap.tsx",
+        "titleTEST.tmx",
         "C:/Users/jacel/Downloads/fann.tsx",
         "C:/Users/jacel/Downloads/start.tsx",
         "C:/Users/jacel/Downloads/titlefont.tsx",
