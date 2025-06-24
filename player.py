@@ -38,8 +38,8 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.last_direction_left = False
         
         # Load and scale animation frames
-        self.idle_frames = self.load_spritesheet(resource_path('resources/idle.png'), 4, 32, 32)
-        self.movement_frames = self.load_spritesheet(resource_path('resources/MOUSE.png'), 8, 32, 32)
+        self.idle_frames = self.load_spritesheet('resources/idle.png', 4, 32, 32)
+        self.movement_frames = self.load_spritesheet('resources/MOUSE.png', 8, 32, 32)
         
         # Ensure current_frame is within bounds of both animations
         self.idle_frame_count = len(self.idle_frames)
