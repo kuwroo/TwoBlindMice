@@ -54,7 +54,7 @@ def center_camera_on_player(player):
     camera_offset.y = max(0, min(camera_offset.y, tile_map.height - SCREEN_HEIGHT))
 
 async def main():
-    global e_pressed_last_frame, cheese_count, quest1_completed, screen  # <-- Added screen here!
+    global e_pressed_last_frame, cheese_count, quest1_completed, quest2_completed, screen  # <-- Added screen here!
 
     running = True
     while running:
