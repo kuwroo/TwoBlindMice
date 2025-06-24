@@ -1,6 +1,6 @@
 import pygame
 from misc import *
-from tilemap import resource_path
+
 
 class PlayerMovement(pygame.sprite.Sprite):
     def __init__(self, screen_width, screen_height, map_width):
@@ -83,12 +83,19 @@ class PlayerMovement(pygame.sprite.Sprite):
 
     def check_floor_collision(self, floor_rects):
         next_y = self.player_y + self.player_velocity_y
-        player_rect = pygame.Rect(self.player_x, next_y, self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)
+        # Create collision rect with full sprite height
+        player_rect = pygame.Rect(
+            self.player_x,
+            next_y,
+            self.PLAYER_WIDTH * 3,
+            self.PLAYER_HEIGHT * 3
+        )
         
         for floor in floor_rects:
             if player_rect.colliderect(floor):
                 if self.player_velocity_y > 0:  # Moving down
-                    self.player_y = floor.top - (self.PLAYER_HEIGHT * 3)
+                    # Align bottom of sprite with floor top
+                    self.player_y = floor.top - (self.PLAYER_HEIGHT * 3)  # Use full height for alignment
                     self.player_velocity_y = 0
                     self.on_ground = True
                     self.is_jumping = False
@@ -125,26 +132,30 @@ class PlayerMovement(pygame.sprite.Sprite):
 
     def draw(self, screen, keys, camera_offset):
         draw_x = self.player_x - camera_offset.x
-        draw_y = self.player_y - camera_offset.y
-
+        draw_y = self.player_y - camera_offset.y + 40  # Added 32 pixels (1 tile height) to move sprite down
+        
         # Check if we should use idle animation
         is_idle = self.on_ground and self.player_velocity_x == 0
         
         if is_idle:
-            # Ensure current_frame is within idle frames bounds
             frame_index = self.current_frame % self.idle_frame_count
             frame = self.idle_frames[frame_index]
             if self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)
         else:
-            # Ensure current_frame is within movement frames bounds
             frame_index = self.current_frame % self.movement_frame_count
             frame = self.movement_frames[frame_index]
             if self.player_velocity_x < 0:  # Moving left
                 frame = pygame.transform.flip(frame, True, False)
-            elif self.player_velocity_x == 0 and self.last_direction_left:  # Not moving but was facing left
+            elif self.player_velocity_x == 0 and self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)
         
-        screen.blit(frame, (draw_x, draw_y))
+        # Center the sprite horizontally at draw position
+        sprite_rect = frame.get_rect()
+        sprite_rect.midbottom = (
+            draw_x + (self.PLAYER_WIDTH * 1.5),  # Center horizontally
+            draw_y + (self.PLAYER_HEIGHT * 3)    # Bottom aligned with collision point
+        )
+        screen.blit(frame, sprite_rect)
 
 

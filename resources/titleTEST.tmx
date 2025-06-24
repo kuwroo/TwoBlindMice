@@ -97,6 +97,6 @@
   <object id="22" name="start" x="160" y="192" width="224" height="96"/>
  </objectgroup>
  <objectgroup id="4" name="door" tintcolor="#55cf55">
-  <object id="25" name="door" type="door" x="672" y="416" width="32" height="64"/>
+  <object id="25" name="door" type="door" x="1664" y="1120" width="32" height="64"/>
  </objectgroup>
 </map>
