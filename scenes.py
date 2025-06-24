@@ -166,7 +166,14 @@ class GameScene:
         keys = pygame.key.get_pressed()
         self.player.handle_input(keys)
         self.player.apply_gravity()
-        self.player.update_position()
+        
+        # Get floor rectangles in world coordinates
+        floor_rects = []
+        for obj in self.tile_map.tmx_data.get_layer_by_name('floor'):
+            floor_rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+            floor_rects.append(floor_rect)
+        
+        self.player.update_position(floor_rects)
         self.center_camera_on_player()
         self.player.update_animation(keys)
         return None

@@ -61,9 +61,9 @@
   <object id="26" x="0" y="480" width="704" height="64"/>
  </objectgroup>
  <objectgroup id="3" name="start">
-  <object id="22" x="160" y="192" width="224" height="96"/>
+  <object id="22" name="start" x="160" y="192" width="224" height="96"/>
  </objectgroup>
  <objectgroup id="4" name="door" tintcolor="#55cf55">
-  <object id="25" x="320" y="352" width="96" height="96"/>
+  <object id="25" name="door" type="door" x="1664" y="1120" width="32" height="64"/>
  </objectgroup>
 </map>
