@@ -106,9 +106,30 @@ class PlayerMovement(pygame.sprite.Sprite):
                     return True
         return False
 
+    def check_wall_collision(self, floor_rects):
+        # Create collision rect at next horizontal position
+        next_x = self.player_x + self.player_velocity_x
+        player_rect = pygame.Rect(
+            next_x,
+            self.player_y,
+            self.PLAYER_WIDTH * 3,
+            self.PLAYER_HEIGHT * 3
+        )
+        
+        for floor in floor_rects:
+            if player_rect.colliderect(floor):
+                if self.player_velocity_x > 0:  # Moving right
+                    self.player_x = floor.left - (self.PLAYER_WIDTH * 3)
+                    return True
+                elif self.player_velocity_x < 0:  # Moving left
+                    self.player_x = floor.right
+                    return True
+        return False
+
     def update_position(self, floor_rects):
-        # Update horizontal position
-        self.player_x += self.player_velocity_x
+        # Check and handle wall collisions first
+        if not self.check_wall_collision(floor_rects):
+            self.player_x += self.player_velocity_x
         
         # Apply gravity and check floor collisions
         if not self.check_floor_collision(floor_rects):
