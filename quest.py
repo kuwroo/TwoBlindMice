@@ -131,14 +131,18 @@ def play_second_quest():
     "WWWWWWWWWWWW",
     "W..      ..W",
     "W.WW WW WW.W",
-    "W.W      W.W",
-    "W.W WW W W.W",
-    "W.. W  W ..W",
+    "W.W  ..  W.W",
+    "W.W WW W W W",
+    "W.. W  W  .W",
     "WWWWWWWWWWWW"
     ]
 
     ROWS = len(maze)
     COLS = len(maze[0])
+    maze_width = COLS * TILE_SIZE
+    maze_height = ROWS * TILE_SIZE
+    draw_offset_x = (WIDTH - maze_width) // 2
+    draw_offset_y = (HEIGHT - maze_height) // 2
 
     # Parse maze
     walls = []
@@ -146,15 +150,18 @@ def play_second_quest():
     for y, row in enumerate(maze):
         for x, char in enumerate(row):
             if char == 'W':
-                walls.append(pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+                walls.append(pygame.Rect(draw_offset_x + x * TILE_SIZE, draw_offset_y + y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
             elif char == '.':
-                points.append(pygame.Rect(x * TILE_SIZE + TILE_SIZE//4, y * TILE_SIZE + TILE_SIZE//4, TILE_SIZE//2, TILE_SIZE//2))
+                points.append(pygame.Rect(
+                    draw_offset_x + x * TILE_SIZE + TILE_SIZE // 4,
+                    draw_offset_y + y * TILE_SIZE + TILE_SIZE // 4,
+                    TILE_SIZE // 2, TILE_SIZE // 2))
 
     # --- PLAYER ---
-    player = pygame.Rect(TILE_SIZE, TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    player = pygame.Rect(draw_offset_x + TILE_SIZE, draw_offset_y + TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
     # Ghost
-    ghost = pygame.Rect((COLS - 2) * TILE_SIZE, (ROWS - 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    ghost = pygame.Rect(draw_offset_x + (COLS - 2) * TILE_SIZE, draw_offset_y + (ROWS - 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
     clock = pygame.time.Clock()
     run = True
@@ -169,8 +176,8 @@ def play_second_quest():
             rect.y += dy * TILE_SIZE
 
     def ghost_chase():
-        start = (ghost.x // TILE_SIZE, ghost.y // TILE_SIZE)
-        goal = (player.x // TILE_SIZE, player.y // TILE_SIZE)
+        start = ((ghost.x - draw_offset_x) // TILE_SIZE, (ghost.y - draw_offset_y) // TILE_SIZE)
+        goal = ((player.x - draw_offset_x) // TILE_SIZE, (player.y - draw_offset_y) // TILE_SIZE)
         queue = deque([(start, [])])
         visited = set()
 
