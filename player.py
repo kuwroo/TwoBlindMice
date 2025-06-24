@@ -55,6 +55,10 @@ class PlayerMovement(pygame.sprite.Sprite):
 
        #self.camera = Camera()  # Initialize the Camera class
 
+        # Collision box size (smaller than sprite)
+        self.COLLISION_WIDTH = self.PLAYER_WIDTH * 1.5  # Make hitbox 2/3 of sprite width
+        self.COLLISION_HEIGHT = self.PLAYER_HEIGHT * 1.5  # Make hitbox 2/3 of sprite height
+
     def load_spritesheet(self, image_path, frame_count, frame_width, frame_height):
         spritesheet = pygame.image.load(image_path)
         frames = []
@@ -83,46 +87,53 @@ class PlayerMovement(pygame.sprite.Sprite):
 
     def check_floor_collision(self, floor_rects):
         next_y = self.player_y + self.player_velocity_y
-        # Create collision rect with full sprite height
+        # Center the collision box within the sprite
+        collision_x = self.player_x + (self.PLAYER_WIDTH * 3 - self.COLLISION_WIDTH) // 2
+        collision_y = next_y + (self.PLAYER_HEIGHT * 3 - self.COLLISION_HEIGHT) // 2
+        
         player_rect = pygame.Rect(
-            self.player_x,
-            next_y,
-            self.PLAYER_WIDTH * 3,
-            self.PLAYER_HEIGHT * 3
+            collision_x,
+            collision_y,
+            self.COLLISION_WIDTH,
+            self.COLLISION_HEIGHT
         )
         
         for floor in floor_rects:
             if player_rect.colliderect(floor):
                 if self.player_velocity_y > 0:  # Moving down
-                    # Align bottom of sprite with floor top
-                    self.player_y = floor.top - (self.PLAYER_HEIGHT * 3)  # Use full height for alignment
+                    # Align bottom of collision box with floor top
+                    self.player_y = floor.top - self.COLLISION_HEIGHT - (self.PLAYER_HEIGHT * 3 - self.COLLISION_HEIGHT) // 2
                     self.player_velocity_y = 0
                     self.on_ground = True
                     self.is_jumping = False
                     return True
                 elif self.player_velocity_y < 0:  # Moving up
-                    self.player_y = floor.bottom
+                    self.player_y = floor.bottom - (self.PLAYER_HEIGHT * 3 - self.COLLISION_HEIGHT) // 2
                     self.player_velocity_y = 0
                     return True
         return False
 
     def check_wall_collision(self, floor_rects):
-        # Create collision rect at next horizontal position
+        # Create collision rect at next horizontal position with smaller hitbox
         next_x = self.player_x + self.player_velocity_x
+        # Center the collision box within the sprite
+        collision_x = next_x + (self.PLAYER_WIDTH * 3 - self.COLLISION_WIDTH) // 2
+        collision_y = self.player_y + (self.PLAYER_HEIGHT * 3 - self.COLLISION_HEIGHT) // 2
+        
         player_rect = pygame.Rect(
-            next_x,
-            self.player_y,
-            self.PLAYER_WIDTH * 3,
-            self.PLAYER_HEIGHT * 3
+            collision_x,
+            collision_y,
+            self.COLLISION_WIDTH,
+            self.COLLISION_HEIGHT
         )
         
         for floor in floor_rects:
             if player_rect.colliderect(floor):
                 if self.player_velocity_x > 0:  # Moving right
-                    self.player_x = floor.left - (self.PLAYER_WIDTH * 3)
+                    self.player_x = floor.left - (self.PLAYER_WIDTH * 3) + (self.PLAYER_WIDTH * 3 - self.COLLISION_WIDTH) // 2
                     return True
                 elif self.player_velocity_x < 0:  # Moving left
-                    self.player_x = floor.right
+                    self.player_x = floor.right - (self.PLAYER_WIDTH * 3 - self.COLLISION_WIDTH) // 2
                     return True
         return False
 
@@ -153,7 +164,7 @@ class PlayerMovement(pygame.sprite.Sprite):
 
     def draw(self, screen, keys, camera_offset):
         draw_x = self.player_x - camera_offset.x
-        draw_y = self.player_y - camera_offset.y + 40  # Added 32 pixels (1 tile height) to move sprite down
+        draw_y = self.player_y - camera_offset.y  # Added 32 pixels (1 tile height) to move sprite down
         
         # Check if we should use idle animation
         is_idle = self.on_ground and self.player_velocity_x == 0
