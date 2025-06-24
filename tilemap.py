@@ -60,18 +60,20 @@ class TileMap:
                 y = obj.y - camera_offset.y - text_surface.get_height()
                 surface.blit(text_surface, (x, y))
                 
-    def get_interaction_prompt(self, player_rect, camera_offset):
+    def get_interaction_prompt(self, player_rect):
         # Adjust player rect to world coordinates (if needed, or expect player_rect already in world coords)
         # Here, assume player_rect is in world coords (no offset)
         for interactable in self.interactables:
             # Inflate interactable rect a bit for easier detection
-            interact_rect = interactable["rect"].inflate(10, 10)
+            interact_rect = interactable["rect"].inflate(50, 50)  # Increased detection range
             if player_rect.colliderect(interact_rect):
                 # You can customize prompt text here by type or name
-                if interactable["type"].lower() == "Bin":
+                if interactable["type"].lower() == "bin":
                     return "Press E to start first quest!"
-                elif interactable["type"].lower() == "Hole":
+                elif interactable["type"].lower() == "hole":
                     return "Press E to start second quest!"
+                elif interactable["type"].lower() == "door":
+                    return "Press E to enter"
                 else:
                     return "Press E to interact!"
         return ""  # no prompt if no nearby interactable
