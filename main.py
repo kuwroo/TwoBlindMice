@@ -75,8 +75,6 @@ async def main():
         if just_pressed_e:
             for interactable in tile_map.interactables:
                 player_rect_map = player.rect.copy()
-                player_rect_map.x += camera_offset.x
-                player_rect_map.y += camera_offset.y
 
                 if player_rect_map.colliderect(interactable["rect"]):
                     print(f"Interacted with: {interactable['name']}")

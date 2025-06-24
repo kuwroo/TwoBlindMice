@@ -27,6 +27,6 @@
  </layer>
  <objectgroup id="2" name="Object Layer 1">
   <object id="1" name="enter_quest1" type="Bin" x="25.159" y="309.645" width="44.95" height="76.7742"/>
-  <object id="6" name="enter_quest2" type="Hole" x="461.67" y="262.334" width="68" height="121.333"/>
+  <object id="6" name="enter_quest2" type="Hole" x="1375.67" y="264.334" width="68" height="121.333"/>
  </objectgroup>
 </map>
