@@ -97,6 +97,7 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.COLLISION_WIDTH,
             self.COLLISION_HEIGHT
         )
+        self.on_ground = False
         
         for floor in floor_rects:
             if player_rect.colliderect(floor):
@@ -152,7 +153,7 @@ class PlayerMovement(pygame.sprite.Sprite):
 
     def update_animation(self, keys):
         # Check if we should use idle animation
-        is_idle = self.on_ground and self.player_velocity_x == 0
+        is_idle = self.player_velocity_x == 0
         
         self.frame_timer += 1
         if self.frame_timer >= self.frame_delay:
@@ -167,7 +168,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         draw_y = self.player_y - camera_offset.y  # Added 32 pixels (1 tile height) to move sprite down
         
         # Check if we should use idle animation
-        is_idle = self.on_ground and self.player_velocity_x == 0
+        is_idle = self.player_velocity_x == 0
         
         if is_idle:
             frame_index = self.current_frame % self.idle_frame_count

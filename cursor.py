@@ -12,7 +12,7 @@ class Cursor:
     def update(self):
         if self.is_mouse:
             pos = pygame.mouse.get_pos()
-            self.rect.center = pos
+            self.rect.topleft = pos
         else:
             pygame.mouse.set_visible(True)  # Show system cursor when custom cursor is disabled
 
