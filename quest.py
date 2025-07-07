@@ -3,6 +3,7 @@ import random
 from misc import SCREEN_WIDTH as WIDTH, SCREEN_HEIGHT as HEIGHT, TILE_SIZE
 import sys
 from collections import deque
+from tilemap import TileMap
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -12,6 +13,9 @@ YELLOW = (255, 255, 0)
 PLAYER_COLOR = (0, 0, 255)
 GREEN = (0, 200, 0)
 BROWN = (139, 69, 19)
+CYAN = (50, 255, 255)
+PURPLE = (180, 50, 255)
+
 
 def play_first_quest():
     # Initialize Pygame and set up the window
@@ -250,4 +254,160 @@ def play_second_quest():
     return quest_result
 
 
+def play_third_quest():
+    FPS = 60
+    PLAYER_SPEED = TILE_SIZE // 8 
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Cheese Heist!")
+    clock = pygame.time.Clock()
 
+    tmx_data = TileMap("resources/mazemap.tmx")
+
+    # Assets
+    player_img = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    player_img.fill(WHITE)
+    npc_img = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    npc_img.fill(RED)
+    cheese_img = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    cheese_img.fill(YELLOW)
+
+    # Game objects
+    walls = []
+    exits = []
+    npcs = []
+    cheese = None
+    player = None
+
+    for group in tmx_data.tmx_data.objectgroups:
+        for obj in group:
+            rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+            if obj.type == "wall" and obj.properties.get("collidable", False):
+                walls.append(rect)
+            elif obj.type == "player_spawn":
+                player = pygame.Rect(obj.x, obj.y, TILE_SIZE, TILE_SIZE)
+            elif obj.type == "cheese":
+                cheese = rect
+            elif obj.type == "exit":
+                exits.append(rect)
+            elif obj.type == "npc_patrol":
+                npcs.append({
+                    "rect": pygame.Rect(obj.x, obj.y, TILE_SIZE, TILE_SIZE),
+                    "start_y": obj.y,
+                    "radius": obj.properties.get("radius", 2) * TILE_SIZE,
+                    "direction": 1,
+                    "timer": 0,
+                    "flip_interval": 2000,  # ms between direction flip
+                })
+
+    got_cheese = False
+    spotted = False
+    quest_result = None
+    run = True
+
+    def move(rect, dx, dy):
+        next_rect = rect.move(dx, dy)
+        if all(not next_rect.colliderect(w) for w in walls):
+            rect.x += dx
+            rect.y += dy
+
+    while run:
+        dt = clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return "quit"
+
+        keys = pygame.key.get_pressed()
+        dx = dy = 0
+        if keys[pygame.K_a]: dx = -PLAYER_SPEED
+        if keys[pygame.K_d]: dx = PLAYER_SPEED
+        if keys[pygame.K_w]: dy = -PLAYER_SPEED
+        if keys[pygame.K_s]: dy = PLAYER_SPEED
+        if dx or dy:
+            move(player, dx, dy)
+
+# ...existing code...
+        # --- NPC Logic ---
+        for npc in npcs:
+            npc_rect = npc["rect"]
+            npc["timer"] += dt
+            if npc["timer"] >= npc["flip_interval"]:
+                npc["direction"] *= -1
+                npc["timer"] = 0
+
+            # Patrol move (up/down)
+            move(npc_rect, 0, npc["direction"])
+            if abs(npc_rect.y - npc["start_y"]) > npc["radius"]:
+                npc_rect.y = npc["start_y"]
+                npc["direction"] *= -1
+
+            # Line of sight (simplified vertical scan)
+            if abs(npc_rect.centerx - player.centerx) < TILE_SIZE:
+                vision_rect = pygame.Rect(
+                    npc_rect.centerx,
+                    npc_rect.centery,
+                    1,
+                    TILE_SIZE * 5 * npc["direction"]
+                )
+                vision_rect.normalize()
+                blocked = any(w.colliderect(vision_rect) for w in walls)
+                if vision_rect.colliderect(player) and not blocked:
+                    print("You were spotted!")
+                    quest_result = "lose"
+                    run = False
+                    break  # Immediately end the loop and quest
+
+        # --- Game Logic ---
+        if cheese and player.colliderect(cheese):
+            got_cheese = True
+            cheese = None
+
+        if got_cheese and any(player.colliderect(exit_rect) for exit_rect in exits):
+            print("You escaped undetected!")
+            quest_result = "win"
+            run = False
+
+        # --- Drawing ---
+        screen.fill(BLACK)
+
+        for layer in tmx_data.tmx_data.visible_layers:
+            if hasattr(layer, "tiles"):
+                for x, y, surf in layer.tiles():
+                    screen.blit(surf, (x * TILE_SIZE, y * TILE_SIZE))
+
+        for wall in walls:
+            pygame.draw.rect(screen, BLUE, wall)
+
+        for exit_rect in exits:
+            pygame.draw.rect(screen, GREEN, exit_rect)
+
+        if cheese:
+            screen.blit(cheese_img, cheese)
+
+        screen.blit(player_img, player)
+
+        for npc in npcs:
+            screen.blit(npc_img, npc["rect"])
+            # Draw patrol zone
+            patrol_line = pygame.Rect(
+                npc["rect"].x,
+                npc["start_y"] - npc["radius"],
+                TILE_SIZE,
+                npc["radius"] * 2
+            )
+            pygame.draw.rect(screen, CYAN, patrol_line, 1)
+            # Draw vision line
+            vision = pygame.Rect(
+                npc["rect"].centerx,
+                npc["rect"].centery,
+                1,
+                TILE_SIZE * 5 * npc["direction"]
+            )
+            vision.normalize()
+            pygame.draw.rect(screen, (150, 100, 255), vision, 1)
+
+        pygame.display.update()
+
+    return quest_result
+
+play_third_quest()

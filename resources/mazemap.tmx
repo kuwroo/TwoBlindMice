@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="39">
+ <tileset firstgid="1" source="maze tile set.tsx"/>
+ <layer id="3" name="floor" width="20" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,28,28,28,29,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,41,41,28,28,29,28,29,30,28,28,28,28,28,28,28,29,30,0,0,
+0,41,42,41,28,28,29,30,28,41,28,41,41,28,28,29,30,29,30,0,
+0,41,42,43,28,29,30,30,28,29,30,28,29,30,28,29,30,29,30,0,
+0,41,42,43,41,28,29,28,28,28,29,30,30,28,28,29,30,29,30,0,
+0,28,29,30,30,28,29,41,41,28,29,30,43,41,28,29,30,29,30,0,
+0,28,29,30,30,28,29,41,41,28,29,30,43,41,28,29,30,29,30,0,
+0,28,28,29,30,30,29,28,29,30,29,30,43,30,30,30,30,29,30,0,
+0,28,28,29,30,28,28,28,29,30,29,30,42,43,30,43,30,29,30,0,
+0,28,28,29,28,41,41,28,29,30,29,30,42,43,43,43,30,30,30,0,
+0,28,28,29,41,41,41,28,28,29,30,30,42,43,30,43,30,30,30,0,
+0,28,28,29,41,42,41,28,28,29,30,43,42,43,30,43,30,43,30,0,
+0,28,28,29,41,42,41,28,28,29,30,41,42,43,30,43,30,43,30,0,
+0,28,41,28,41,42,41,41,28,29,30,0,41,42,43,43,30,29,30,0,
+0,28,41,41,42,43,41,41,28,29,28,29,30,30,43,43,43,29,30,0,
+0,28,41,41,42,43,43,28,29,30,41,42,43,43,43,42,43,29,30,0,
+0,41,42,41,42,43,43,28,28,28,28,41,42,43,30,30,28,29,30,0,
+0,0,0,43,41,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="1" name="walls" width="20" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,2,2,2,2,2,2,3,3,3,3,4,3,0,0,4,4,4,4,5,
+14,15,15,15,15,15,15,16,16,16,16,17,16,0,0,17,17,17,17,18,
+27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,
+40,0,0,1,2,33,33,33,33,33,33,33,33,34,0,0,0,22,0,31,
+14,0,0,14,15,46,46,46,46,46,46,46,46,47,0,0,31,115,0,44,
+27,0,0,27,0,0,0,0,0,0,0,0,0,0,0,0,135,0,0,18,
+144,33,33,34,0,0,0,0,0,100,0,0,0,0,0,0,135,0,0,31,
+157,46,46,47,0,1,2,120,0,0,121,4,5,0,0,0,135,0,0,44,
+0,0,0,0,0,14,15,133,0,0,134,17,18,0,0,0,135,0,0,44,
+118,33,4,5,0,27,0,0,0,0,0,0,32,33,3,3,148,0,147,148,
+14,46,17,32,33,34,35,0,0,31,0,0,45,46,16,16,161,0,46,161,
+27,0,0,45,46,47,48,115,0,44,0,0,0,0,29,29,0,0,0,0,
+27,0,0,0,0,0,0,0,0,32,33,33,4,5,0,1,2,33,4,5,
+27,0,118,119,119,120,120,148,0,45,46,46,17,31,0,14,15,46,17,18,
+40,0,131,132,132,133,133,161,0,0,0,0,0,44,0,34,0,0,0,31,
+144,3,34,0,0,0,0,0,0,0,0,0,0,31,0,47,0,0,0,44,
+157,16,47,171,0,0,174,0,0,0,0,0,0,44,0,0,0,0,0,44,
+0,29,0,0,0,54,55,55,55,55,55,56,56,56,56,56,56,56,56,57,
+0,170,171,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="2" name="maze" class="wall">
+  <object id="1" name="walls" type="wall" x="29" y="30" width="377" height="19">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="2" name="walls" type="wall" x="17" y="53" width="12" height="201">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="3" name="walls" type="wall" x="19" y="234" width="103" height="15">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="4" name="walls" type="wall" x="129" y="136" width="319" height="13">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="5" name="walls" type="wall" x="119" y="145" width="8" height="106">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="6" name="walls" type="wall" x="489" y="37">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="7" name="walls" type="wall" x="488" y="34" width="136" height="21">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="8" name="walls" type="wall" x="610" y="45" width="6" height="302">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="9" x="575" y="331" width="70" height="10"/>
+  <object id="10" name="walls" type="wall" x="511" y="165" width="12" height="177">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="11" name="walls" type="wall" x="327" y="269" width="62" height="12">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="12" name="walls" type="wall" x="384" y="271" width="12" height="77">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="13" name="walls" type="wall" x="392" y="332" width="128" height="11">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="15" name="walls" type="wall" x="179" y="267" width="76" height="9">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="16" name="walls" type="wall" x="180" y="269" width="10" height="103">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="17" name="walls" type="wall" x="21" y="332" width="84" height="9">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="18" name="walls" type="wall" x="94" y="332" width="14" height="45">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="19" name="walls" type="wall" x="96" y="361" width="96" height="14">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="20" name="walls" type="wall" x="20" y="337" width="14" height="195">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="21" name="walls" type="wall" x="20" y="522" width="75" height="14">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="22" name="walls" type="wall" x="83" y="460" width="11" height="78">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="23" name="walls" type="wall" x="87" y="452" width="146" height="20">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="24" name="walls" type="wall" x="290" y="352" width="9" height="88">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="25" name="walls" type="wall" x="289" y="425" width="131" height="12">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="26" name="walls" type="wall" x="412" y="423" width="14" height="153">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="27" name="walls" type="wall" x="503" y="427" width="112" height="15">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="28" name="walls" type="wall" x="605" y="426" width="11" height="165">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="29" name="walls" type="wall" x="499" y="426" width="11" height="77">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="30" name="walls" type="wall" x="478" y="488" width="29" height="13">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="31" name="walls" type="wall" x="160" y="576" width="454" height="14">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="32" name="player_spawn " type="player_spawn" x="424" y="29" width="50" height="44"/>
+  <object id="33" name="cheese" type="cheese" x="289" y="228" width="32" height="25"/>
+  <object id="34" name="exit" type="exit" x="11" y="285" width="38" height="46"/>
+  <object id="35" name="exit" type="exit" x="101" y="571" width="48" height="40"/>
+  <object id="36" name="exit" type="exit" x="575" y="380" width="52" height="42"/>
+  <object id="37" name="npc" type="npc_patrol" x="556" y="161" width="27" height="64">
+   <properties>
+    <property name="radius " type="int" value="2"/>
+    <property name="random_patrol" type="bool" value="true"/>
+    <property name="vision_length" type="int" value="5"/>
+   </properties>
+  </object>
+  <object id="38" name="npc" type="npc_patrol" x="230.5" y="360" width="27" height="64">
+   <properties>
+    <property name="radius " type="int" value="2"/>
+    <property name="random_patrol" type="bool" value="true"/>
+    <property name="vision_length" type="int" value="5"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
