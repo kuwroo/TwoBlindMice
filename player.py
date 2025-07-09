@@ -19,12 +19,16 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.PLAYER_HEIGHT = 50
         self.PLAYER_SPEED = 5
         self.JUMP_POWER = 15
+        self.CLIMB_SPEED = 4
 
         # Physics constants
         self.GRAVITY = 0.5
         self.TERMINAL_VELOCITY = 10
         self.is_jumping = False
         self.on_ground = False
+        self.at_ladder = False  # Flag to indicate if the player is near a ladder
+        self.on_ladder = False  # Flag to indicate if the player is on a ladder
+        self.climbing = False
 
         # Initial player position and velocity
         self.player_x = 300
@@ -80,6 +84,24 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.player_velocity_y = -self.JUMP_POWER
             self.is_jumping = True
             self.on_ground = False
+
+    # Ladder movement
+        if self.at_ladder:
+            if keys[pygame.K_w]:
+                self.climbing = True
+                self.player_velocity_y = -self.CLIMB_SPEED
+                self.on_ladder = True
+            elif keys[pygame.K_s]:
+                self.climbing = True
+                self.player_velocity_y = self.CLIMB_SPEED
+                self.on_ladder = True
+            else:
+                self.climbing = False
+                if self.on_ladder:
+                    self.player_velocity_y = 0
+        else:
+            self.climbing = False
+            self.on_ladder = False
 
     def apply_gravity(self):
         if not self.on_ground:
@@ -137,8 +159,30 @@ class PlayerMovement(pygame.sprite.Sprite):
                     self.player_x = floor.right - (self.PLAYER_WIDTH * 3 - self.COLLISION_WIDTH) // 2
                     return True
         return False
+    
+    def check_ladder_collision(self, ladder_rects):
+        """Check if player is touching a ladder"""
+        collision_rect = pygame.Rect(
+            self.player_x + (self.PLAYER_WIDTH * 3 - self.COLLISION_WIDTH) // 2,
+            self.player_y + (self.PLAYER_HEIGHT * 3 - self.COLLISION_HEIGHT) // 2,
+            self.COLLISION_WIDTH,
+            self.COLLISION_HEIGHT
+        )
+        
+        self.at_ladder = False
+        for ladder in ladder_rects:
+            if collision_rect.colliderect(ladder):
+                self.at_ladder = True
+                return True
+        return False
 
-    def update_position(self, floor_rects):
+    def update_position(self, floor_rects, ladder_rects):
+        # Check ladder collision first
+        self.check_ladder_collision(ladder_rects)
+        if self.on_ladder:
+            # If on ladder, only move vertically
+            self.player_y += self.player_velocity_y
+        
         # Check and handle wall collisions first
         if not self.check_wall_collision(floor_rects):
             self.player_x += self.player_velocity_x
@@ -147,6 +191,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         if not self.check_floor_collision(floor_rects):
             self.on_ground = False
             self.player_y += self.player_velocity_y
+        
         
         # Update sprite rect position
         self.rect.topleft = (self.player_x, self.player_y)

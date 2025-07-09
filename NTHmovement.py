@@ -21,6 +21,8 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.player_velocity_y = 0
         self.is_jumping = False
         self.on_ground = True
+        self.on_ladder = False  # Flag to indicate if the player is on a ladder
+        self.at_ladder = False  # Flag to indicate if the player is near a ladder
 
         self.current_frame = 0
         self.frame_timer = 0
@@ -61,6 +63,19 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.player_velocity_y = -self.JUMP_POWER
             self.is_jumping = True
             self.on_ground = False
+            
+        if  self.at_ladder:
+            if keys[pygame.K_w]:
+                self.climbing = True  # Set climbing flag
+                self.player_velocity_y = -self.PLAYER_SPEED  # Move up the ladder
+                self.on_ladder = True  # Set a flag to indicate the player is on a ladder
+            else:
+                self.climbing = False
+                if self.on_ladder:
+                    self.player_velocity_y = 0
+            
+            
+            
 
     def apply_gravity(self):
         if not self.on_ground:

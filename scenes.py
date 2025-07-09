@@ -105,13 +105,29 @@ class TitleScene:
                         )
                         floor_rects.append(floor_rect)
             
-            self.player.update_position(floor_rects)
+            ladder_rects = []
+            ladder_layer = self.tile_map.tmx_data.get_layer_by_name('ladder')
+            if isinstance(ladder_layer, pytmx.TiledTileLayer):
+                for x, y, gid in ladder_layer:
+                    if gid:
+                        ladder_rect = pygame.Rect(
+                            x * self.tile_map.tmx_data.tilewidth,
+                            y * self.tile_map.tmx_data.tileheight,
+                            self.tile_map.tmx_data.tilewidth,
+                            self.tile_map.tmx_data.tileheight
+                        )
+                        ladder_rects.append(ladder_rect)
+            
+            self.player.update_position(floor_rects, ladder_rects)
             self.center_camera_on_player()
             self.player.update_animation(keys)
             
             # Check for door proximity
             self.check_door_proximity()
-            
+        
+    
+                
+        
         return None
         
     def center_camera_on_player(self):
@@ -137,7 +153,7 @@ class TitleScene:
                 prompt_x = (SCREEN_WIDTH - self.prompt_text.get_width()) // 2
                 prompt_y = SCREEN_HEIGHT - 100  # Position prompt near bottom of screen
                 screen.blit(self.prompt_text, (prompt_x, prompt_y))
-                print(f"Drawing prompt at ({prompt_x}, {prompt_y})")
+                #print(f"Drawing prompt at ({prompt_x}, {prompt_y})")
             
 class GameScene:
     def __init__(self, screen):
@@ -175,9 +191,9 @@ class GameScene:
         for obj in self.tile_map.interactables:
             if obj["type"].lower() == "bin":
                 bin_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                print(f"Bin rect: {bin_rect}")
+                #print(f"Bin rect: {bin_rect}")
                 if player_pos.colliderect(bin_rect):
-                    print("Near bin - showing prompt")
+                    #print("Near bin - showing prompt")
                     self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
                     self.near_bin = True
                     return
