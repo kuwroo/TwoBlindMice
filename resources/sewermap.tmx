@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="8">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="10">
  <tileset firstgid="1" source="sewer.tsx"/>
  <tileset firstgid="577" source="dank.tsx"/>
  <layer id="1" name="Tile Layer 1" width="50" height="20">
@@ -53,5 +53,6 @@
  <objectgroup id="2" name="Object Layer 1">
   <object id="1" name="enter_quest1" type="Bin" x="25.159" y="309.645" width="44.95" height="76.7742"/>
   <object id="6" name="enter_quest2" type="Hole" x="1375.67" y="264.334" width="68" height="121.333"/>
+  <object id="8" name="enter_quest3" type="wall" x="715" y="305" width="77" height="95"/>
  </objectgroup>
 </map>

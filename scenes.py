@@ -4,7 +4,7 @@ from tilemap import TileMap
 from player import PlayerMovement
 from cursor import Cursor
 from visibility import FogOfWar
-from quest import play_first_quest, play_second_quest
+from quest import play_first_quest, play_second_quest, play_third_quest
 from button import Button
 import pytmx
 
@@ -156,10 +156,12 @@ class GameScene:
         self.prompt_text = None
         self.near_bin = False
         self.near_hole = False  # Add near_hole attribute
+        self.near_wall = False  # Add near_wall attribute for third quest
         self.cheese_sprite = pygame.image.load("resources/cheese.png")
         self.cheese_sprite = pygame.transform.scale(self.cheese_sprite, (24, 24))
         self.quest1_completed = False
         self.quest2_completed = False
+        self.quest3_completed = False
 
     def check_bin_proximity(self):
         # Get player position in world coordinates
@@ -209,6 +211,29 @@ class GameScene:
             self.prompt_text = None
         self.near_hole = False
 
+    def check_thirdquest_proximity(self):
+        # Get player position in world coordinates
+        player_pos = pygame.Rect(
+            self.player.player_x,
+            self.player.player_y,
+            self.player.rect.width,
+            self.player.rect.height
+        )
+        
+        # Check each hole
+        for obj in self.tile_map.interactables:
+            if obj["type"].lower() == "wall":
+                wall_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
+                if player_pos.colliderect(wall_rect):
+                    self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
+                    self.near_wall = True
+                    return
+        
+        # Reset if not near any hole
+        if not self.near_wall:  # Only reset prompt if we're not near a bin
+            self.prompt_text = None
+        self.near_wall = False
+
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
             if self.near_bin:
@@ -227,6 +252,15 @@ class GameScene:
                     if not self.quest2_completed:
                         self.cheese_count += 1
                     self.quest2_completed = True
+            elif self.near_wall:  # Check for third quest proximity
+                print("Starting third quest!")
+                result = play_third_quest()
+                print("Quest result:", result)
+                if result == "win":
+                    if not self.quest3_completed:
+                        self.cheese_count += 1
+                    self.quest3_completed = True
+
         return None
         
     def update(self):
@@ -255,6 +289,7 @@ class GameScene:
         # Check for bin and hole proximity
         self.check_bin_proximity()
         self.check_hole_proximity()
+        self.check_thirdquest_proximity()
         return None
         
     def center_camera_on_player(self):
