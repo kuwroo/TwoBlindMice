@@ -44,13 +44,15 @@ class PlayerMovement(pygame.sprite.Sprite):
         # Load and scale animation frames
         self.idle_frames = self.load_spritesheet('resources/idle.png', 4, 32, 32)
         self.movement_frames = self.load_spritesheet('resources/MOUSE.png', 8, 32, 32)
-        
+        self.climbing_frames = self.load_spritesheet('resources/CLIMB.png', 8, 32, 32)
         # Ensure current_frame is within bounds of both animations
         self.idle_frame_count = len(self.idle_frames)
         self.movement_frame_count = len(self.movement_frames)
+        self.climbing_frame_count = len(self.climbing_frames)
         
         self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.idle_frames]
         self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.movement_frames]
+        self.climbing_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.climbing_frames]
         
         # Set initial image and rect
         self.image = self.idle_frames[0]
@@ -198,13 +200,15 @@ class PlayerMovement(pygame.sprite.Sprite):
 
     def update_animation(self, keys):
         # Check if we should use idle animation
-        is_idle = self.player_velocity_x == 0
+        is_idle = self.player_velocity_x == 0 and not self.climbing
         
         self.frame_timer += 1
         if self.frame_timer >= self.frame_delay:
             self.frame_timer = 0
             if is_idle:
                 self.current_frame = (self.current_frame + 1) % self.idle_frame_count
+            elif self.climbing:
+                self.current_frame = (self.current_frame + 1) % self.climbing_frame_count
             else:
                 self.current_frame = (self.current_frame + 1) % self.movement_frame_count
 
@@ -213,13 +217,17 @@ class PlayerMovement(pygame.sprite.Sprite):
         draw_y = self.player_y - camera_offset.y  # Added 32 pixels (1 tile height) to move sprite down
         
         # Check if we should use idle animation
-        is_idle = self.player_velocity_x == 0
+        is_idle = self.player_velocity_x == 0 and not self.climbing
+        
         
         if is_idle:
             frame_index = self.current_frame % self.idle_frame_count
             frame = self.idle_frames[frame_index]
             if self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)
+        elif self.climbing:
+            frame_index = self.current_frame % self.climbing_frame_count
+            frame = self.climbing_frames[frame_index]    
         else:
             frame_index = self.current_frame % self.movement_frame_count
             frame = self.movement_frames[frame_index]

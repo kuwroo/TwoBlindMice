@@ -164,7 +164,7 @@ class GameScene:
         self.player.player_y = SCREEN_HEIGHT // 4
         self.player.rect.topleft = (self.player.player_x, self.player.player_y)
         self.camera_offset = pygame.Vector2(0, 0)
-        self.fog = FogOfWar(visibility_radius=150)
+        self.fog = FogOfWar()
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.cheese_count = 1
@@ -264,7 +264,9 @@ class GameScene:
                     )
                     floor_rects.append(floor_rect)
         
-        self.player.update_position(floor_rects)
+        ladder_rects = []
+        
+        self.player.update_position(floor_rects, ladder_rects)
         self.center_camera_on_player()
         self.player.update_animation(keys)
         
@@ -286,6 +288,13 @@ class GameScene:
         self.tile_map.draw(screen, self.camera_offset)
         self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
+        # Dynamically update fog radius based on cheese count
+        self.fog.visibility_radius = 150 + (self.cheese_count - 1) * 50
+
+        # Update and draw fog of war
+        self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
+        self.fog.draw(screen)
+        
         # Draw interaction prompt if it exists
         if self.prompt_text:
             prompt_x = (SCREEN_WIDTH - self.prompt_text.get_width()) // 2
@@ -299,6 +308,4 @@ class GameScene:
         cheese_text = self.font.render(f"x {self.cheese_count}", True, (255, 255, 255))
         screen.blit(cheese_text, (cheese_x + 30, cheese_y))
         
-        # Update and draw fog of war
-        self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
-        self.fog.draw(screen)
+        
