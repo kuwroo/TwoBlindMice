@@ -173,7 +173,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         
         self.at_ladder = False
         for ladder in ladder_rects:
-            if collision_rect.colliderect(ladder):
+            if collision_rect.colliderect(ladder) and not self.on_ground:
                 self.at_ladder = True
                 return True
         return False
@@ -200,14 +200,14 @@ class PlayerMovement(pygame.sprite.Sprite):
 
     def update_animation(self, keys):
         # Check if we should use idle animation
-        is_idle = self.player_velocity_x == 0 and not self.climbing
+        is_idle = self.player_velocity_x == 0 and not self.on_ladder
         
         self.frame_timer += 1
         if self.frame_timer >= self.frame_delay:
             self.frame_timer = 0
             if is_idle:
                 self.current_frame = (self.current_frame + 1) % self.idle_frame_count
-            elif self.climbing:
+            elif self.on_ladder:
                 self.current_frame = (self.current_frame + 1) % self.climbing_frame_count
             else:
                 self.current_frame = (self.current_frame + 1) % self.movement_frame_count
@@ -217,7 +217,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         draw_y = self.player_y - camera_offset.y  # Added 32 pixels (1 tile height) to move sprite down
         
         # Check if we should use idle animation
-        is_idle = self.player_velocity_x == 0 and not self.climbing
+        is_idle = self.player_velocity_x == 0 and not self.on_ladder
         
         
         if is_idle:
@@ -225,7 +225,7 @@ class PlayerMovement(pygame.sprite.Sprite):
             frame = self.idle_frames[frame_index]
             if self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)
-        elif self.climbing:
+        elif self.on_ladder:
             frame_index = self.current_frame % self.climbing_frame_count
             frame = self.climbing_frames[frame_index]    
         else:
