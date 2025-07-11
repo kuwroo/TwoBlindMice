@@ -105,29 +105,13 @@ class TitleScene:
                         )
                         floor_rects.append(floor_rect)
             
-            ladder_rects = []
-            ladder_layer = self.tile_map.tmx_data.get_layer_by_name('ladder')
-            if isinstance(ladder_layer, pytmx.TiledTileLayer):
-                for x, y, gid in ladder_layer:
-                    if gid:
-                        ladder_rect = pygame.Rect(
-                            x * self.tile_map.tmx_data.tilewidth,
-                            y * self.tile_map.tmx_data.tileheight,
-                            self.tile_map.tmx_data.tilewidth,
-                            self.tile_map.tmx_data.tileheight
-                        )
-                        ladder_rects.append(ladder_rect)
-            
-            self.player.update_position(floor_rects, ladder_rects)
+            self.player.update_position(floor_rects)
             self.center_camera_on_player()
             self.player.update_animation(keys)
             
             # Check for door proximity
             self.check_door_proximity()
-        
-    
-                
-        
+            
         return None
         
     def center_camera_on_player(self):
@@ -153,7 +137,7 @@ class TitleScene:
                 prompt_x = (SCREEN_WIDTH - self.prompt_text.get_width()) // 2
                 prompt_y = SCREEN_HEIGHT - 100  # Position prompt near bottom of screen
                 screen.blit(self.prompt_text, (prompt_x, prompt_y))
-                #print(f"Drawing prompt at ({prompt_x}, {prompt_y})")
+                print(f"Drawing prompt at ({prompt_x}, {prompt_y})")
             
 class GameScene:
     def __init__(self, screen):
@@ -164,7 +148,7 @@ class GameScene:
         self.player.player_y = SCREEN_HEIGHT // 4
         self.player.rect.topleft = (self.player.player_x, self.player.player_y)
         self.camera_offset = pygame.Vector2(0, 0)
-        self.fog = FogOfWar()
+        self.fog = FogOfWar(visibility_radius=150)
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.cheese_count = 1
@@ -193,9 +177,9 @@ class GameScene:
         for obj in self.tile_map.interactables:
             if obj["type"].lower() == "bin":
                 bin_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                #print(f"Bin rect: {bin_rect}")
+                print(f"Bin rect: {bin_rect}")
                 if player_pos.colliderect(bin_rect):
-                    #print("Near bin - showing prompt")
+                    print("Near bin - showing prompt")
                     self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
                     self.near_bin = True
                     return
@@ -298,9 +282,7 @@ class GameScene:
                     )
                     floor_rects.append(floor_rect)
         
-        ladder_rects = []
-        
-        self.player.update_position(floor_rects, ladder_rects)
+        self.player.update_position(floor_rects)
         self.center_camera_on_player()
         self.player.update_animation(keys)
         
@@ -323,13 +305,6 @@ class GameScene:
         self.tile_map.draw(screen, self.camera_offset)
         self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
-        # Dynamically update fog radius based on cheese count
-        self.fog.visibility_radius = 150 + (self.cheese_count - 1) * 50
-
-        # Update and draw fog of war
-        self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
-        self.fog.draw(screen)
-        
         # Draw interaction prompt if it exists
         if self.prompt_text:
             prompt_x = (SCREEN_WIDTH - self.prompt_text.get_width()) // 2
@@ -343,4 +318,6 @@ class GameScene:
         cheese_text = self.font.render(f"x {self.cheese_count}", True, (255, 255, 255))
         screen.blit(cheese_text, (cheese_x + 30, cheese_y))
         
-        
+        # Update and draw fog of war
+        self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
+        self.fog.draw(screen)
