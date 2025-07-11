@@ -35,7 +35,7 @@ class TileMap:
                     "name": obj.name
                 })
 
-        print("Loaded interactables:", interactables)
+        #print("Loaded interactables:", interactables)
         return interactables
 
     def draw(self, surface, camera_offset):
