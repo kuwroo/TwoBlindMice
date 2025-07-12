@@ -1,7 +1,6 @@
 import pygame
 import random
 from misc import SCREEN_WIDTH as WIDTH, SCREEN_HEIGHT as HEIGHT, TILE_SIZE
-import sys
 from collections import deque
 from tilemap import TileMap
 
@@ -15,6 +14,7 @@ GREEN = (0, 200, 0)
 BROWN = (139, 69, 19)
 CYAN = (50, 255, 255)
 PURPLE = (180, 50, 255)
+MAGENTA = (255, 0, 255)
 
 
 def play_first_quest():
@@ -257,223 +257,169 @@ def play_second_quest():
 def play_third_quest():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Cheese Heist!")
     clock = pygame.time.Clock()
-
-    tmx_data = TileMap("resources/mazemap.tmx")
+    pygame.display.set_caption("Stealth Heist")
     FPS = 60
-    PLAYER_SPEED = TILE_SIZE // 6
 
-    # Assets
-    player_img = pygame.Surface((TILE_SIZE, TILE_SIZE)); player_img.fill(WHITE)
-    npc_img = pygame.Surface((TILE_SIZE, TILE_SIZE)); npc_img.fill(RED)
-    cheese_img = pygame.Surface((TILE_SIZE, TILE_SIZE)); cheese_img.fill(YELLOW)
+    tmx = TileMap("resources/mazemap.tmx")
 
-    # Game state
-    walls, exits, npcs = [], [], []
-    player, cheese = None, None
-    got_cheese = False
-    quest_result = None
-    run = True
+    player = None
+    exit_rects = []
+    walls = []
+    npcs = []
 
-    # Load objects
-    for group in tmx_data.tmx_data.objectgroups:
-        for obj in group:
-            rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-            
-            if obj.type == "wall" and obj.properties.get("collidable", False):
-                walls.append(rect)
+    for obj in tmx.interactables:
+        if obj["type"].lower() == "wall":
+            walls.append(obj["rect"])
+        elif obj["type"].lower() == "spawn":
+            PLAYER_SIZE = 32  # or any value you want
+            player = pygame.Rect(obj["rect"].x, obj["rect"].y, PLAYER_SIZE, PLAYER_SIZE)
+        elif obj["type"].lower() == "exit":
+            exit_rects.append(obj["rect"])
+        elif obj["type"].lower() == "npc":
+            print("Raw NPC object:", obj)  # <-- Add this line
+            props = {p["name"]: p["value"] for p in obj.get("properties", [])}
+            patrol_tiles = int(props.get("patrol_length", props.get("patrol length", 1)))
+            direction = props.get("direction", "horizontal").lower()
+            start_dir = props.get("start_direction", "right").lower()
 
-            elif obj.type == "player_spawn":
-                player = pygame.Rect(obj.x, obj.y, TILE_SIZE, TILE_SIZE)
+            print(f"NPC {obj.get('name', f'npc{len(npcs)+1}')}: direction={direction}, patrol_range={patrol_tiles}, start_direction={start_dir}")
 
-            elif obj.type == "cheese":
-                cheese = rect
+            npc = {
+                "name": obj.get("name", f"npc{len(npcs)+1}"),
+                "rect": pygame.Rect(obj["rect"].x, obj["rect"].y, TILE_SIZE, TILE_SIZE),
+                "origin": (obj["rect"].x, obj["rect"].y),
+                "axis": direction,
+                "direction": 1 if start_dir in ("right", "down") else -1,
+                "patrol_range": patrol_tiles * TILE_SIZE,
+                "speed": 1,
+                "start_direction": start_dir
+            }
+            npcs.append(npc)
 
-            elif obj.type == "exit":
-                exits.append(rect)
+    print("Walls loaded:", walls)
+    print("Player spawn:", player)
+    print("Exits loaded:", exit_rects)
+    print("NPCs loaded:", npcs)
 
-            elif obj.type == "npc_patrol":
-                movement_type = obj.properties.get("movement_type", "vertical")  # Default to vertical
-                npcs.append({
-                    "rect": pygame.Rect(int(obj.x), int(obj.y), TILE_SIZE, TILE_SIZE),
-                    "name": obj.name,
-                    "movement": movement_type,
-                    "start_x": obj.x,
-                    "start_y": obj.y,
-                    "radius": obj.properties.get("radius", 2) * TILE_SIZE,
-                    "direction": 1,
-                    "speed": obj.properties.get("speed", TILE_SIZE // 32)
-                })
-
-
-    # Abstracted functions
-    def handle_events():
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return False
-        return True
+    for i, npc in enumerate(npcs):
+        print(f"{npc['name']}: pos={npc['rect'].topleft}, axis={npc['axis']}, patrol_range={npc['patrol_range']}, direction={npc['direction']}")
 
     def move_player(rect, dx, dy):
         next_rect = rect.move(dx, dy)
-        if all(not next_rect.colliderect(w) for w in walls):
+        if not any(next_rect.colliderect(w) for w in walls):
             rect.x += dx
             rect.y += dy
 
     def update_player():
         keys = pygame.key.get_pressed()
         dx = dy = 0
-        if keys[pygame.K_a]: dx = -PLAYER_SPEED
-        if keys[pygame.K_d]: dx = PLAYER_SPEED
-        if keys[pygame.K_w]: dy = -PLAYER_SPEED
-        if keys[pygame.K_s]: dy = PLAYER_SPEED
+        if keys[pygame.K_a]: dx = -TILE_SIZE // 6
+        if keys[pygame.K_d]: dx = TILE_SIZE // 6
+        if keys[pygame.K_w]: dy = -TILE_SIZE // 6
+        if keys[pygame.K_s]: dy = TILE_SIZE // 6
         if dx or dy:
             move_player(player, dx, dy)
-    
-    # helper functions for NPCs
-    def is_wall_blocking_vision(npc_rect, player_rect, walls, axis):
-        if axis == "x":
-            min_x = min(npc_rect.centerx, player_rect.centerx)
-            max_x = max(npc_rect.centerx, player_rect.centerx)
-            scan_box = pygame.Rect(min_x, npc_rect.centery - 4, max_x - min_x, 8)
-        else:
-            min_y = min(npc_rect.centery, player_rect.centery)
-            max_y = max(npc_rect.centery, player_rect.centery)
-            scan_box = pygame.Rect(npc_rect.centerx - 4, min_y, 8, max_y - min_y)
 
-        return any(scan_box.colliderect(w) for w in walls)
+    def is_wall_blocking(npc_rect, player_rect, axis):
+        # Use center points for raycast
+        start = npc_rect.center
+        end = player_rect.center
 
-    def move_npc_horizontal(npc):
-        rect = npc["rect"]
-        speed = npc["speed"]
-        rect.x += npc["direction"] * speed
+        # Number of steps for the ray (higher = more accurate)
+        steps = int(max(abs(end[0] - start[0]), abs(end[1] - start[1])) // 4)
+        if steps == 0:
+            return False  # Same position
 
-        min_x = npc["start_x"] - npc["radius"]
-        max_x = npc["start_x"] + npc["radius"]
+        for i in range(steps + 1):
+            t = i / steps
+            x = int(start[0] + (end[0] - start[0]) * t)
+            y = int(start[1] + (end[1] - start[1]) * t)
+            point_rect = pygame.Rect(x, y, 4, 4)  # Small box for collision
+            if any(point_rect.colliderect(w) for w in walls):
+                return True  # Wall blocks vision
+        return False  # No wall blocks vision
 
-        if rect.x < min_x:
-            rect.x = min_x
-            npc["direction"] = 1
-        elif rect.x > max_x:
-            rect.x = max_x
-            npc["direction"] = -1
-
-    def move_npc_vertical(npc):
-        rect = npc["rect"]
-        speed = npc["speed"]
-        rect.y += npc["direction"] * speed
-
-        min_y = npc["start_y"] - npc["radius"]
-        max_y = npc["start_y"] + npc["radius"]
-
-        if rect.y < min_y:
-            rect.y = min_y
-            npc["direction"] = 1
-        elif rect.y > max_y:
-            rect.y = max_y
-            npc["direction"] = -1
-
-    def npc_can_see_player(npc, player, walls):
-        vision_rect = get_npc_vision_rect(npc)
-
-        if not vision_rect.colliderect(player):
-            return False  # Player not inside vision area
-
-        axis = "x" if npc["movement"] == "horizontal" else "y"
-        return not is_wall_blocking_vision(npc["rect"], player, walls, axis)
-
-    def get_npc_vision_rect(npc):
+    def npc_vision_rect(npc):
         rect = npc["rect"]
         direction = npc["direction"]
-        movement = npc["movement"]
-        vision_length = TILE_SIZE * 5
-        vision_width = TILE_SIZE // 2
-
-        if movement == "horizontal":
-            if direction > 0:
-                # facing right
-                return pygame.Rect(rect.right, rect.top + (TILE_SIZE - vision_width) // 2, vision_length, vision_width)
-            else:
-                # facing left
-                return pygame.Rect(rect.left - vision_length, rect.top + (TILE_SIZE - vision_width) // 2, vision_length, vision_width)
+        length = TILE_SIZE * 5  # Vision length (how far the NPC can see)
+        width = TILE_SIZE       # Vision width (same as NPC width)
+        if npc["axis"] == "horizontal":
+            x = rect.right if direction > 0 else rect.left - length
+            return pygame.Rect(x, rect.centery - width // 2, length, width)
         else:
-            if direction > 0:
-                # facing down
-                return pygame.Rect(rect.left + (TILE_SIZE - vision_width) // 2, rect.bottom, vision_width, vision_length)
-            else:
-                # facing up
-                return pygame.Rect(rect.left + (TILE_SIZE - vision_width) // 2, rect.top - vision_length, vision_width, vision_length)
+            y = rect.bottom if direction > 0 else rect.top - length
+            return pygame.Rect(rect.centerx - width // 2, y, width, length)
 
-    def update_npcs(dt, npcs, player, walls):
+    def update_npcs():
         for npc in npcs:
-            if npc["movement"] == "horizontal":
-                move_npc_horizontal(npc)
-            else:
-                move_npc_vertical(npc)
+            rect = npc["rect"]
+            axis = npc["axis"]
+            speed = npc["speed"]
+            dir = npc["direction"]
+            ox, oy = npc["origin"]
 
-            if npc_can_see_player(npc, player, walls):
-                print(f"{npc['name']} spotted the player!")
+            if axis == "horizontal":
+                rect.x += dir * speed
+                if abs(rect.x - ox) >= npc["patrol_range"]:
+                    npc["direction"] *= -1
+            else:
+                rect.y += dir * speed
+                if abs(rect.y - oy) >= npc["patrol_range"]:
+                    npc["direction"] *= -1
+
+            vis = npc_vision_rect(npc)
+            if vis.colliderect(player) and not is_wall_blocking(rect, player, "x" if axis == "horizontal" else "y"):
+                print(f"{npc['rect']} spotted the player!")
                 return "lose"
         return None
 
-    def check_game_conditions():
-        nonlocal got_cheese, quest_result, run, cheese
-        if cheese and player.colliderect(cheese):
-            got_cheese = True
-            cheese = None
-        if got_cheese and any(player.colliderect(e) for e in exits):
-            print("You escaped undetected!")
-            quest_result = "win"
-            return False
-        return True
-
-    def draw_game():
+    def draw():
         screen.fill(BLACK)
-        for layer in tmx_data.tmx_data.visible_layers:
-            if hasattr(layer, "tiles"):
-                for x, y, surf in layer.tiles():
-                    screen.blit(surf, (x * TILE_SIZE, y * TILE_SIZE))
-        if cheese: screen.blit(cheese_img, cheese)
-        screen.blit(player_img, player)
+        # Draw all tile layers from the map
+        tmx.draw(screen, pygame.Vector2(0, 0))
+
+        # Draw wall objects
+        for wall in walls:
+            pygame.draw.rect(screen, BROWN, wall)
+
+        # Draw exit(s)
+        for exit_rect in exit_rects:
+            pygame.draw.rect(screen, GREEN, exit_rect)
+
+        # Draw player
+        pygame.draw.rect(screen, WHITE, player)
+
+        # Draw NPCs and their vision
         for npc in npcs:
-            screen.blit(npc_img, npc["rect"])
+            pygame.draw.rect(screen, RED, npc["rect"])
+            pygame.draw.rect(screen, MAGENTA, npc_vision_rect(npc), 2)
 
-            # draw patrol area
-            if npc["movement"] == "horizontal":
-                patrol_rect = pygame.Rect(
-                    npc["start_x"] - npc["radius"],
-                    npc["start_y"],
-                    2 * npc["radius"],
-                    TILE_SIZE
-                )
-            else:
-                patrol_rect = pygame.Rect(
-                    npc["start_x"],
-                    npc["start_y"] - npc["radius"],
-                    TILE_SIZE,
-                    2 * npc["radius"]
-                )
+        # Draw any map texts
+        tmx.draw_texts(screen, pygame.Vector2(0, 0))
+        pygame.display.flip()
 
-            pygame.draw.rect(screen, CYAN, patrol_rect, 1)
-
-            vision = get_npc_vision_rect(npc)
-            pygame.draw.rect(screen, (255, 0, 255), vision, 2)  # Magenta vision box
-
-        pygame.display.update()
-
-    # --- Main Game Loop ---
-    while run:
+    # Game loop
+    result = None
+    running = True
+    while running:
         dt = clock.tick(FPS)
-        run = handle_events()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
         update_player()
-
-        npc_result = update_npcs(dt, npcs, player, walls)
+        npc_result = update_npcs()
         if npc_result == "lose":
-            quest_result = "lose"
+            result = "lose"
             break
+        if any(player.colliderect(exit_rect) for exit_rect in exit_rects):
+            result = "win"
+            break
+        draw()
 
-        run = run and check_game_conditions()
-        draw_game()
-        
-    return quest_result
+    pygame.quit()
+    return result
 
+play_third_quest()

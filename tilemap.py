@@ -29,10 +29,15 @@ class TileMap:
             print(f"Found object: {obj.name} {obj.type}")
             if obj.type:  # Only include objects with a type
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                # Convert pytmx properties dict to a list of dicts (for compatibility)
+                properties = []
+                if hasattr(obj, "properties"):
+                    properties = [{"name": k, "value": v} for k, v in obj.properties.items()]
                 interactables.append({
                     "rect": rect,
                     "type": obj.type,
-                    "name": obj.name
+                    "name": obj.name,
+                    "properties": properties
                 })
 
         #print("Loaded interactables:", interactables)

@@ -104,8 +104,9 @@ class TitleScene:
                             self.tile_map.tmx_data.tileheight
                         )
                         floor_rects.append(floor_rect)
+            ladder_rects = []
             
-            self.player.update_position(floor_rects)
+            self.player.update_position(floor_rects, ladder_rects)
             self.center_camera_on_player()
             self.player.update_animation(keys)
             
