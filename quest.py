@@ -380,14 +380,6 @@ def play_third_quest():
         # Draw all tile layers from the map
         tmx.draw(screen, pygame.Vector2(0, 0))
 
-        # Draw wall objects
-        for wall in walls:
-            pygame.draw.rect(screen, BROWN, wall)
-
-        # Draw exit(s)
-        for exit_rect in exit_rects:
-            pygame.draw.rect(screen, GREEN, exit_rect)
-
         # Draw player
         pygame.draw.rect(screen, WHITE, player)
 
