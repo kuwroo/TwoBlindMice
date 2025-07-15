@@ -126,23 +126,23 @@ def play_second_quest():
 
     # --- MAP ---
     maze = [
-        "WWWWWWWWWWWWWWWWWWWWWW",
-        "W..     WW       .    W",
-        "W.WW W    WW  WW W    W",
-        "W.W    ..     WW W    W",
-        "W.W  WWW WWW    W W W W",
-        "W..   W    W W  W     W",
-        "W WWWWWWWWW WWWWW WWWW",
-        "W      W      W       W",
-        "W WWW  W  WWW  W  WWW W",
-        "W W          W        W",
-        "W WWWWWWW WWWWWWWWWWW W",
-        "W    .   W    W      .W",
-        "W WWW  W WWW WWWWW WWWW",
-        "W    W    ..    W     W",
-        "W..    WWWW     ..    W",
-        "WWWWWWWWWWWWWWWWWWWWWW",
-    ]
+        "WWWWWWWWWWWWWWWWWWW",
+        "W..    WW      .  W",
+        "W.WW W   WW WW W  W",
+        "W.W   ..    WW W  W",
+        "W.W WWW WWW   W W W",
+        "W..  W   W W W    W",
+        "W WWWWWWWWW WWWWW W",
+        "W     W     W     W",
+        "W WWW W WWW W WWW W",
+        "W W      W      W W",
+        "W WWWWWWW WWWWWWW W",
+        "W   .  W   W     .W",
+        "W WWW W WWW WWWWW W",
+        "W   W   ..   W    W",
+        "W..   WWWW    ..  W",
+        "WWWWWWWWWWWWWWWWWWW"
+        ]
 
     ROWS = len(maze)
     COLS = len(maze[0])
@@ -183,8 +183,8 @@ def play_second_quest():
             rect.x += dx * TILE_SIZE
             rect.y += dy * TILE_SIZE
 
-    def ghost_chase():
-        start = ((ghost.x - draw_offset_x) // TILE_SIZE, (ghost.y - draw_offset_y) // TILE_SIZE)
+    def ghost_chase(ghost_rect):
+        start = ((ghost_rect.x - draw_offset_x) // TILE_SIZE, (ghost_rect.y - draw_offset_y) // TILE_SIZE)
         goal = ((player.x - draw_offset_x) // TILE_SIZE, (player.y - draw_offset_y) // TILE_SIZE)
         queue = deque([(start, [])])
         visited = set()
@@ -194,16 +194,13 @@ def play_second_quest():
             if (x, y) == goal:
                 if path:
                     dx, dy = path[0]
-                    move(ghost, dx, dy)
+                    move(ghost_rect, dx, dy)
                 return
             for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
                 nx, ny = x+dx, y+dy
                 if 0 <= nx < COLS and 0 <= ny < ROWS and maze[ny][nx] != 'W' and (nx, ny) not in visited:
                     visited.add((nx, ny))
                     queue.append(((nx, ny), path+[(dx, dy)]))
-
-
-
         
                     
     while run:
@@ -232,7 +229,8 @@ def play_second_quest():
                 move(player, 0, 1)
 
             # Ghost moves
-            ghost_chase()
+            ghost_chase(ghost)
+            ghost_chase(ghost2)
 
             # Check collision with points
             points = [p for p in points if not player.colliderect(p)]
