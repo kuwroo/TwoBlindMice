@@ -4,16 +4,9 @@ from misc import SCREEN_WIDTH as WIDTH, SCREEN_HEIGHT as HEIGHT, TILE_SIZE
 import sys
 from collections import deque
 from tilemap import TileMap
+from spritesheet_loader import SpriteSheet
+from colours import *
 
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
-PLAYER_COLOR = (0, 0, 255)
-GREEN = (0, 200, 0)
-BROWN = (139, 69, 19)
-MAGENTA = (255, 0, 255)
 
 def play_first_quest():
     # Initialize Pygame and set up the window
@@ -127,16 +120,29 @@ def play_second_quest():
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Pac-Mouse!")
+    tile = SpriteSheet("resources\\ROUNDBRICKS.png")
+    wall_image = tile.get_frame(0, 32, 32)
+    tube = SpriteSheet("resources\\tube.jpg")
+    tube_image = tube.get_frame(0, 32, 32)
 
     # --- MAP ---
     maze = [
-    "WWWWWWWWWWWW",
-    "W..      ..W",
-    "W.WW WW WW.W",
-    "W.W  ..  W.W",
-    "W.W WW W W W",
-    "W.. W  W  .W",
-    "WWWWWWWWWWWW"
+        "WWWWWWWWWWWWWWWWWWWWWW",
+        "W..     WW       .    W",
+        "W.WW W    WW  WW W    W",
+        "W.W    ..     WW W    W",
+        "W.W  WWW WWW    W W W W",
+        "W..   W    W W  W     W",
+        "W WWWWWWWWW WWWWW WWWW",
+        "W      W      W       W",
+        "W WWW  W  WWW  W  WWW W",
+        "W W          W        W",
+        "W WWWWWWW WWWWWWWWWWW W",
+        "W    .   W    W      .W",
+        "W WWW  W WWW WWWWW WWWW",
+        "W    W    ..    W     W",
+        "W..    WWWW     ..    W",
+        "WWWWWWWWWWWWWWWWWWWWWW",
     ]
 
     ROWS = len(maze)
@@ -144,7 +150,7 @@ def play_second_quest():
     maze_width = COLS * TILE_SIZE
     maze_height = ROWS * TILE_SIZE
     draw_offset_x = (WIDTH - maze_width) // 2
-    draw_offset_y = (HEIGHT - maze_height) // 2
+    draw_offset_y = (HEIGHT - maze_height) // 2 
 
     # Parse maze
     walls = []
@@ -164,6 +170,7 @@ def play_second_quest():
 
     # Ghost
     ghost = pygame.Rect(draw_offset_x + (COLS - 2) * TILE_SIZE, draw_offset_y + (ROWS - 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    ghost2 = pygame.Rect(draw_offset_x + TILE_SIZE * (COLS - 3), draw_offset_y + TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
     clock = pygame.time.Clock()
     run = True
@@ -197,15 +204,20 @@ def play_second_quest():
                     queue.append(((nx, ny), path+[(dx, dy)]))
 
 
+
+        
+                    
     while run:
         clock.tick(5)
-        win.fill(BLACK)
+        for y in range(0, HEIGHT, 32):
+            for x in range(0, WIDTH, 32):
+                win.blit(wall_image, (x, y))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 quest_result = "quit"
-
+        
         keys = pygame.key.get_pressed()
         if not game_started and keys[pygame.K_SPACE]:
             game_started = True
@@ -237,15 +249,23 @@ def play_second_quest():
                 print("Caught by Ghost! You Lose.")
                 quest_result = "lose"
                 run = False
+            
+            if player.colliderect(ghost2):
+                print("Caught by Second Ghost! You Lose.")
+                quest_result = "lose"
+                run = False
 
         # Draw maze
         for wall in walls:
-            pygame.draw.rect(win, BLUE, wall)
+            # pygame.draw.rect(win, BLUE, wall)
+            win.blit(tube_image, wall.topleft)
+
         for p in points:
             pygame.draw.rect(win, WHITE, p)
 
         pygame.draw.rect(win, YELLOW, player)
         pygame.draw.rect(win, RED, ghost)
+        pygame.draw.rect(win, (255, 105, 180), ghost2)  
 
         pygame.display.update()
 
@@ -412,4 +432,3 @@ def play_third_quest():
     return result
 
 play_third_quest()
-
