@@ -1,6 +1,6 @@
 import pygame
 vec = pygame.math.Vector2
-from misc import SCREEN_WIDTH, SCREEN_HEIGHT, GROUND_HEIGHT
+from misc import SCREEN_WIDTH, SCREEN_HEIGHT
 from abc import ABC, abstractmethod
 
 
