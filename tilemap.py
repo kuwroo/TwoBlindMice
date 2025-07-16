@@ -21,18 +21,22 @@ class TileMap:
         for obj in self.tmx_data.objects:
             if obj.type:  # Only include objects with a type
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                
+                # Access properties as a dictionary
+                props = obj.properties if hasattr(obj, "properties") else {}
 
-                # Extract all custom properties as a dict
-                props = {}
-                if hasattr(obj, 'properties'):
-                    for key, value in obj.properties.items():
-                        props[key] = value
+                # Extract text content from 'Text' or 'text' property
+                text_value = props.get("Text") or props.get("text")
+
+                # Also convert properties into a list of dicts if you still need that
+                properties_list = [{"name": k, "value": v} for k, v in props.items()]
 
                 interactables.append({
                     "rect": rect,
                     "type": obj.type,
                     "name": obj.name,
-                    "properties": props  # ✅ Store custom properties here
+                    "properties": properties_list,
+                    "text": text_value 
                 })
         return interactables
 
