@@ -6,59 +6,63 @@ from collections import deque
 from tilemap import TileMap
 from spritesheet_loader import SpriteSheet
 from colours import *
+from quest1 import play_first_quest
 
 
 def play_first_quest():
-    # Initialize Pygame and set up the window
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Rabbit-hole!")
+    FPS = 60
 
-    # --- PLAYER ---
-    player_size = 30
-    player_x = WIDTH // 2
-    player_y = HEIGHT // 2
-    player = pygame.Rect(player_x, player_y, player_size, player_size)
-    player_speed = 7
-    scroll_speed = 8
+    # Load TMX map
+    tmx = TileMap("resources/quest1map.tmx")
 
-    # --- STARTING PLATFORM ---
-    platform_width = WIDTH
-    platform_height = 20
-    platform_x = player_x - platform_width // 2
-    platform_y = player_y + player_size  # just below player
-    platform = pygame.Rect(platform_x, platform_y, platform_width, platform_height)
+    print("=== Tiled Objects ===")
+    for obj in tmx.tmx_data.objects:
+        print(f"name: {obj.name}, type: {obj.type}, text: {getattr(obj, 'text', None)}")
 
-    # Adjust player to stand directly on the platform
-    player.bottom = platform.top
 
-    # --- OBSTACLES ---
+    platform = None
+    walls = []
     obstacles = []
-    obstacle_height = 20
-    gap = 200
-    start_offset = 750  # moved further down
-    num_obstacles = 10
+    floor = None
+    texts = []
 
-    for i in range(num_obstacles):
-        obstacle_width = random.randint(70, 200)
-        x = random.randint(0, WIDTH - obstacle_width)
-        y = i * gap + start_offset
-        obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))
+    for obj in tmx.interactables:
+        obj_type = obj["type"].lower()
+        rect = obj["rect"]
+        if obj_type == "spawn":
+            PLAYER_SIZE = 32
+            player = pygame.Rect(rect.x, rect.y, PLAYER_SIZE, PLAYER_SIZE)
+        elif obj_type == "platform":
+            platform = rect
+        elif obj_type == "wall":
+            walls.append(rect)
+        elif obj_type == "floor":
+            floor = rect
+        elif obj_type == "obstacle":
+            obstacles.append(rect)
+    
+    print("--- Tiled Objects ---")
+    for obj in tmx.tmx_data.objects:
+        print(f"name: {obj.name}, type: {obj.type}, text: {getattr(obj, 'text', None)}")
 
-    ground_height = 30
-    ground_y = num_obstacles * gap + start_offset
-    ground = pygame.Rect(0, ground_y, WIDTH, ground_height)
 
-    # Game Loop variables
+    # Game loop variables
     camera_offset = 0
     clock = pygame.time.Clock()
     run = True
+    falling = False
+    on_floor = False
+    scroll_speed = 8
+    player_speed = 7
     quest_result = None
-    on_ground = False
-    falling = False  # player must press SPACE to start falling
+
+    font = pygame.font.SysFont(None, 24)
 
     while run:
-        clock.tick(60) # game timing
+        clock.tick(FPS)
         win.fill(WHITE)
 
         for event in pygame.event.get():
@@ -66,53 +70,71 @@ def play_first_quest():
                 run = False
                 quest_result = "quit"
 
-        # Input handling
+        def can_move(new_rect):
+            for wall in walls:
+                wall_moved = wall.copy()
+                wall_moved.y -= camera_offset  # adjust for scroll
+                if new_rect.colliderect(wall_moved):
+                    return False
+            return True
+
+        # Input
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and player.left > 0:
-            player.x -= player_speed
-        if keys[pygame.K_d] and player.right < WIDTH:
-            player.x += player_speed
+        if keys[pygame.K_a]:
+            new_pos = player.move(-player_speed, 0)
+            if can_move(new_pos):
+                player = new_pos
+        if keys[pygame.K_d]:
+            new_pos = player.move(player_speed, 0)
+            if can_move(new_pos):
+                player = new_pos
 
+        # Begin falling when space pressed
         if not falling and keys[pygame.K_SPACE]:
-            falling = True  # start fall when SPACE is pressed 
+            falling = True
 
-        if falling and not on_ground:
-            if ground.top - camera_offset <= player.bottom:
-                on_ground = True
-                print("You landed safely! Press E to return.")
+        # Simulate fall by scrolling map upward
+        if falling and not on_floor:
+            if floor.top - camera_offset <= player.bottom:
+                on_floor = True
+                print("You landed on the floor! Press E to win.")
             else:
-                camera_offset += scroll_speed # game mechanics
+                camera_offset += scroll_speed
+
+        # --- DRAW TILEMAP BACKGROUND ---
+        tmx.draw(win, pygame.Vector2(0, camera_offset))
+
+        test_font = pygame.font.SysFont(None, 30)
+        test_surface = test_font.render("TEST TEXT", True, (255, 0, 0))
+        win.blit(test_surface, (50, 50))
+
+
+        tmx.draw_texts(win, pygame.Vector2(0, camera_offset))
 
         # --- DRAW OBSTACLES ---
+        # Check collision with invisible obstacle areas
         for obs in obstacles:
-            draw_rect = obs.copy()
-            draw_rect.y -= camera_offset
-            pygame.draw.rect(win, RED, draw_rect)
-            if player.colliderect(draw_rect):
-                print("Game Over!")
+            draw_obs = obs.copy()
+            draw_obs.y -= camera_offset
+            if player.colliderect(draw_obs):
+                print("You hit an obstacle. Game over!")
                 quest_result = "lose"
                 run = False
 
-        # --- DRAW GROUND ---
-        draw_ground = ground.copy()
-        draw_ground.y -= camera_offset
-        pygame.draw.rect(win, GREEN, draw_ground)
+        # --- DRAW PLAYER ---
+        pygame.draw.rect(win, PLAYER_COLOR, player)
 
-        # --- DRAW STARTING PLATFORM ---
-        draw_platform = platform.copy()
-        draw_platform.y -= camera_offset
-        pygame.draw.rect(win, BROWN, draw_platform)
 
-        # --- INTERACT AFTER LANDING ---
-        if on_ground and keys[pygame.K_e]:
+        # Win condition
+        if on_floor and keys[pygame.K_e]:
+            print("You completed the quest!")
             quest_result = "win"
             run = False
 
-        # --- DRAW PLAYER ---
-        pygame.draw.rect(win, PLAYER_COLOR, player)
         pygame.display.update()
 
-    return quest_result
+    pygame.quit()
+    return quest_result    
 
 def play_second_quest():
 
