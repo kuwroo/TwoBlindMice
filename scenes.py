@@ -88,7 +88,7 @@ class Scene:
 class TitleScene(Scene):
     def __init__(self, screen):
         super().__init__(screen, "resources/titleTEST.tmx")
-        print("Loaded tilemap, interactables:", self.tile_map.interactables)  # Debug print
+        #print("Loaded tilemap, interactables:", self.tile_map.interactables)  # Debug print
         self.is_mouse = True
         self.cursor = Cursor()
         
@@ -105,7 +105,7 @@ class TitleScene(Scene):
         self.game_button = Button(start_x, game_y, button_width, button_height, "Enter Game")
         
         self.near_door = False
-        print("TitleScene initialized with door prompt")
+        #print("TitleScene initialized with door prompt")
         
     def check_door_proximity(self):
         if not self.is_mouse:
@@ -122,9 +122,8 @@ class TitleScene(Scene):
             for obj in self.tile_map.interactables:
                 if obj["type"].lower() == "door":
                     door_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                    print(f"Door rect: {door_rect}")
                     if player_pos.colliderect(door_rect):
-                        print("Near door - showing prompt")
+                        #print("Near door - showing prompt")
                         self.prompt_text = self.font.render("Press E to enter", True, (255, 255, 255))
                         self.near_door = True
                         return

@@ -26,7 +26,7 @@ class TileMap:
     def load_interactables(self):
         interactables = []
         for obj in self.tmx_data.objects:
-            print(f"Found object: {obj.name} {obj.type}")
+            # print(f"Found object: {obj.name} {obj.type}")
             if obj.type:  # Only include objects with a type
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
                 interactables.append({
