@@ -11,7 +11,7 @@ def play_first_quest():
     # Initialize Pygame and set up the window
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Fall Without Hitting")
+    pygame.display.set_caption("Rabbit-hole!")
 
     # --- PLAYER ---
     player_size = 30

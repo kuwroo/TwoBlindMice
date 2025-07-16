@@ -29,19 +29,25 @@ class TileMap:
             print(f"Found object: {obj.name} {obj.type}")
             if obj.type:  # Only include objects with a type
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-                # Convert pytmx properties dict to a list of dicts (for compatibility)
-                properties = []
-                if hasattr(obj, "properties"):
-                    properties = [{"name": k, "value": v} for k, v in obj.properties.items()]
+                
+                # Access properties as a dictionary
+                props = obj.properties if hasattr(obj, "properties") else {}
+
+                # Extract text content from 'Text' or 'text' property
+                text_value = props.get("Text") or props.get("text")
+
+                # Also convert properties into a list of dicts if you still need that
+                properties_list = [{"name": k, "value": v} for k, v in props.items()]
+
                 interactables.append({
                     "rect": rect,
                     "type": obj.type,
                     "name": obj.name,
-                    "properties": properties
+                    "properties": properties_list,
+                    "text": text_value 
                 })
-
-        #print("Loaded interactables:", interactables)
         return interactables
+
 
     def draw(self, surface, camera_offset):
         for layer in self.tmx_data.visible_layers:
