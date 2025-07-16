@@ -208,6 +208,29 @@ class GameScene(Scene):
             self.prompt_text = None
         self.near_hole = False
 
+    def check_thirdquest_proximity(self):
+        # Get player position in world coordinates
+        player_pos = pygame.Rect(
+            self.player.player_x,
+            self.player.player_y,
+            self.player.rect.width,
+            self.player.rect.height
+        )
+        
+        # Check each hole
+        for obj in self.tile_map.interactables:
+            if obj["type"].lower() == "wall":
+                wall_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
+                if player_pos.colliderect(wall_rect):
+                    self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
+                    self.near_wall = True
+                    return
+        
+        # Reset if not near any hole
+        if not self.near_wall:  # Only reset prompt if we're not near a bin
+            self.prompt_text = None
+        self.near_wall = False
+
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
             if self.near_bin:
