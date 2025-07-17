@@ -6,8 +6,7 @@ from collections import deque
 from tilemap import TileMap
 from spritesheet_loader import SpriteSheet
 from colours import *
-from quest1 import play_first_quest
-
+from spritesheet_loader import load_spritesheet
 
 def play_first_quest():
     pygame.init()
@@ -17,7 +16,6 @@ def play_first_quest():
 
     # Load TMX map
     tmx = TileMap("resources/quest1map.tmx")
-
     print("=== Tiled Objects ===")
     for obj in tmx.tmx_data.objects:
         print(f"name: {obj.name}, type: {obj.type}, text: {getattr(obj, 'text', None)}")
@@ -105,7 +103,7 @@ def play_first_quest():
         tmx.draw(win, pygame.Vector2(0, camera_offset))
 
         test_font = pygame.font.SysFont(None, 30)
-        test_surface = test_font.render("TEST TEXT", True, (255, 0, 0))
+        test_surface = test_font.render("press SPACE to start", True, WHITE)
         win.blit(test_surface, (50, 50))
 
 
@@ -453,4 +451,3 @@ def play_third_quest():
     pygame.quit()
     return result
 
-play_third_quest()
