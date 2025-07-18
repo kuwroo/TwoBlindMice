@@ -216,16 +216,10 @@ class PlayerMovement(pygame.sprite.Sprite):
         
         if not self.jumping_frames:
             return 0
-    
+
         max_index = len(self.jumping_frames) - 1
-    
-        # Flip the velocity mapping so negative (upward) velocity maps to early frames
-        # and positive (downward) velocity maps to later frames
         mapped = map_value(self.player_velocity_y, -self.JUMP_POWER, self.JUMP_POWER, 0, max_index)
-        air_index = round(clamp(mapped, 0, max_index))
-        air_index = int(clamp(mapped, 0, max_index))
-        self.image = self.jumping_frames[air_index]
-        return air_index
+        return int(clamp(mapped, 0, max_index))
 
     def update_animation(self, keys):
         # Check if we should use idle animation
@@ -268,7 +262,10 @@ class PlayerMovement(pygame.sprite.Sprite):
                 frame = pygame.transform.flip(frame, True, False)
         elif self.is_jumping and not self.on_ladder:
             frame_index = self.current_frame
-            frame = self.jumping_frames[frame_index]
+            if self.jumping_frames and 0 <= frame_index < len(self.jumping_frames):
+                frame = self.jumping_frames[frame_index]
+            else:
+                frame = self.idle_frames[0]
             if self.player_velocity_x < 0 or self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)
         else:
