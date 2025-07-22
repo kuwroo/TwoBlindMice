@@ -3,6 +3,7 @@ import random
 from misc import SCREEN_WIDTH as WIDTH, SCREEN_HEIGHT as HEIGHT, TILE_SIZE
 import sys
 from collections import deque
+from tilemap import TileMap
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -12,6 +13,7 @@ YELLOW = (255, 255, 0)
 PLAYER_COLOR = (0, 0, 255)
 GREEN = (0, 200, 0)
 BROWN = (139, 69, 19)
+MAGENTA = (255, 0, 255)
 
 def play_first_quest():
     # Initialize Pygame and set up the window
@@ -256,7 +258,7 @@ def play_third_quest():
     pygame.display.set_caption("Stealth Heist")
     FPS = 60
 
-    tmx = TileMap("resources/mazemap.tmx")
+    tmx = TileMap("resources/mazemap2.tmx")
 
     player = None
     exit_rects = []
