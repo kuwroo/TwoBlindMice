@@ -1,5 +1,5 @@
 import pygame
-from tilemap import resource_path
+from utils import resource_path
 
 class Button:
     def __init__(self, x, y, width, height, text, font_size=36, color=(200, 200, 200), hover_color=(150, 150, 150), text_color=(0, 0, 0)):
