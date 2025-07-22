@@ -5,7 +5,7 @@ from collections import deque
 from tilemap import TileMap
 from spritesheet_loader import SpriteSheet
 from colours import *
-from spritesheet_loader import load_spritesheet
+from spritesheet_loader import *
 
 def play_first_quest():
     pygame.init()

@@ -169,8 +169,5 @@
   <object id="120" type="obstacle" x="160" y="2560" width="32" height="32"/>
   <object id="123" type="obstacle" x="480" y="2688" width="32" height="32"/>
   <object id="124" type="obstacle" x="96" y="2688" width="32" height="32"/>
-  <object id="126" x="288" y="64" width="83" height="19">
-   <text wrap="1" color="#ffffff">Hello World</text>
-  </object>
  </objectgroup>
 </map>
