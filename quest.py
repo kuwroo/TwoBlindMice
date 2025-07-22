@@ -15,38 +15,43 @@ def play_first_quest():
 
     # Load TMX map
     tmx = TileMap("resources/quest1map.tmx")
-    print("=== Tiled Objects ===")
-    for obj in tmx.tmx_data.objects:
-        print(f"name: {obj.name}, type: {obj.type}, text: {getattr(obj, 'text', None)}")
 
-
-    platform = None
-    walls = []
+    # Setup variables
     obstacles = []
-    floor = None
-    texts = []
+    floor_tiles = []
+    player = None  # Default to None in case spawn isn't found
 
+    # Find spawn point from object layer
     for obj in tmx.interactables:
         obj_type = obj["type"].lower()
         rect = obj["rect"]
         if obj_type == "spawn":
             PLAYER_SIZE = 32
             player = pygame.Rect(rect.x, rect.y, PLAYER_SIZE, PLAYER_SIZE)
-        elif obj_type == "platform":
-            platform = rect
-        elif obj_type == "wall":
-            walls.append(rect)
-        elif obj_type == "floor":
-            floor = rect
-        elif obj_type == "obstacle":
+
+    if player is None:
+        raise ValueError("No 'spawn' object found in TMX map. Cannot start quest.")
+
+    # === LOAD FLOOR AND OBSTACLE TILES FROM LAYERS ===
+    tilewidth = tmx.tmx_data.tilewidth
+    tileheight = tmx.tmx_data.tileheight
+
+    # Get floor tiles (pick the lowest one for landing logic)
+    # Get floor tiles (now store all of them)
+    floor_layer = tmx.tmx_data.get_layer_by_name("floor")
+    for x, y, gid in floor_layer:
+        if gid:
+            rect = pygame.Rect(x * tilewidth, y * tileheight, tilewidth, tileheight)
+            floor_tiles.append(rect)
+
+    # Get obstacle tiles (touch = lose)
+    obs_layer = tmx.tmx_data.get_layer_by_name("obs")
+    for x, y, gid in obs_layer:
+        if gid:
+            rect = pygame.Rect(x * tilewidth, y * tileheight, tilewidth, tileheight)
             obstacles.append(rect)
-    
-    print("--- Tiled Objects ---")
-    for obj in tmx.tmx_data.objects:
-        print(f"name: {obj.name}, type: {obj.type}, text: {getattr(obj, 'text', None)}")
 
-
-    # Game loop variables
+    # Game loop vars
     camera_offset = 0
     clock = pygame.time.Clock()
     run = True
@@ -55,7 +60,6 @@ def play_first_quest():
     scroll_speed = 8
     player_speed = 7
     quest_result = None
-
     font = pygame.font.SysFont(None, 24)
 
     while run:
@@ -67,11 +71,12 @@ def play_first_quest():
                 run = False
                 quest_result = "quit"
 
+        # Movement logic — no walking through floor tile (not used currently but kept for consistency)
         def can_move(new_rect):
-            for wall in walls:
-                wall_moved = wall.copy()
-                wall_moved.y -= camera_offset  # adjust for scroll
-                if new_rect.colliderect(wall_moved):
+            for tile in floor_tiles:
+                tile_shifted = tile.copy()
+                tile_shifted.y -= camera_offset
+                if new_rect.colliderect(tile_shifted):
                     return False
             return True
 
@@ -86,41 +91,48 @@ def play_first_quest():
             if can_move(new_pos):
                 player = new_pos
 
-        # Begin falling when space pressed
-        if not falling and keys[pygame.K_SPACE]:
-            falling = True
+        # Begin falling
+        if not falling:
+            # Check if no floor is under the player
+            feet_rect = player.copy()
+            feet_rect.y += 1  # One pixel below player
+            on_platform = any(feet_rect.colliderect(tile) for tile in floor_tiles)
+            if not on_platform:
+                falling = True
 
-        # Simulate fall by scrolling map upward
+
+
+        # Simulate falling by scrolling upward
         if falling and not on_floor:
-            if floor.top - camera_offset <= player.bottom:
-                on_floor = True
-                print("You landed on the floor! Press E to win.")
+            # Check collision with any floor tile
+            player_feet = player.copy()
+            player_feet.y += 1
+            for tile in floor_tiles:
+                if player_feet.colliderect(tile.move(0, -camera_offset)):
+                    on_floor = True
+                    print("You landed on the floor! Press E to win.")
+                    break
             else:
                 camera_offset += scroll_speed
 
-        # --- DRAW TILEMAP BACKGROUND ---
+
+        # --- DRAW EVERYTHING ---
         tmx.draw(win, pygame.Vector2(0, camera_offset))
-
-        test_font = pygame.font.SysFont(None, 30)
-        test_surface = test_font.render("press SPACE to start", True, WHITE)
-        win.blit(test_surface, (50, 50))
-
-
         tmx.draw_texts(win, pygame.Vector2(0, camera_offset))
 
-        # --- DRAW OBSTACLES ---
-        # Check collision with invisible obstacle areas
+        win.blit(font.render("press SPACE to start", True, WHITE), (50, 50))
+
+        # Check collision with obstacles
         for obs in obstacles:
-            draw_obs = obs.copy()
-            draw_obs.y -= camera_offset
-            if player.colliderect(draw_obs):
+            obs_screen = obs.copy()
+            obs_screen.y -= camera_offset
+            if player.colliderect(obs_screen):
                 print("You hit an obstacle. Game over!")
                 quest_result = "lose"
                 run = False
 
-        # --- DRAW PLAYER ---
+        # Draw player
         pygame.draw.rect(win, PLAYER_COLOR, player)
-
 
         # Win condition
         if on_floor and keys[pygame.K_e]:
@@ -130,8 +142,10 @@ def play_first_quest():
 
         pygame.display.update()
 
-    pygame.quit()
-    return quest_result    
+    return quest_result
+
+
+play_first_quest()
 
 def play_second_quest():
 
