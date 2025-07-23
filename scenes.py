@@ -229,7 +229,7 @@ class GameScene(Scene):
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.cheese_count = 1
-        self.near_bin = False
+        self.near_mansion = False
         self.near_hole = False  # Add near_hole attribute
         self.near_wall = False  # Add near_wall attribute for third quest
         self.cheese_sprite = pygame.image.load("resources/cheese.png")
@@ -238,7 +238,7 @@ class GameScene(Scene):
         self.quest2_completed = False
         self.quest3_completed = False
 
-    def check_bin_proximity(self):
+    def check_mansion_proximity(self):
         # Get player position in world coordinates
         player_pos = pygame.Rect(
             self.player.player_x,
@@ -248,20 +248,20 @@ class GameScene(Scene):
         )
         #print(f"Player pos: {player_pos}")
         
-        # Check each bin
+        # Check each mansion
         for obj in self.tile_map.interactables:
-            if obj["type"].lower() == "bin":
-                bin_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                print(f"Bin rect: {bin_rect}")
-                if player_pos.colliderect(bin_rect):
-                    print("Near bin - showing prompt")
+            if obj["type"].lower() == "mansion":
+                mansion_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
+                print(f"Mansion rect: {mansion_rect}")
+                if player_pos.colliderect(mansion_rect):
+                    print("Near mansion - showing prompt")
                     self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
-                    self.near_bin = True
+                    self.near_mansion = True
                     return
         
-        # No bin nearby
+        # No mansion nearby
         self.prompt_text = None
-        self.near_bin = False
+        self.near_mansion = False
         
     def check_hole_proximity(self):
         # Get player position in world coordinates
@@ -282,7 +282,7 @@ class GameScene(Scene):
                     return
         
         # Reset if not near any hole
-        if not self.near_bin:  # Only reset prompt if we're not near a bin
+        if not self.near_hole:  # Only reset prompt if we're not near a hole
             self.prompt_text = None
         self.near_hole = False
 
@@ -304,14 +304,14 @@ class GameScene(Scene):
                     self.near_wall = True
                     return
         
-        # Reset if not near any hole
-        if not self.near_wall:  # Only reset prompt if we're not near a bin
+        # Reset if not near any wall
+        if not self.near_wall:  # Only reset prompt if we're not near a wall
             self.prompt_text = None
         self.near_wall = False
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            if self.near_bin:
+            if self.near_mansion:
                 print("Starting first quest!")
                 result = play_first_quest()
                 print("Quest result:", result)
@@ -363,8 +363,8 @@ class GameScene(Scene):
         self.center_camera_on_player()
         self.player.update_animation(keys)
         
-        # Check for bin and hole proximity
-        self.check_bin_proximity()
+        # Check for mansion and hole proximity
+        self.check_mansion_proximity()
         self.check_hole_proximity()
         self.check_thirdquest_proximity()
         return None
@@ -394,3 +394,39 @@ class GameScene(Scene):
         # Update and draw fog of war
         self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
         self.fog.draw(screen)
+
+class FirstQuestScene(Scene):
+    def __init__(self, screen):
+        super().__init__(screen, "resources/quest1map.tmx")
+        self.quest_result = None
+        self.quest_started = False
+        self.quest_done = False
+
+    def handle_event(self, event):
+        if not self.quest_started and event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            print("Starting play_first_quest()...")
+            self.quest_started = True
+            self.quest_result = play_first_quest()
+            print("play_first_quest() finished with result:", self.quest_result)
+
+            if self.quest_result == "win":
+                # For example, award a cheese
+                print("Player won quest!")
+                self.quest_done = True
+            elif self.quest_result == "lose":
+                print("Player lost quest!")
+                self.quest_done = True
+
+    def update(self):
+        # Optional: add idle animations or background updates
+        pass
+
+    def draw(self, screen):
+        # You can show a static screen before/after the quest
+        screen.fill((0, 0, 0))
+        prompt = self.font.render("Press SPACE to begin quest", True, (255, 255, 255))
+        screen.blit(prompt, ((SCREEN_WIDTH - prompt.get_width()) // 2, SCREEN_HEIGHT // 2))
+        
+        if self.quest_result:
+            result_text = self.font.render(f"Result: {self.quest_result}", True, (255, 255, 0))
+            screen.blit(result_text, ((SCREEN_WIDTH - result_text.get_width()) // 2, SCREEN_HEIGHT // 2 + 40))
