@@ -146,80 +146,98 @@ def play_first_quest():
     return quest_result
 
 
-play_first_quest()
-
 def play_second_quest():
-
-    # Initialize Pygame and set up the window
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Pac-Mouse!")
-    tile = SpriteSheet("resources\\ROUNDBRICKS.png")
-    wall_image = tile.get_frame(0, 32, 32)
-    tube = SpriteSheet("resources\\tube.jpg")
-    tube_image = tube.get_frame(0, 32, 32)
 
-    # --- MAP ---
+    WALL_COLOR = (0, 0, 255)
+    DOT_COLOR = (255, 255, 255)
+    PLAYER_COLOR = (255, 255, 0)
+    GHOST1_COLOR = (255, 0, 0)
+    GHOST2_COLOR = (255, 105, 180)
+
     maze = [
-        "WWWWWWWWWWWWWWWWWWWWWW",
-        "W..     WW       .    W",
-        "W.WW W    WW  WW W    W",
-        "W.W    ..     WW W    W",
-        "W.W  WWW WWW    W W W W",
-        "W..   W    W W  W     W",
-        "W WWWWWWWWW WWWWW WWWW",
-        "W      W      W       W",
-        "W WWW  W  WWW  W  WWW W",
-        "W W          W        W",
-        "W WWWWWWW WWWWWWWWWWW W",
-        "W    .   W    W      .W",
-        "W WWW  W WWW WWWWW WWWW",
-        "W    W    ..    W     W",
-        "W..    WWWW     ..    W",
-        "WWWWWWWWWWWWWWWWWWWWWW",
+        "WWWWWWWWWWWWWWWWWWWWW",
+        "W.......W....   .   W",
+        "W.WWW .W. . WWW.    W",
+        "W.W    W W    W.  . W",
+        "W.W WW  G   WW W   WW",
+        "W....    .   .....  W",
+        "W. W  WWWWW WW   WW W",
+        "W. W  W  W   W      W",
+        "W.WW WWWWWW WW   WW W",
+        "W..    ...   G....  W",
+        "W.WW WWW WWW W W WW W",
+        "W.W        W        W",
+        "W.WWWWWWWWWW  WWWWW W",
+        "W....        .....  W",
+        "W    .........      W",
+        "W    WWWW           W",
+        "W      ........     W",
+        "WWWWWWWWWWWWWWWWWWWWW"
     ]
 
     ROWS = len(maze)
     COLS = len(maze[0])
     maze_width = COLS * TILE_SIZE
     maze_height = ROWS * TILE_SIZE
-    draw_offset_x = (WIDTH - maze_width) // 2
-    draw_offset_y = (HEIGHT - maze_height) // 2 
 
-    # Parse maze
+    draw_offset_x = (WIDTH - maze_width) // 2  # 64
+    draw_offset_y = (HEIGHT - maze_height) // 2  # 64
+
     walls = []
     points = []
+    ghosts = []
+
     for y, row in enumerate(maze):
         for x, char in enumerate(row):
-            if char == 'W':
-                walls.append(pygame.Rect(draw_offset_x + x * TILE_SIZE, draw_offset_y + y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
-            elif char == '.':
-                points.append(pygame.Rect(
-                    draw_offset_x + x * TILE_SIZE + TILE_SIZE // 4,
-                    draw_offset_y + y * TILE_SIZE + TILE_SIZE // 4,
-                    TILE_SIZE // 2, TILE_SIZE // 2))
+            px = draw_offset_x + x * TILE_SIZE
+            py = draw_offset_y + y * TILE_SIZE
 
-    # --- PLAYER ---
+            if char == 'W':
+                walls.append(pygame.Rect(px, py, TILE_SIZE, TILE_SIZE))
+            elif char == '.':
+                points.append(pygame.Rect(px + TILE_SIZE // 4, py + TILE_SIZE // 4, TILE_SIZE // 2, TILE_SIZE // 2))
+            elif char == 'G':
+                ghosts.append(pygame.Rect(px, py, TILE_SIZE, TILE_SIZE))
+
     player = pygame.Rect(draw_offset_x + TILE_SIZE, draw_offset_y + TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
-    # Ghost
-    ghost = pygame.Rect(draw_offset_x + (COLS - 2) * TILE_SIZE, draw_offset_y + (ROWS - 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-    ghost2 = pygame.Rect(draw_offset_x + TILE_SIZE * (COLS - 3), draw_offset_y + TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    ghost = ghosts[0] if len(ghosts) > 0 else pygame.Rect(draw_offset_x + (COLS - 2) * TILE_SIZE, draw_offset_y + (ROWS - 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    ghost2 = ghosts[1] if len(ghosts) > 1 else pygame.Rect(draw_offset_x + TILE_SIZE * (COLS - 3), draw_offset_y + TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
     clock = pygame.time.Clock()
     run = True
     quest_result = None
     game_started = False
+    ghost_move_timer = 0
+    ghost_move_interval = 2
 
+    def can_move(rect, ignore_ghost=None):
+        # Check walls and screen bounds as before
+        if rect.left < draw_offset_x or rect.right > draw_offset_x + maze_width:
+            return False
+        if rect.top < draw_offset_y or rect.bottom > draw_offset_y + maze_height:
+            return False
+        if any(rect.colliderect(w) for w in walls):
+            return False
+        # Prevent collision with the other ghost
+        if ignore_ghost != ghost and rect.colliderect(ghost):
+            return False
+        if ignore_ghost != ghost2 and rect.colliderect(ghost2):
+            return False
+        return True
 
-    def move(rect, dx, dy):
+    def move(rect, dx, dy, ignore_ghost=None):
         new_rect = rect.move(dx * TILE_SIZE, dy * TILE_SIZE)
-        if all(not new_rect.colliderect(w) for w in walls):
-            rect.x += dx * TILE_SIZE
-            rect.y += dy * TILE_SIZE
+        if can_move(new_rect, ignore_ghost):
+            rect.x = new_rect.x
+            rect.y = new_rect.y
 
-    def ghost_chase():
-        start = ((ghost.x - draw_offset_x) // TILE_SIZE, (ghost.y - draw_offset_y) // TILE_SIZE)
+
+    def ghost_chase(ghost_rect, ignore_ghost=None):
+        start = ((ghost_rect.x - draw_offset_x) // TILE_SIZE, (ghost_rect.y - draw_offset_y) // TILE_SIZE)
         goal = ((player.x - draw_offset_x) // TILE_SIZE, (player.y - draw_offset_y) // TILE_SIZE)
         queue = deque([(start, [])])
         visited = set()
@@ -229,7 +247,7 @@ def play_second_quest():
             if (x, y) == goal:
                 if path:
                     dx, dy = path[0]
-                    move(ghost, dx, dy)
+                    move(ghost_rect, dx, dy, ignore_ghost)
                 return
             for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
                 nx, ny = x+dx, y+dy
@@ -238,20 +256,29 @@ def play_second_quest():
                     queue.append(((nx, ny), path+[(dx, dy)]))
 
 
+            while queue:
+                (x, y), path = queue.popleft()
+                if (x, y) == goal:
+                    if path:
+                        dx, dy = path[0]
+                        move(ghost_rect, dx, dy)
+                    return
+                for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
+                    nx, ny = x+dx, y+dy
+                    if 0 <= nx < COLS and 0 <= ny < ROWS and maze[ny][nx] != 'W' and (nx, ny) not in visited:
+                        visited.add((nx, ny))
+                        queue.append(((nx, ny), path+[(dx, dy)]))
 
-        
-                    
+            # If no path found, ghost does not move this turn (safe fallback)
+
     while run:
-        clock.tick(5)
-        for y in range(0, HEIGHT, 32):
-            for x in range(0, WIDTH, 32):
-                win.blit(wall_image, (x, y))
+        clock.tick(8)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 quest_result = "quit"
-        
+
         keys = pygame.key.get_pressed()
         if not game_started and keys[pygame.K_SPACE]:
             game_started = True
@@ -266,40 +293,40 @@ def play_second_quest():
             if keys[pygame.K_s]:
                 move(player, 0, 1)
 
-            # Ghost moves
-            ghost_chase()
+            ghost_move_timer += 1
+            if ghost_move_timer >= ghost_move_interval:
+                ghost_chase(ghost, ignore_ghost=ghost)
+                ghost_chase(ghost2, ignore_ghost=ghost2)
 
-            # Check collision with points
+                ghost_move_timer = 0
+
             points = [p for p in points if not player.colliderect(p)]
 
-            # Win condition
             if not points:
                 print("You Win!")
                 quest_result = "win"
                 run = False
 
-            # Lose condition
             if player.colliderect(ghost):
                 print("Caught by Ghost! You Lose.")
                 quest_result = "lose"
                 run = False
-            
+
             if player.colliderect(ghost2):
                 print("Caught by Second Ghost! You Lose.")
                 quest_result = "lose"
                 run = False
 
-        # Draw maze
+        win.fill((0, 0, 0))
+
         for wall in walls:
-            # pygame.draw.rect(win, BLUE, wall)
-            win.blit(tube_image, wall.topleft)
-
+            pygame.draw.rect(win, WALL_COLOR, wall)
         for p in points:
-            pygame.draw.rect(win, WHITE, p)
+            pygame.draw.rect(win, DOT_COLOR, p)
 
-        pygame.draw.rect(win, YELLOW, player)
-        pygame.draw.rect(win, RED, ghost)
-        pygame.draw.rect(win, (255, 105, 180), ghost2)  
+        pygame.draw.rect(win, PLAYER_COLOR, player)
+        pygame.draw.rect(win, GHOST1_COLOR, ghost)
+        pygame.draw.rect(win, GHOST2_COLOR, ghost2)
 
         pygame.display.update()
 

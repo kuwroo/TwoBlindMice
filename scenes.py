@@ -153,14 +153,14 @@ class GameScene(Scene):
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.cheese_count = 1
-        self.near_bin = False
+        self.near_mansion = False
         self.near_hole = False  # Add near_hole attribute
         self.cheese_sprite = pygame.image.load("resources/cheese.png")
         self.cheese_sprite = pygame.transform.scale(self.cheese_sprite, (24, 24))
         self.quest1_completed = False
         self.quest2_completed = False
 
-    def check_bin_proximity(self):
+    def check_mansion_proximity(self):
         # Get player position in world coordinates
         player_pos = pygame.Rect(
             self.player.player_x,
@@ -170,20 +170,20 @@ class GameScene(Scene):
         )
         #print(f"Player pos: {player_pos}")
         
-        # Check each bin
+        # Check each mansion
         for obj in self.tile_map.interactables:
-            if obj["type"].lower() == "bin":
-                bin_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                #print(f"Bin rect: {bin_rect}")
-                if player_pos.colliderect(bin_rect):
-                    #print("Near bin - showing prompt")
+            if obj["type"].lower() == "mansion":
+                mansion_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
+                print(f"Mansion rect: {mansion_rect}")
+                if player_pos.colliderect(mansion_rect):
+                    print("Near mansion - showing prompt")
                     self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
-                    self.near_bin = True
+                    self.near_mansion = True
                     return
         
-        # No bin nearby
+        # No mansion nearby
         self.prompt_text = None
-        self.near_bin = False
+        self.near_mansion = False
         
     def check_hole_proximity(self):
         # Get player position in world coordinates
@@ -204,7 +204,7 @@ class GameScene(Scene):
                     return
         
         # Reset if not near any hole
-        if not self.near_bin:  # Only reset prompt if we're not near a bin
+        if not self.near_hole:  # Only reset prompt if we're not near a hole
             self.prompt_text = None
         self.near_hole = False
 
@@ -226,14 +226,14 @@ class GameScene(Scene):
                     self.near_wall = True
                     return
         
-        # Reset if not near any hole
-        if not self.near_wall:  # Only reset prompt if we're not near a bin
+        # Reset if not near any wall
+        if not self.near_wall:  # Only reset prompt if we're not near a wall
             self.prompt_text = None
         self.near_wall = False
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            if self.near_bin:
+            if self.near_mansion:
                 print("Starting first quest!")
                 result = play_first_quest()
                 print("Quest result:", result)
@@ -259,8 +259,8 @@ class GameScene(Scene):
         self.update_player_position(keys)
         self.center_camera_on_player()
         
-        # Check for bin and hole proximity
-        self.check_bin_proximity()
+        # Check for mansion and hole proximity
+        self.check_mansion_proximity()
         self.check_hole_proximity()
         return None
 
