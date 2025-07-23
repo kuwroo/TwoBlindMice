@@ -1,5 +1,6 @@
 import pygame
 from misc import *
+from spritesheet_loader import load_spritesheet
 
 
 class PlayerMovement(pygame.sprite.Sprite):
@@ -42,10 +43,10 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.last_direction_left = False
         
         # Load and scale animation frames
-        self.idle_frames = self.load_spritesheet('resources/idle.png', 4, 32, 32)
-        self.movement_frames = self.load_spritesheet('resources/MOUSE.png', 8, 32, 32)
-        self.climbing_frames = self.load_spritesheet('resources/CLIMB.png', 8, 32, 32)
-        self.jumping_frames = self.load_spritesheet('resources/jump5.png', 7, 32, 32)  # Assuming you have a jumping animation
+        self.idle_frames = load_spritesheet('resources/idle.png', 4, 32, 32)
+        self.movement_frames = load_spritesheet('resources/MOUSE.png', 8, 32, 32)
+        self.climbing_frames = load_spritesheet('resources/CLIMB.png', 8, 32, 32)
+        self.jumping_frames = load_spritesheet('resources/jump5.png', 7, 32, 32)  # Assuming you have a jumping animation
         # Ensure current_frame is within bounds of both animations
         self.idle_frame_count = len(self.idle_frames)
         self.movement_frame_count = len(self.movement_frames)
@@ -68,13 +69,6 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.COLLISION_WIDTH = self.PLAYER_WIDTH * 1.5  # Make hitbox 2/3 of sprite width
         self.COLLISION_HEIGHT = self.PLAYER_HEIGHT * 1.5  # Make hitbox 2/3 of sprite height
 
-    def load_spritesheet(self, image_path, frame_count, frame_width, frame_height):
-        spritesheet = pygame.image.load(image_path)
-        frames = []
-        for i in range(frame_count):
-            frame = spritesheet.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height))
-            frames.append(frame)
-        return frames
 
     def handle_input(self, keys):
         self.player_velocity_x = 0

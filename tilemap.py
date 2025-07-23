@@ -34,13 +34,17 @@ class TileMap:
     def load_npcs(self):
         """Load NPCs from the map's object layer."""
         npcs = []
+        print("\nLoading NPCs from tilemap...")
         for obj in self.tmx_data.objects:
-            if getattr(obj, 'type', '').lower() == 'npc':
-                # Get NPC properties from Tiled
+            print(f"Found object: type={getattr(obj, 'type', 'None')}, name={getattr(obj, 'name', 'None')}")
+            if obj.type == "NPC":
                 name = getattr(obj, 'name', 'default_npc')
-                dialogue = obj.properties.get('dialogue', 'Hello!')
+                dialogue = getattr(obj, 'properties', {}).get('dialogue', 'Hello!')
+                
+                print(f"Creating NPC: {name} with dialogue: {dialogue}")
                 npc = NPC(obj.x, obj.y, name, dialogue)
                 npcs.append(npc)
+        print(f"Loaded {len(npcs)} NPCs\n")
         return npcs
 
     def draw(self, surface, camera_offset):
@@ -71,6 +75,8 @@ class TileMap:
                 x = obj.x - camera_offset.x
                 y = obj.y - camera_offset.y - text_surface.get_height()
                 surface.blit(text_surface, (x, y))
+                
+        
                 
     def get_interaction_prompt(self, player_rect):
         # Adjust player rect to world coordinates (if needed, or expect player_rect already in world coords)

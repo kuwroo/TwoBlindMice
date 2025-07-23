@@ -1,32 +1,108 @@
 import pygame
+import textwrap
 from misc import SCREEN_WIDTH, SCREEN_HEIGHT
 
-#make dialogue box myself, show with bg?
 SCALE = 4
+
 class DialogueView:
-    def __init__(self, font_path, text):
-        self.font = pygame.font.Font(font_path, 20)
-        self.text = text
+    def __init__(self, font_path, raw_text):
+        self.font = pygame.font.Font(font_path, 24)
+        self.dialogue_boxes = self.parse_dialogue(raw_text)
+        self.current_box_index = 0
+
         self.surface = pygame.image.load("resources/dialogue_box.png").convert_alpha()
         self.surface = pygame.transform.scale(self.surface, (200 * SCALE, 150 * SCALE))
-        self.render_text()
 
-    def render_text(self):
-        lines = self.text.split('\n')
-        y_offset = 400  # Padding from the top
-        for line in lines:
-            text_surface = self.font.render(line, True, (255, 255, 255))
-            self.surface.blit(text_surface, (75, y_offset))  # Padding from the left
-            y_offset += text_surface.get_height() + 5 * SCALE  # Line spacing
+        self.char_delay = 30  # ms between characters
+        self.load_text_box(self.dialogue_boxes[self.current_box_index])
+        
+
+    def parse_dialogue(self, raw_dialogue, max_chars_per_box=120, max_chars_per_line=50):
+        # Step 1: Manually split by new box delimiter first
+        raw_boxes = raw_dialogue.split('//')
+
+        text_boxes = []
+
+        for box_text in raw_boxes:
+            raw_lines = box_text.replace('/n', '\n').split('\n')
+            wrapped_lines = []
+            for line in raw_lines:
+                wrapped = textwrap.wrap(line.strip(), width=max_chars_per_line)
+                wrapped_lines.extend(wrapped)
+
+            # Optional: auto split further if too many chars in one box
+            current_box = []
+            current_length = 0
+            for line in wrapped_lines:
+                line_length = len(line)
+                if current_length + line_length > max_chars_per_box and current_box:
+                    text_boxes.append(current_box)
+                    current_box = [line]
+                    current_length = line_length
+                else:
+                    current_box.append(line)
+                    current_length += line_length
+
+            if current_box:
+                text_boxes.append(current_box)
+
+        return text_boxes
+
+
+    def load_text_box(self, lines):
+        self.current_text_box = lines
+        self.visible_text = []
+        self.char_index = 0
+        self.line_index = 0
+        self.last_char_time = pygame.time.get_ticks()
+        self.typing = True
+
+    def skip_typing(self):
+        self.visible_text = self.current_text_box[:]
+        self.typing = False
+
+
+    def next_box(self):
+        if self.current_box_index + 1 < len(self.dialogue_boxes):
+            self.current_box_index += 1
+            self.load_text_box(self.dialogue_boxes[self.current_box_index])
+        else:
+            print("End of dialogue.")
+            self.typing = False  # Optional: signal that dialogue is finished
+
+    def update(self):
+        if not self.typing:
+            return
+
+        now = pygame.time.get_ticks()
+        if now - self.last_char_time > self.char_delay:
+            self.last_char_time = now
+            current_line = self.current_text_box[self.line_index]
+
+            if self.line_index >= len(self.visible_text):
+                self.visible_text.append("")
+
+            if self.char_index < len(current_line):
+                self.visible_text[self.line_index] += current_line[self.char_index]
+                self.char_index += 1
+            else:
+                if self.line_index + 1 < len(self.current_text_box):
+                    self.line_index += 1
+                    self.char_index = 0
+                else:
+                    self.typing = False
 
     def draw(self, screen):
-        screen.blit(self.surface, (SCREEN_WIDTH // 2 - self.surface.get_width() // 2,
-                                   SCREEN_HEIGHT - self.surface.get_height() + 2 * SCALE))
-                                 
-        
-import pygame
-from dialogueview import DialogueView
-from misc import SCREEN_WIDTH, SCREEN_HEIGHT
+        x = 0
+        y =  0
+
+        screen.blit(self.surface, (x, y))
+
+        # Draw visible lines of text
+        for i, line in enumerate(self.visible_text):
+            text_surface = self.font.render(line, True, (255, 255, 255))
+            screen.blit(text_surface, (80, 400 + i * 40))
+
 
 def test_dialogue_view():
     pygame.init()
@@ -34,12 +110,9 @@ def test_dialogue_view():
     pygame.display.set_caption("Dialogue View Test")
     clock = pygame.time.Clock()
 
-    # Load a font
-    font = pygame.font.Font(None, 36)
+    font_path = "resources/Minecraft.ttf"
+    dialogue_text = "Hello, Mouse!/nWelcome to the sewer. This is a very long sentence that should wrap and split over multiple boxes. kjbfkjs dfkjad fjhadsfjahsdfk jaskjfad kjhfakjdhfjkahjfah jkajhkafafd //Press E to continue."
 
-    # Create a DialogueView instance
-    font_path = "resources/Minecraft.ttf"  # Replace with your font path
-    dialogue_text = "Hello, Mouse!\nWelcome to the sewer.\nPress E to continue."
     dialogue_box = DialogueView(font_path, dialogue_text)
 
     running = True
@@ -48,17 +121,19 @@ def test_dialogue_view():
             if event.type == pygame.QUIT:
                 running = False
 
-        # Clear the screen
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if dialogue_box.typing:
+                        dialogue_box.skip_typing()
+                    elif dialogue_box.visible_text:
+                        dialogue_box.next_box()
+
         screen.fill((50, 50, 50))
-
-        # Draw the dialogue box
+        dialogue_box.update()
         dialogue_box.draw(screen)
-
-        # Update the display
         pygame.display.flip()
         clock.tick(60)
 
     pygame.quit()
 
-if __name__ == "__main__":
-    test_dialogue_view()
+test_dialogue_view()

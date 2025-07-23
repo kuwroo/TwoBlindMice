@@ -47,7 +47,18 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="3" name="MouseGod" offsetx="64" offsety="0">
-  <object id="2" x="1088" y="256" width="96" height="96"/>
+ <objectgroup id="3" name="NPC" class="NPC" offsetx="64" offsety="0">
+  <properties>
+   <property name="Name" value="MouseGod"/>
+   <property name="type" value="NPC"/>
+  </properties>
+  <object id="2" name="MouseGod" type="NPC" x="1088" y="256" width="96" height="96">
+   <properties>
+    <property name="dialogue">AYO WASSUP CUH
+KAJNFKAJHDF
+KJSDBGLJSDF
+4th line</property>
+   </properties>
+  </object>
  </objectgroup>
 </map>

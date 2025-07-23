@@ -266,12 +266,12 @@ class GameScene(Scene):
 class Quest1:
     pass
 
-class Entry:
+class Entry(Scene):
     def __init__(self, screen):
         super().__init__(screen, "resources/entry.tmx")
         self.fog = FogOfWar()
         self.player.player_y = SCREEN_HEIGHT // 4
-        self.fog = FogOfWar(visibility_radius = 0)
+        self.fog = FogOfWar()
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.npcs = self.tile_map.load_npcs()
@@ -286,22 +286,21 @@ class Entry:
         )
         
         # Check each NPC
-        for obj in self.tile_map.interactables:
-            if obj["type"].lower() == "NPC":
-                npc_rect = obj["rect"].inflate(100, 100)
-                if player_pos.colliderect(npc_rect):
-                    self.prompt_text = self.font.render("Press E to talk", True, (255, 255, 255))
-                    return
-        # No NPC nearby
-        self.prompt_text = None
+        # for obj in self.tile_map:
+        #     if obj["type"].lower() == "NPC":
+        #         npc_rect = obj["rect"].inflate(100, 100)
+        #         if player_pos.colliderect(npc_rect):
+        #             self.prompt_text = self.font.render("Press E to talk", True, (255, 255, 255))
+        #             return
+        # # No NPC nearby
+        # self.prompt_text = None
         
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            if self.prompt_text:
-                for npc in self.npcs:
-                    if npc.is_near_player(self.player.rect):
-                        npc.interact()
-                        return "NPC_INTERACTED"
+            for npc in self.npcs:
+                if npc.is_near_player(self.player.rect):
+                    npc.interact()
+                    return "NPC_INTERACTED"
                 # Implement NPC interaction logic here
         return None
     
@@ -322,14 +321,19 @@ class Entry:
         self.tile_map.draw(screen, self.camera_offset)
         self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
-
-        
         # Update and draw fog of war
         self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
         self.fog.draw(screen)
-        
-        for npc in self.npcs:
-            npc.draw(screen, self.camera_offset)
-        
         # Draw interaction prompt if it exists
         self.draw_prompt(screen)
+        # Let each NPC handle its own update and draw
+        current_time = pygame.time.get_ticks()
+        for npc in self.npcs:
+            npc.update_and_draw(screen, self.camera_offset, current_time)
+        
+        
+        
+
+        
+       
+        
