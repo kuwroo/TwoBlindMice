@@ -158,24 +158,17 @@ def play_second_quest():
     GHOST2_COLOR = (255, 105, 180)
 
     maze = [
-        "WWWWWWWWWWWWWWWWWWWWW",
-        "W.......W....   .   W",
-        "W.WWW .W. . WWW.    W",
-        "W.W    W W    W.  . W",
-        "W.W WW  G   WW W   WW",
-        "W....    .   .....  W",
-        "W. W  WWWWW WW   WW W",
-        "W. W  W  W   W      W",
-        "W.WW WWWWWW WW   WW W",
-        "W..    ...   G....  W",
-        "W.WW WWW WWW W W WW W",
-        "W.W        W        W",
-        "W.WWWWWWWWWW  WWWWW W",
-        "W....        .....  W",
-        "W    .........      W",
-        "W    WWWW           W",
-        "W      ........     W",
-        "WWWWWWWWWWWWWWWWWWWWW"
+        "WWWWWWWWWWWWWWWWWWW",
+        "W....    G       .W",
+        "W.W    W  W       W",
+        "W.WW W   WW WWWW WW",
+        "W....       ....  W",
+        "W.WW WWWW    WW  WW",
+        "W.         W      W",
+        "W.WWW     W    G  W",
+        "W       ..    .   W",
+        "W   WW WWWW WW .  W",
+        "WWWWWWWWWWWWWWWWWWW"
     ]
 
     ROWS = len(maze)
@@ -183,8 +176,11 @@ def play_second_quest():
     maze_width = COLS * TILE_SIZE
     maze_height = ROWS * TILE_SIZE
 
-    draw_offset_x = (WIDTH - maze_width) // 2  # 64
-    draw_offset_y = (HEIGHT - maze_height) // 2  # 64
+    draw_offset_x = 97 # higher = more right
+    draw_offset_y = 225 # higher = more down
+
+    background = pygame.image.load("resources/quest2/quest2screen.png").convert()
+    background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
     walls = []
     points = []
@@ -317,7 +313,7 @@ def play_second_quest():
                 quest_result = "lose"
                 run = False
 
-        win.fill((0, 0, 0))
+        win.blit(background, (0, 0))
 
         for wall in walls:
             pygame.draw.rect(win, WALL_COLOR, wall)
