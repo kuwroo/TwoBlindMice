@@ -395,38 +395,3 @@ class GameScene(Scene):
         self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
         self.fog.draw(screen)
 
-class FirstQuestScene(Scene):
-    def __init__(self, screen):
-        super().__init__(screen, "resources/quest1map.tmx")
-        self.quest_result = None
-        self.quest_started = False
-        self.quest_done = False
-
-    def handle_event(self, event):
-        if not self.quest_started and event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            print("Starting play_first_quest()...")
-            self.quest_started = True
-            self.quest_result = play_first_quest()
-            print("play_first_quest() finished with result:", self.quest_result)
-
-            if self.quest_result == "win":
-                # For example, award a cheese
-                print("Player won quest!")
-                self.quest_done = True
-            elif self.quest_result == "lose":
-                print("Player lost quest!")
-                self.quest_done = True
-
-    def update(self):
-        # Optional: add idle animations or background updates
-        pass
-
-    def draw(self, screen):
-        # You can show a static screen before/after the quest
-        screen.fill((0, 0, 0))
-        prompt = self.font.render("Press SPACE to begin quest", True, (255, 255, 255))
-        screen.blit(prompt, ((SCREEN_WIDTH - prompt.get_width()) // 2, SCREEN_HEIGHT // 2))
-        
-        if self.quest_result:
-            result_text = self.font.render(f"Result: {self.quest_result}", True, (255, 255, 0))
-            screen.blit(result_text, ((SCREEN_WIDTH - result_text.get_width()) // 2, SCREEN_HEIGHT // 2 + 40))
