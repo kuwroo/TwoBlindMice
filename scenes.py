@@ -367,7 +367,6 @@ class Entry(Scene):
                         result = npc.dialogue.handle_input(event.key)
                         if result == "CLOSE":
                             npc.showing_dialogue = False
-                            self.player.can_move = True
                         return result
 
             # Only try to interact if no dialogue is showing
