@@ -131,7 +131,7 @@ def play_second_quest():
     # --- MAP ---
     maze = [
     "WWWWWWWWWWWW",
-    "W..      ..W",
+    "W..   W  ..W",
     "W.WW WW WW.W",
     "W.W  ..  W.W",
     "W.W WW W W W",
