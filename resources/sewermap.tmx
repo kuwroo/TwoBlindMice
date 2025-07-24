@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="8">
-=======
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="40" tilewidth="32" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="13">
->>>>>>> 9a0155d (edited main game lobby to have levels)
-=======
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="40" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="13">
->>>>>>> 09c8a05 (finalised quest1 game design)
  <tileset firstgid="1" source="sewer.tsx"/>
  <tileset firstgid="577" source="dank.tsx"/>
  <tileset firstgid="1153" source="quest1mansion.tsx"/>
@@ -189,15 +181,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
-<<<<<<< HEAD
- <objectgroup id="2" name="Object Layer 1" visible="0">
-  <object id="1" name="enter_quest1" type="Bin" x="25.159" y="309.645" width="44.95" height="76.7742"/>
-  <object id="6" name="enter_quest2" type="Hole" x="1375.67" y="264.334" width="68" height="121.333"/>
-=======
  <objectgroup id="2" name="Object Layer 1">
   <object id="1" name="enter_quest1" type="mansion" x="1184" y="576" width="192" height="192"/>
   <object id="6" name="enter_quest2" type="Hole" x="128" y="288" width="100" height="121.333"/>
   <object id="8" name="enter_quest3" type="wall" x="715" y="305" width="77" height="95"/>
->>>>>>> e7b69b3 (fixed quest2 game logic, added a placeholder visual in main game lobby to play quest2)
  </objectgroup>
 </map>
