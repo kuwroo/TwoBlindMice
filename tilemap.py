@@ -28,17 +28,15 @@ class TileMap:
                 # Extract text content from 'Text' or 'text' property
                 text_value = props.get("Text") or props.get("text")
 
-                # Also convert properties into a list of dicts if you still need that
-                properties_list = [{"name": k, "value": v} for k, v in props.items()]
-
                 interactables.append({
                     "rect": rect,
                     "type": obj.type,
                     "name": obj.name,
-                    "properties": properties_list,
-                    "text": text_value 
+                    "properties": props,      # ✅ use dictionary directly
+                    "text": text_value
                 })
         return interactables
+
 
 
     def load_npcs(self):
