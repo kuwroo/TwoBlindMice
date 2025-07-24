@@ -487,4 +487,3 @@ def play_third_quest():
     pygame.quit()
     return result
 
-play_third_quest()
