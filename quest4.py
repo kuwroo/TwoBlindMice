@@ -2,7 +2,6 @@
 import pygame
 from misc import *
 from pygame import mixer
-from pygame import font
 
 
 # class Quest4:
@@ -35,16 +34,12 @@ from pygame import font
 #         return (self.player_x, self.player_y)
     
 #     def fire
-pygame.font.init()
+
 
 clock = pygame.time.Clock()
 win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) 
 pygame.display.set_caption("RAT AND ROLL!") 
-print("RAT AND ROLL!") 
-
-game_started = False
-
-
+print("welcome to rat and roll!") 
 
 HIT_ZONE_Y = SCREEN_HEIGHT - 100
 HIT_ZONE_WIDTH = 25
@@ -92,53 +87,18 @@ def load(filename):
                 
 map_rects = load("resources/WienerDog")
                 
-
-
-def pause():
-    paused = True
-    pygame.mixer.music.pause()
-    while paused:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE:
-                    paused = False
-                    pygame.mixer.music.unpause()
-        win.fill((0, 0, 0))
-        font = pygame.font.Font(None, 74)
-        text = font.render("PAUSED", True, (255, 255, 255))
-        win.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 - text.get_height() // 2))
-        pygame.display.update()
-        clock.tick(FPS)             
- 
- 
-
-                   
+                
+               
         
     
     
 while True:
-    
-    # font = pygame.font.Font(None, 74)
-    # text = font.render("PRESS SPACE TO START", True, (255, 255, 255))
-    # win.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 - text.get_height() // 2))
-    # pygame.display.update()
-    
     win.fill((0,0,0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
-        
-        
-    
 
-        
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE:
-                pause()
 
     k = pygame.key.get_pressed()
     for key in keys:

@@ -1,19 +1,8 @@
 import pygame
 import random
 from misc import SCREEN_WIDTH as WIDTH, SCREEN_HEIGHT as HEIGHT, TILE_SIZE
-import sys
 from collections import deque
 from tilemap import TileMap
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
-PLAYER_COLOR = (0, 0, 255)
-GREEN = (0, 200, 0)
-BROWN = (139, 69, 19)
-MAGENTA = (255, 0, 255)
 from spritesheet_loader import SpriteSheet
 from colours import *
 from spritesheet_loader import *
@@ -345,7 +334,7 @@ def play_third_quest():
     pygame.display.set_caption("Stealth Heist")
     FPS = 60
 
-    tmx = TileMap("resources/mazemap2.tmx")
+    tmx = TileMap("resources/mazemap.tmx")
 
     player = None
     exit_rects = []
@@ -497,6 +486,4 @@ def play_third_quest():
 
     pygame.quit()
     return result
-
-#play_third_quest()
 

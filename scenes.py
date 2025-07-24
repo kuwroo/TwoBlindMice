@@ -4,9 +4,8 @@ from tilemap import TileMap
 from player import PlayerMovement
 from cursor import Cursor
 from visibility import FogOfWar
-from quest import play_first_quest, play_second_quest
+from quest import play_first_quest, play_second_quest, play_third_quest
 from button import Button
-from camera import Camera
 import pytmx
 
 class Scene:
@@ -15,43 +14,81 @@ class Scene:
     def __init__(self, screen, tilemap_path):
         self.screen = screen
         self.tile_map = TileMap(tilemap_path)
-        # Player movement based on map width
         self.player = PlayerMovement(SCREEN_WIDTH, SCREEN_HEIGHT, self.tile_map.width)
-        self.cursor = Cursor()
-        self.fog = FogOfWar()
-        # Initialize camera with tilemap dimensions
-        self.camera = Camera(self.player, self.tile_map.width, self.tile_map.height)
-        self.camera_offset = self.camera.offset  # Initialize camera_offset with camera's offset
-        self.font = pygame.font.Font(None, 36)  # Initialize font here since multiple scenes use it
+        self.camera_offset = pygame.Vector2(0, 0)
+        self.font = pygame.font.Font(None, 36)
+        self.prompt_text = None
         
     def handle_input_and_gravity(self, keys):
         """Common input handling and gravity application."""
         self.player.handle_input(keys)
         self.player.apply_gravity()
         
+    def get_floor_rectangles(self):
+        """Get floor rectangles from tile layer."""
+        floor_rects = []
+        floor_layer = self.tile_map.tmx_data.get_layer_by_name('floor')
+        if isinstance(floor_layer, pytmx.TiledTileLayer):
+            for x, y, gid in floor_layer:
+                if gid:  # If there's a tile here
+                    floor_rect = pygame.Rect(
+                        x * self.tile_map.tmx_data.tilewidth,
+                        y * self.tile_map.tmx_data.tileheight,
+                        self.tile_map.tmx_data.tilewidth,
+                        self.tile_map.tmx_data.tileheight
+                    )
+                    floor_rects.append(floor_rect)
+        return floor_rects
+        
+    def get_ladder_rectangles(self):
+        """Get ladder rectangles from tile layer."""
+        ladder_rects = []
+        try:
+            ladder_layer = self.tile_map.tmx_data.get_layer_by_name('ladder')
+        except:
+            return ladder_rects
+        else:
+            if isinstance(ladder_layer, pytmx.TiledTileLayer):
+                for x, y, gid in ladder_layer:
+                    if gid:
+                        ladder_rect = pygame.Rect(
+                            x * self.tile_map.tmx_data.tilewidth,
+                            y * self.tile_map.tmx_data.tileheight,
+                            self.tile_map.tmx_data.tilewidth,
+                            self.tile_map.tmx_data.tileheight
+                        )
+                        ladder_rects.append(ladder_rect)
+        return ladder_rects
+        
     def update_player_position(self, keys):
         """Common player position update logic."""
-        # Use the pre-loaded rectangles from TileMap
-        self.player.update_position(self.tile_map.floor_rects, self.tile_map.ladder_rects)
+        floor_rects = self.get_floor_rectangles()
+        ladder_rects = self.get_ladder_rectangles()
+        
+        self.player.update_position(floor_rects, ladder_rects)
+        self.center_camera_on_player()
         self.player.update_animation(keys)
         
     def center_camera_on_player(self):
-        """Update camera position."""
-        self.camera_offset = self.camera.scroll()
+        """Center camera on player with bounds clamping."""
+        # Center camera on player
+        self.camera_offset.x = self.player.rect.centerx - SCREEN_WIDTH // 2
+        self.camera_offset.y = self.player.rect.centery - SCREEN_HEIGHT // 2
+        # Clamp camera to map bounds
+        self.camera_offset.x = max(0, min(self.camera_offset.x, self.tile_map.width - SCREEN_WIDTH))
+        self.camera_offset.y = max(0, min(self.camera_offset.y, self.tile_map.height - SCREEN_HEIGHT))
         
     def draw_prompt(self, screen):
         """Draw interaction prompt if it exists."""
-        prompt_text = self.tile_map.get_interaction_prompt(self.player.rect)
-        if prompt_text:
-            font = pygame.font.Font(None, 36)
-            text = font.render(prompt_text, True, (255, 255, 255))
-            text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50))
-            screen.blit(text, text_rect)
+        if self.prompt_text:
+            prompt_x = (SCREEN_WIDTH - self.prompt_text.get_width()) // 2
+            prompt_y = SCREEN_HEIGHT - 100  # Position prompt near bottom of screen
+            screen.blit(self.prompt_text, (prompt_x, prompt_y))
 
 class TitleScene(Scene):
     def __init__(self, screen):
         super().__init__(screen, "resources/titleTEST.tmx")
-        #print("Loaded tilemap, interactables:", self.tile_map.interactables)  # Debug print
+        print("Loaded tilemap, interactables:", self.tile_map.interactables)  # Debug print
         self.is_mouse = True
         self.cursor = Cursor()
         
@@ -68,7 +105,7 @@ class TitleScene(Scene):
         self.game_button = Button(start_x, game_y, button_width, button_height, "Enter Game")
         
         self.near_door = False
-        #print("TitleScene initialized with door prompt")
+        print("TitleScene initialized with door prompt")
         
     def check_door_proximity(self):
         if not self.is_mouse:
@@ -85,8 +122,9 @@ class TitleScene(Scene):
             for obj in self.tile_map.interactables:
                 if obj["type"].lower() == "door":
                     door_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
+                    print(f"Door rect: {door_rect}")
                     if player_pos.colliderect(door_rect):
-                        #print("Near door - showing prompt")
+                        print("Near door - showing prompt")
                         self.prompt_text = self.font.render("Press E to enter", True, (255, 255, 255))
                         self.near_door = True
                         return
@@ -120,13 +158,46 @@ class TitleScene(Scene):
             self.cursor.update()
             self.start_button.update_position(self.camera_offset)
         else:
-            # Use common update logic from superclass
-            self.handle_input_and_gravity(keys)
-            self.update_player_position(keys)
+            # Update player
+            self.player.handle_input(keys)
+            self.player.apply_gravity()
+            
+            # Get floor rectangles and update position
+            floor_rects = []
+            floor_layer = self.tile_map.tmx_data.get_layer_by_name('floor')
+            if isinstance(floor_layer, pytmx.TiledTileLayer):
+                for x, y, gid in floor_layer:
+                    if gid:  # If there's a tile here
+                        floor_rect = pygame.Rect(
+                            x * self.tile_map.tmx_data.tilewidth,
+                            y * self.tile_map.tmx_data.tileheight,
+                            self.tile_map.tmx_data.tilewidth,
+                            self.tile_map.tmx_data.tileheight
+                        )
+                        floor_rects.append(floor_rect)
+            
+            ladder_rects = []
+            ladder_layer = self.tile_map.tmx_data.get_layer_by_name('ladder')
+            if isinstance(ladder_layer, pytmx.TiledTileLayer):
+                for x, y, gid in ladder_layer:
+                    if gid:
+                        ladder_rect = pygame.Rect(
+                            x * self.tile_map.tmx_data.tilewidth,
+                            y * self.tile_map.tmx_data.tileheight,
+                            self.tile_map.tmx_data.tilewidth,
+                            self.tile_map.tmx_data.tileheight
+                        )
+                        ladder_rects.append(ladder_rect)
+            
+            self.player.update_position(floor_rects, ladder_rects)
             self.center_camera_on_player()
+            self.player.update_animation(keys)
             
             # Check for door proximity
             self.check_door_proximity()
+        
+    
+                
         
         return None
         
@@ -141,7 +212,11 @@ class TitleScene(Scene):
             self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
             
             # Draw interaction prompt if it exists
-            self.draw_prompt(screen)
+            if self.prompt_text:
+                prompt_x = (SCREEN_WIDTH - self.prompt_text.get_width()) // 2
+                prompt_y = SCREEN_HEIGHT - 100  # Position prompt near bottom of screen
+                screen.blit(self.prompt_text, (prompt_x, prompt_y))
+                #print(f"Drawing prompt at ({prompt_x}, {prompt_y})")
             
 class GameScene(Scene):
     def __init__(self, screen):
@@ -149,16 +224,19 @@ class GameScene(Scene):
         # Set initial spawn position higher
         self.player.player_y = SCREEN_HEIGHT // 4
         self.player.rect.topleft = (self.player.player_x, self.player.player_y)
+        self.camera_offset = pygame.Vector2(0, 0)
         self.fog = FogOfWar()
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.cheese_count = 1
         self.near_mansion = False
         self.near_hole = False  # Add near_hole attribute
+        self.near_wall = False  # Add near_wall attribute for third quest
         self.cheese_sprite = pygame.image.load("resources/cheese.png")
         self.cheese_sprite = pygame.transform.scale(self.cheese_sprite, (24, 24))
         self.quest1_completed = False
         self.quest2_completed = False
+        self.quest3_completed = False
 
     def check_mansion_proximity(self):
         # Get player position in world coordinates
@@ -249,6 +327,15 @@ class GameScene(Scene):
                     if not self.quest2_completed:
                         self.cheese_count += 1
                     self.quest2_completed = True
+            elif self.near_wall:  # Check for third quest proximity
+                print("Starting third quest!")
+                result = play_third_quest()
+                print("Quest result:", result)
+                if result == "win":
+                    if not self.quest3_completed:
+                        self.cheese_count += 1
+                    self.quest3_completed = True
+
         return None
         
     def update(self):
@@ -256,9 +343,23 @@ class GameScene(Scene):
         self.player.handle_input(keys)
         self.player.apply_gravity()
         
-        # Use common update logic from superclass
-        self.handle_input_and_gravity(keys)
-        self.update_player_position(keys)
+        # Get floor rectangles from tile layer
+        floor_rects = []
+        floor_layer = self.tile_map.tmx_data.get_layer_by_name('floor')
+        if isinstance(floor_layer, pytmx.TiledTileLayer):
+            for x, y, gid in floor_layer:
+                if gid:
+                    floor_rect = pygame.Rect(
+                        x * self.tile_map.tmx_data.tilewidth,
+                        y * self.tile_map.tmx_data.tileheight,
+                        self.tile_map.tmx_data.tilewidth,
+                        self.tile_map.tmx_data.tileheight
+                    )
+                    floor_rects.append(floor_rect)
+        
+        ladder_rects = []
+        
+        self.player.update_position(floor_rects, ladder_rects)
         self.center_camera_on_player()
         self.player.update_animation(keys)
         
@@ -289,78 +390,8 @@ class GameScene(Scene):
         screen.blit(self.cheese_sprite, (cheese_x, cheese_y))
         cheese_text = self.font.render(f"x {self.cheese_count}", True, (255, 255, 255))
         screen.blit(cheese_text, (cheese_x + 30, cheese_y))
-
-class Quest1:
-    pass
-
-class Entry(Scene):
-    def __init__(self, screen):
-        super().__init__(screen, "resources/entry.tmx")
-        self.fog = FogOfWar()
-        self.player.player_y = SCREEN_HEIGHT // 4
-        self.fog = FogOfWar()
-        self.all_sprites = pygame.sprite.Group()
-        self.all_sprites.add(self.player)
-        self.npcs = self.tile_map.load_npcs()
-        
-    def check_NPC_proximity(self):
-        # Get player position in world coordinates
-        player_pos = pygame.Rect(
-            self.player.player_x,
-            self.player.player_y,
-            self.player.rect.width,
-            self.player.rect.height
-        )
-        
-        # Check each NPC
-        # for obj in self.tile_map:
-        #     if obj["type"].lower() == "NPC":
-        #         npc_rect = obj["rect"].inflate(100, 100)
-        #         if player_pos.colliderect(npc_rect):
-        #             self.prompt_text = self.font.render("Press E to talk", True, (255, 255, 255))
-        #             return
-        # # No NPC nearby
-        # self.prompt_text = None
-        
-    def handle_event(self, event):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            for npc in self.npcs:
-                if npc.is_near_player(self.player.rect):
-                    npc.interact()
-                    return "NPC_INTERACTED"
-                # Implement NPC interaction logic here
-        return None
-    
-    def update(self):
-        keys = pygame.key.get_pressed()
-        
-        # Use common update logic from superclass
-        self.handle_input_and_gravity(keys)
-        self.update_player_position(keys)
-        self.center_camera_on_player()
-        
-        # Check for NPC proximity
-        self.check_NPC_proximity()
-        return None
-    
-    def draw(self, screen):
-        screen.fill((0, 0, 0))
-        self.tile_map.draw(screen, self.camera_offset)
-        self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
         # Update and draw fog of war
         self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
         self.fog.draw(screen)
-        # Draw interaction prompt if it exists
-        self.draw_prompt(screen)
-        # Let each NPC handle its own update and draw
-        current_time = pygame.time.get_ticks()
-        for npc in self.npcs:
-            npc.update_and_draw(screen, self.camera_offset, current_time)
-        
-        
-        
 
-        
-       
-        

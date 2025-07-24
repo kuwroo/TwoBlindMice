@@ -1,6 +1,6 @@
 import pygame
 import asyncio
-from scenes import *
+from scenes import TitleScene, GameScene
 from scene_manager import SceneManager
 from misc import SCREEN_WIDTH, SCREEN_HEIGHT
 
@@ -14,9 +14,8 @@ async def main():
     
     # Create scene manager and start with title scene
     scene_manager = SceneManager()
-    entry_scene = Entry(screen)
-    #title_scene = TitleScene(screen)
-    scene_manager.switch_to(entry_scene)
+    title_scene = TitleScene(screen)
+    scene_manager.switch_to(title_scene)
     
     
     running = True
