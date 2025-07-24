@@ -275,25 +275,7 @@ class Entry(Scene):
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.npcs = self.tile_map.load_npcs()
-        
-    def check_NPC_proximity(self):
-        # Get player position in world coordinates
-        player_pos = pygame.Rect(
-            self.player.player_x,
-            self.player.player_y,
-            self.player.rect.width,
-            self.player.rect.height
-        )
-        
-        # Check each NPC
-        # for obj in self.tile_map:
-        #     if obj["type"].lower() == "NPC":
-        #         npc_rect = obj["rect"].inflate(100, 100)
-        #         if player_pos.colliderect(npc_rect):
-        #             self.prompt_text = self.font.render("Press E to talk", True, (255, 255, 255))
-        #             return
-        # # No NPC nearby
-        # self.prompt_text = None
+
         
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
@@ -305,17 +287,38 @@ class Entry(Scene):
         return None
     
     def update(self):
-        keys = pygame.key.get_pressed()
         
+        keys = pygame.key.get_pressed()
         # Use common update logic from superclass
+        if any(npc.showing_dialogue for npc in self.npcs):
+            self.player.can_move = False
         self.handle_input_and_gravity(keys)
         self.update_player_position(keys)
         self.center_camera_on_player()
-        
-        # Check for NPC proximity
-        self.check_NPC_proximity()
+
+
+
         return None
     
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key in (pygame.K_e, pygame.K_SPACE):
+                for npc in self.npcs:
+                    if npc.showing_dialogue:
+                        result = npc.dialogue.handle_input(event.key)
+                        if result == "CLOSE":
+                            npc.showing_dialogue = False
+                        return result
+
+            # Only try to interact if no dialogue is showing
+            if event.key == pygame.K_e:
+                for npc in self.npcs:
+                    if npc.is_near_player(self.player.rect):
+                        npc.interact()
+                        return "NPC_INTERACTED"
+        return None
+
+
     def draw(self, screen):
         screen.fill((0, 0, 0))
         self.tile_map.draw(screen, self.camera_offset)
@@ -329,7 +332,9 @@ class Entry(Scene):
         # Let each NPC handle its own update and draw
         current_time = pygame.time.get_ticks()
         for npc in self.npcs:
-            npc.update_and_draw(screen, self.camera_offset, current_time)
+            npc.update(current_time)
+            npc.draw(screen, self.camera_offset)
+
         
         
         

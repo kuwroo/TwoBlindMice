@@ -15,6 +15,7 @@ class DialogueView:
 
         self.char_delay = 30  # ms between characters
         self.load_text_box(self.dialogue_boxes[self.current_box_index])
+        self.can_close = False
         
 
     def parse_dialogue(self, raw_dialogue, max_chars_per_box=120, max_chars_per_line=50):
@@ -69,6 +70,21 @@ class DialogueView:
         else:
             print("End of dialogue.")
             self.typing = False  # Optional: signal that dialogue is finished
+            self.can_close = True  # Allow closing the dialogue box
+    def handle_input(self, key):
+        if key == pygame.K_SPACE:
+            if self.typing:
+                self.skip_typing()
+                return "SKIPPED"
+            elif not self.can_close:
+                self.next_box()
+                return "NEXT_BOX"
+        elif key == pygame.K_e:
+            if self.can_close:
+                return "CLOSE"
+        return "NO_ACTION"
+    
+    
 
     def update(self):
         if not self.typing:
@@ -91,17 +107,32 @@ class DialogueView:
                     self.char_index = 0
                 else:
                     self.typing = False
+                    if self.current_box_index == len(self.dialogue_boxes) - 1:
+                        self.can_close = True
 
     def draw(self, screen):
         x = 0
-        y =  0
+        y = 30
 
         screen.blit(self.surface, (x, y))
 
         # Draw visible lines of text
         for i, line in enumerate(self.visible_text):
             text_surface = self.font.render(line, True, (255, 255, 255))
-            screen.blit(text_surface, (80, 400 + i * 40))
+            screen.blit(text_surface, (80, 430 + i * 40))
+            
+        
+        if not self.typing and not self.can_close:
+            # Optional: show "[SPACE] Skip"
+            if (pygame.time.get_ticks() // 500) % 2 == 0:
+                skip = self.font.render("Press SPACE", True, (255, 255, 255))
+                screen.blit(skip, (SCREEN_WIDTH - 230, SCREEN_HEIGHT - 100))
+        elif self.can_close:
+            # Show "[E] to close"
+            if (pygame.time.get_ticks() // 500) % 2 == 0:
+                close = self.font.render("Press E", True, (255, 255, 255))
+                screen.blit(close, (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 100))
+
 
 
 def test_dialogue_view():

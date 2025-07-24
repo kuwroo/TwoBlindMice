@@ -24,7 +24,8 @@ class NPC():
         
         # Create dialogue box
         font_path = "resources/Minecraft.ttf"
-        self.dialogue = DialogueView(font_path, dialogue_text)
+        self.original_dialogue_text = dialogue_text
+        self.dialogue = DialogueView(font_path, self.original_dialogue_text)
         self.showing_dialogue = False
 
     def update(self, current_time):
@@ -32,6 +33,12 @@ class NPC():
         if current_time - self.frame_timer > self.FRAME_DURATION:
             self.frame_timer = current_time
             self.current_frame = (self.current_frame + 1) % len(self.current_animation)
+
+        # Update dialogue
+        if self.showing_dialogue:
+            self.dialogue.update()
+
+
 
     def draw(self, screen, camera_offset):
         # Draw NPC sprite using current animation frame
@@ -45,26 +52,15 @@ class NPC():
             self.dialogue.draw(screen)
 
     def interact(self):
-        """Toggle dialogue when interacting with NPC"""
-        self.showing_dialogue = not self.showing_dialogue
+        """Always restart dialogue when interacting"""
+        font_path = "resources/Minecraft.ttf"
+        self.dialogue = DialogueView(font_path, self.original_dialogue_text)
+        self.showing_dialogue = True
+        
+            
 
     def is_near_player(self, player_rect, interaction_distance=100):
         """Check if player is within interaction distance"""
         return self.rect.inflate(interaction_distance, interaction_distance).colliderect(player_rect)
 
-    def update_and_draw(self, screen, camera_offset, current_time):
-        """Handle both animation update and drawing in one method"""
-        # Update animation
-        if current_time - self.frame_timer > self.FRAME_DURATION:
-            self.frame_timer = current_time
-            self.current_frame = (self.current_frame + 1) % len(self.current_animation)
-        
-        # Draw NPC sprite
-        screen_x = self.rect.x - camera_offset.x
-        screen_y = self.rect.y - camera_offset.y
-        current_sprite = self.current_animation[self.current_frame]
-        screen.blit(current_sprite, (screen_x, screen_y))
-        
-        # Draw dialogue if active
-        if self.showing_dialogue:
-            self.dialogue.draw(screen)
+

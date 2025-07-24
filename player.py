@@ -36,6 +36,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.player_y = screen_height // 2  # Start in middle of screen, will fall to floor
         self.player_velocity_x = 0
         self.player_velocity_y = 0
+        self.can_move = True
 
         self.current_frame = 0
         self.frame_timer = 0
@@ -180,6 +181,9 @@ class PlayerMovement(pygame.sprite.Sprite):
         return False
 
     def update_position(self, floor_rects, ladder_rects):
+        if not self.can_move:
+            self.player_velocity_x = 0
+            self.player_velocity_y = 0
         # Check ladder collision first
         self.check_ladder_collision(ladder_rects)
         if self.on_ladder:
