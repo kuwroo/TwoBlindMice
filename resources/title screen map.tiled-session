@@ -96,14 +96,13 @@
         },
         "titleTEST.tmx": {
             "expandedObjectLayers": [
-                4,
-                3
+                4
             ],
-            "scale": 0.38,
-            "selectedLayer": 3,
+            "scale": 0.42,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1068.4210526315792,
-                "y": 1015.7894736842106
+                "x": 515.4761904761904,
+                "y": 604.7619047619048
             }
         },
         "titleTEST.tmx#dank": {
@@ -113,23 +112,21 @@
     "frame.defaultDuration": 120,
     "last.externalTilesetPath": "C:/Users/jacel/Downloads",
     "last.imagePath": "C:/Users/jacel/Downloads/Telegram Desktop",
-    "map.fixedSize": true,
+    "map.fixedSize": false,
     "map.height": 42,
     "map.lastUsedFormat": "tmx",
     "map.width": 60,
     "openFiles": [
-        "title.tmx",
         "titleTEST.tmx",
-        "sewermap.tsx",
         "sewer.tsx"
     ],
     "project": "title screen map.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "title.tmx",
         "sewer.tsx",
-        "sewermap.tsx",
         "titleTEST.tmx",
+        "title.tmx",
+        "sewermap.tsx",
         "C:/Users/jacel/Downloads/fann.tsx",
         "C:/Users/jacel/Downloads/start.tsx",
         "C:/Users/jacel/Downloads/titlefont.tsx",
@@ -138,6 +135,7 @@
         "C:/Users/jacel/Downloads/twt.tsx",
         "C:/Users/jacel/Downloads/71d2baa8ee45a03911aab0d811ea1936.tsx"
     ],
+    "resizeMap.removeObjects": true,
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
