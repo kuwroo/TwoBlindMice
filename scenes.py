@@ -270,6 +270,7 @@ class Entry(Scene):
     def __init__(self, screen):
         super().__init__(screen, "resources/entry.tmx")
         self.fog = FogOfWar()
+        self.fog.visibility_radius = 0 # Set initial visibility radius idk why this doesnt work
         self.player.player_y = SCREEN_HEIGHT // 4
         self.fog = FogOfWar()
         self.all_sprites = pygame.sprite.Group()
