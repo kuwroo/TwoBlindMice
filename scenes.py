@@ -4,7 +4,7 @@ from tilemap import TileMap
 from player import PlayerMovement
 from cursor import Cursor
 from visibility import FogOfWar
-from quest import play_first_quest, play_second_quest
+from quest import play_first_quest, play_second_quest, play_third_quest
 from button import Button
 from camera import Camera
 import pytmx
@@ -155,10 +155,23 @@ class GameScene(Scene):
         self.cheese_count = 1
         self.near_mansion = False
         self.near_hole = False  # Add near_hole attribute
+        self.near_wall = False
         self.cheese_sprite = pygame.image.load("resources/cheese.png")
         self.cheese_sprite = pygame.transform.scale(self.cheese_sprite, (24, 24))
         self.quest1_completed = False
         self.quest2_completed = False
+        self.quest3_completed = False
+
+        self.npcs = self.tile_map.load_npcs()
+
+    def check_NPC_proximity(self):
+        # Get player position in world coordinates
+        player_pos = pygame.Rect(
+            self.player.player_x,
+            self.player.player_y,
+            self.player.rect.width,
+            self.player.rect.height
+        )
 
     def check_mansion_proximity(self):
         # Get player position in world coordinates
@@ -249,6 +262,18 @@ class GameScene(Scene):
                     if not self.quest2_completed:
                         self.cheese_count += 1
                     self.quest2_completed = True
+            elif self.near_wall:
+                print("Starting third quest!")
+                result = play_third_quest()
+                if result == "win":
+                    if not self.quest3_completed:
+                        self.cheese_count += 1
+                    self.quest3_completed = True
+
+            for npc in self.npcs:
+                if npc.is_near_player(self.player.rect):
+                    npc.interact()
+                    return "NPC_INTERACTED"
         return None
         
     def update(self):
@@ -259,14 +284,23 @@ class GameScene(Scene):
         self.update_player_position(keys)
         self.center_camera_on_player()
         
-        # Check for mansion and hole proximity
+        # Check for quest + NPC proximity
         self.check_mansion_proximity()
         self.check_hole_proximity()
+        self.check_thirdquest_proximity()
+        self.check_NPC_proximity()
         return None
 
     def draw(self, screen):
         screen.fill((30, 30, 30))
         self.tile_map.draw(screen, self.camera_offset)
+
+        # Let each NPC handle its own update and draw
+        current_time = pygame.time.get_ticks()
+        for npc in self.npcs:
+            npc.update_and_draw(screen, self.camera_offset, current_time)
+
+        # Draw player
         self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
         # Dynamically update fog radius based on cheese count
@@ -278,6 +312,7 @@ class GameScene(Scene):
         
         # Draw interaction prompt if it exists
         self.draw_prompt(screen)
+        
         
         # Draw cheese count
         cheese_x = 10

@@ -22,6 +22,7 @@ async def main():
 
     
     running = True
+
     while running:
         # Handle all events first
         for event in pygame.event.get():

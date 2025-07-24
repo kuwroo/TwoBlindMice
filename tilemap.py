@@ -99,7 +99,7 @@ class TileMap:
                 elif interactable["type"].lower() == "hole":
                     return "Press E to start second quest!"
                 elif interactable["type"].lower() == "door":
-                    return "Press E to enter"
+                    return "Press E to start third quest!"
                 else:
                     return "Press E to interact!"
         return ""  # no prompt if no nearby interactable

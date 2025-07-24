@@ -159,17 +159,18 @@ def play_second_quest():
 
     maze = [
         "WWWWWWWWWWWWWWWWWWW",
-        "W....    G       .W",
-        "W.W    W  W       W",
-        "W.WW W   WW WWWW WW",
-        "W....       ....  W",
-        "W.WW WWWW    WW  WW",
-        "W.         W      W",
-        "W.WWW     W    G  W",
-        "W       ..    .   W",
-        "W   WW WWWW WW .  W",
+        "W....            .W",
+        "W.W     W   W     W",
+        "W.WW W   WW WW    W",
+        "W....     ....    W",
+        "W.WW WW       W  WW",
+        "W.       W        W",
+        "W.WW      W       W",
+        "W     ..     .    W",
+        "W   W   WW WW .   W",
         "WWWWWWWWWWWWWWWWWWW"
     ]
+
 
     ROWS = len(maze)
     COLS = len(maze[0])
