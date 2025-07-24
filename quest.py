@@ -1,71 +1,69 @@
 import pygame
 import random
 from misc import SCREEN_WIDTH as WIDTH, SCREEN_HEIGHT as HEIGHT, TILE_SIZE
-import sys
 from collections import deque
 from tilemap import TileMap
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
-PLAYER_COLOR = (0, 0, 255)
-GREEN = (0, 200, 0)
-BROWN = (139, 69, 19)
-MAGENTA = (255, 0, 255)
+from spritesheet_loader import SpriteSheet
+from colours import *
+from spritesheet_loader import *
 
 def play_first_quest():
-    # Initialize Pygame and set up the window
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Fall Without Hitting")
+    pygame.display.set_caption("Rabbit-hole!")
+    FPS = 60
 
-    # --- PLAYER ---
-    player_size = 30
-    player_x = WIDTH // 2
-    player_y = HEIGHT // 2
-    player = pygame.Rect(player_x, player_y, player_size, player_size)
-    player_speed = 7
-    scroll_speed = 8
+    # Load TMX map
+    tmx = TileMap("resources/quest1map.tmx")
 
-    # --- STARTING PLATFORM ---
-    platform_width = WIDTH
-    platform_height = 20
-    platform_x = player_x - platform_width // 2
-    platform_y = player_y + player_size  # just below player
-    platform = pygame.Rect(platform_x, platform_y, platform_width, platform_height)
-
-    # Adjust player to stand directly on the platform
-    player.bottom = platform.top
-
-    # --- OBSTACLES ---
+    # Setup variables
     obstacles = []
-    obstacle_height = 20
-    gap = 200
-    start_offset = 750  # moved further down
-    num_obstacles = 10
+    floor_tiles = []
+    player = None  # Default to None in case spawn isn't found
 
-    for i in range(num_obstacles):
-        obstacle_width = random.randint(70, 200)
-        x = random.randint(0, WIDTH - obstacle_width)
-        y = i * gap + start_offset
-        obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))
+    # Find spawn point from object layer
+    for obj in tmx.interactables:
+        obj_type = obj["type"].lower()
+        rect = obj["rect"]
+        if obj_type == "spawn":
+            PLAYER_SIZE = 32
+            player = pygame.Rect(rect.x, rect.y, PLAYER_SIZE, PLAYER_SIZE)
 
-    ground_height = 30
-    ground_y = num_obstacles * gap + start_offset
-    ground = pygame.Rect(0, ground_y, WIDTH, ground_height)
+    if player is None:
+        raise ValueError("No 'spawn' object found in TMX map. Cannot start quest.")
 
-    # Game Loop variables
+    # === LOAD FLOOR AND OBSTACLE TILES FROM LAYERS ===
+    tilewidth = tmx.tmx_data.tilewidth
+    tileheight = tmx.tmx_data.tileheight
+
+    # Get floor tiles (pick the lowest one for landing logic)
+    # Get floor tiles (now store all of them)
+    floor_layer = tmx.tmx_data.get_layer_by_name("floor")
+    for x, y, gid in floor_layer:
+        if gid:
+            rect = pygame.Rect(x * tilewidth, y * tileheight, tilewidth, tileheight)
+            floor_tiles.append(rect)
+
+    # Get obstacle tiles (touch = lose)
+    obs_layer = tmx.tmx_data.get_layer_by_name("obs")
+    for x, y, gid in obs_layer:
+        if gid:
+            rect = pygame.Rect(x * tilewidth, y * tileheight, tilewidth, tileheight)
+            obstacles.append(rect)
+
+    # Game loop vars
     camera_offset = 0
     clock = pygame.time.Clock()
     run = True
+    falling = False
+    on_floor = False
+    scroll_speed = 8
+    player_speed = 7
     quest_result = None
-    on_ground = False
-    falling = False  # player must press SPACE to start falling
+    font = pygame.font.SysFont(None, 24)
 
     while run:
-        clock.tick(60) # game timing
+        clock.tick(FPS)
         win.fill(WHITE)
 
         for event in pygame.event.get():
@@ -73,112 +71,168 @@ def play_first_quest():
                 run = False
                 quest_result = "quit"
 
-        # Input handling
+        # Movement logic — no walking through floor tile (not used currently but kept for consistency)
+        def can_move(new_rect):
+            for tile in floor_tiles:
+                tile_shifted = tile.copy()
+                tile_shifted.y -= camera_offset
+                if new_rect.colliderect(tile_shifted):
+                    return False
+            return True
+
+        # Input
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and player.left > 0:
-            player.x -= player_speed
-        if keys[pygame.K_d] and player.right < WIDTH:
-            player.x += player_speed
+        if keys[pygame.K_a]:
+            new_pos = player.move(-player_speed, 0)
+            if can_move(new_pos):
+                player = new_pos
+        if keys[pygame.K_d]:
+            new_pos = player.move(player_speed, 0)
+            if can_move(new_pos):
+                player = new_pos
 
-        if not falling and keys[pygame.K_SPACE]:
-            falling = True  # start fall when SPACE is pressed 
+        # Begin falling
+        if not falling:
+            # Check if no floor is under the player
+            feet_rect = player.copy()
+            feet_rect.y += 1  # One pixel below player
+            on_platform = any(feet_rect.colliderect(tile) for tile in floor_tiles)
+            if not on_platform:
+                falling = True
 
-        if falling and not on_ground:
-            if ground.top - camera_offset <= player.bottom:
-                on_ground = True
-                print("You landed safely! Press E to return.")
+
+
+        # Simulate falling by scrolling upward
+        if falling and not on_floor:
+            # Check collision with any floor tile
+            player_feet = player.copy()
+            player_feet.y += 1
+            for tile in floor_tiles:
+                if player_feet.colliderect(tile.move(0, -camera_offset)):
+                    on_floor = True
+                    print("You landed on the floor! Press E to win.")
+                    break
             else:
-                camera_offset += scroll_speed # game mechanics
+                camera_offset += scroll_speed
 
-        # --- DRAW OBSTACLES ---
+
+        # --- DRAW EVERYTHING ---
+        tmx.draw(win, pygame.Vector2(0, camera_offset))
+        tmx.draw_texts(win, pygame.Vector2(0, camera_offset))
+
+        win.blit(font.render("press SPACE to start", True, WHITE), (50, 50))
+
+        # Check collision with obstacles
         for obs in obstacles:
-            draw_rect = obs.copy()
-            draw_rect.y -= camera_offset
-            pygame.draw.rect(win, RED, draw_rect)
-            if player.colliderect(draw_rect):
-                print("Game Over!")
+            obs_screen = obs.copy()
+            obs_screen.y -= camera_offset
+            if player.colliderect(obs_screen):
+                print("You hit an obstacle. Game over!")
                 quest_result = "lose"
                 run = False
 
-        # --- DRAW GROUND ---
-        draw_ground = ground.copy()
-        draw_ground.y -= camera_offset
-        pygame.draw.rect(win, GREEN, draw_ground)
+        # Draw player
+        pygame.draw.rect(win, PLAYER_COLOR, player)
 
-        # --- DRAW STARTING PLATFORM ---
-        draw_platform = platform.copy()
-        draw_platform.y -= camera_offset
-        pygame.draw.rect(win, BROWN, draw_platform)
-
-        # --- INTERACT AFTER LANDING ---
-        if on_ground and keys[pygame.K_e]:
+        # Win condition
+        if on_floor and keys[pygame.K_e]:
+            print("You completed the quest!")
             quest_result = "win"
             run = False
 
-        # --- DRAW PLAYER ---
-        pygame.draw.rect(win, PLAYER_COLOR, player)
         pygame.display.update()
 
     return quest_result
 
-def play_second_quest():
 
-    # Initialize Pygame and set up the window
+def play_second_quest():
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Pac-Mouse!")
 
-    # --- MAP ---
+    WALL_COLOR = (0, 0, 255)
+    DOT_COLOR = (255, 255, 255)
+    PLAYER_COLOR = (255, 255, 0)
+    GHOST1_COLOR = (255, 0, 0)
+    GHOST2_COLOR = (255, 105, 180)
+
     maze = [
-    "WWWWWWWWWWWW",
-    "W..      ..W",
-    "W.WW WW WW.W",
-    "W.W  ..  W.W",
-    "W.W WW W W W",
-    "W.. W  W  .W",
-    "WWWWWWWWWWWW"
+        "WWWWWWWWWWWWWWWWWWW",
+        "W....    G       .W",
+        "W.W    W  W       W",
+        "W.WW W   WW WWWW WW",
+        "W....       ....  W",
+        "W.WW WWWW    WW  WW",
+        "W.         W      W",
+        "W.WWW     W    G  W",
+        "W       ..    .   W",
+        "W   WW WWWW WW .  W",
+        "WWWWWWWWWWWWWWWWWWW"
     ]
 
     ROWS = len(maze)
     COLS = len(maze[0])
     maze_width = COLS * TILE_SIZE
     maze_height = ROWS * TILE_SIZE
-    draw_offset_x = (WIDTH - maze_width) // 2
-    draw_offset_y = (HEIGHT - maze_height) // 2
 
-    # Parse maze
+    draw_offset_x = 97 # higher = more right
+    draw_offset_y = 225 # higher = more down
+
+    background = pygame.image.load("resources/quest2/quest2screen.png").convert()
+    background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+
     walls = []
     points = []
+    ghosts = []
+
     for y, row in enumerate(maze):
         for x, char in enumerate(row):
-            if char == 'W':
-                walls.append(pygame.Rect(draw_offset_x + x * TILE_SIZE, draw_offset_y + y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
-            elif char == '.':
-                points.append(pygame.Rect(
-                    draw_offset_x + x * TILE_SIZE + TILE_SIZE // 4,
-                    draw_offset_y + y * TILE_SIZE + TILE_SIZE // 4,
-                    TILE_SIZE // 2, TILE_SIZE // 2))
+            px = draw_offset_x + x * TILE_SIZE
+            py = draw_offset_y + y * TILE_SIZE
 
-    # --- PLAYER ---
+            if char == 'W':
+                walls.append(pygame.Rect(px, py, TILE_SIZE, TILE_SIZE))
+            elif char == '.':
+                points.append(pygame.Rect(px + TILE_SIZE // 4, py + TILE_SIZE // 4, TILE_SIZE // 2, TILE_SIZE // 2))
+            elif char == 'G':
+                ghosts.append(pygame.Rect(px, py, TILE_SIZE, TILE_SIZE))
+
     player = pygame.Rect(draw_offset_x + TILE_SIZE, draw_offset_y + TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
-    # Ghost
-    ghost = pygame.Rect(draw_offset_x + (COLS - 2) * TILE_SIZE, draw_offset_y + (ROWS - 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    ghost = ghosts[0] if len(ghosts) > 0 else pygame.Rect(draw_offset_x + (COLS - 2) * TILE_SIZE, draw_offset_y + (ROWS - 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    ghost2 = ghosts[1] if len(ghosts) > 1 else pygame.Rect(draw_offset_x + TILE_SIZE * (COLS - 3), draw_offset_y + TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
     clock = pygame.time.Clock()
     run = True
     quest_result = None
     game_started = False
+    ghost_move_timer = 0
+    ghost_move_interval = 2
 
+    def can_move(rect, ignore_ghost=None):
+        # Check walls and screen bounds as before
+        if rect.left < draw_offset_x or rect.right > draw_offset_x + maze_width:
+            return False
+        if rect.top < draw_offset_y or rect.bottom > draw_offset_y + maze_height:
+            return False
+        if any(rect.colliderect(w) for w in walls):
+            return False
+        # Prevent collision with the other ghost
+        if ignore_ghost != ghost and rect.colliderect(ghost):
+            return False
+        if ignore_ghost != ghost2 and rect.colliderect(ghost2):
+            return False
+        return True
 
-    def move(rect, dx, dy):
+    def move(rect, dx, dy, ignore_ghost=None):
         new_rect = rect.move(dx * TILE_SIZE, dy * TILE_SIZE)
-        if all(not new_rect.colliderect(w) for w in walls):
-            rect.x += dx * TILE_SIZE
-            rect.y += dy * TILE_SIZE
+        if can_move(new_rect, ignore_ghost):
+            rect.x = new_rect.x
+            rect.y = new_rect.y
 
-    def ghost_chase():
-        start = ((ghost.x - draw_offset_x) // TILE_SIZE, (ghost.y - draw_offset_y) // TILE_SIZE)
+
+    def ghost_chase(ghost_rect, ignore_ghost=None):
+        start = ((ghost_rect.x - draw_offset_x) // TILE_SIZE, (ghost_rect.y - draw_offset_y) // TILE_SIZE)
         goal = ((player.x - draw_offset_x) // TILE_SIZE, (player.y - draw_offset_y) // TILE_SIZE)
         queue = deque([(start, [])])
         visited = set()
@@ -188,7 +242,7 @@ def play_second_quest():
             if (x, y) == goal:
                 if path:
                     dx, dy = path[0]
-                    move(ghost, dx, dy)
+                    move(ghost_rect, dx, dy, ignore_ghost)
                 return
             for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
                 nx, ny = x+dx, y+dy
@@ -197,9 +251,23 @@ def play_second_quest():
                     queue.append(((nx, ny), path+[(dx, dy)]))
 
 
+            while queue:
+                (x, y), path = queue.popleft()
+                if (x, y) == goal:
+                    if path:
+                        dx, dy = path[0]
+                        move(ghost_rect, dx, dy)
+                    return
+                for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
+                    nx, ny = x+dx, y+dy
+                    if 0 <= nx < COLS and 0 <= ny < ROWS and maze[ny][nx] != 'W' and (nx, ny) not in visited:
+                        visited.add((nx, ny))
+                        queue.append(((nx, ny), path+[(dx, dy)]))
+
+            # If no path found, ghost does not move this turn (safe fallback)
+
     while run:
-        clock.tick(5)
-        win.fill(BLACK)
+        clock.tick(8)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -220,32 +288,40 @@ def play_second_quest():
             if keys[pygame.K_s]:
                 move(player, 0, 1)
 
-            # Ghost moves
-            ghost_chase()
+            ghost_move_timer += 1
+            if ghost_move_timer >= ghost_move_interval:
+                ghost_chase(ghost, ignore_ghost=ghost)
+                ghost_chase(ghost2, ignore_ghost=ghost2)
 
-            # Check collision with points
+                ghost_move_timer = 0
+
             points = [p for p in points if not player.colliderect(p)]
 
-            # Win condition
             if not points:
                 print("You Win!")
                 quest_result = "win"
                 run = False
 
-            # Lose condition
             if player.colliderect(ghost):
                 print("Caught by Ghost! You Lose.")
                 quest_result = "lose"
                 run = False
 
-        # Draw maze
-        for wall in walls:
-            pygame.draw.rect(win, BLUE, wall)
-        for p in points:
-            pygame.draw.rect(win, WHITE, p)
+            if player.colliderect(ghost2):
+                print("Caught by Second Ghost! You Lose.")
+                quest_result = "lose"
+                run = False
 
-        pygame.draw.rect(win, YELLOW, player)
-        pygame.draw.rect(win, RED, ghost)
+        win.blit(background, (0, 0))
+
+        for wall in walls:
+            pygame.draw.rect(win, WALL_COLOR, wall)
+        for p in points:
+            pygame.draw.rect(win, DOT_COLOR, p)
+
+        pygame.draw.rect(win, PLAYER_COLOR, player)
+        pygame.draw.rect(win, GHOST1_COLOR, ghost)
+        pygame.draw.rect(win, GHOST2_COLOR, ghost2)
 
         pygame.display.update()
 
@@ -258,7 +334,7 @@ def play_third_quest():
     pygame.display.set_caption("Stealth Heist")
     FPS = 60
 
-    tmx = TileMap("resources/mazemap2.tmx")
+    tmx = TileMap("resources/mazemap.tmx")
 
     player = None
     exit_rects = []
@@ -410,6 +486,4 @@ def play_third_quest():
 
     pygame.quit()
     return result
-
-#play_third_quest()
 
