@@ -19,17 +19,23 @@ class TileMap:
     def load_interactables(self):
         interactables = []
         for obj in self.tmx_data.objects:
-            # print(f"Found object: {obj.name} {obj.type}")
             if obj.type:  # Only include objects with a type
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+
+                # Extract all custom properties as a dict
+                props = {}
+                if hasattr(obj, 'properties'):
+                    for key, value in obj.properties.items():
+                        props[key] = value
+
                 interactables.append({
                     "rect": rect,
                     "type": obj.type,
-                    "name": obj.name
+                    "name": obj.name,
+                    "properties": props  # ✅ Store custom properties here
                 })
-
-        #print("Loaded interactables:", interactables)
         return interactables
+
 
     def load_npcs(self):
         """Load NPCs from the map's object layer."""

@@ -258,7 +258,7 @@ def play_third_quest():
     pygame.display.set_caption("Stealth Heist")
     FPS = 60
 
-    tmx = TileMap("resources/mazemap2.tmx")
+    tmx = TileMap("resources/mazemap.tmx")
 
     player = None
     exit_rects = []
@@ -275,7 +275,7 @@ def play_third_quest():
             exit_rects.append(obj["rect"])
         elif obj["type"].lower() == "npc":
             print("Raw NPC object:", obj)  # <-- Add this line
-            props = {p["name"]: p["value"] for p in obj.get("properties", [])}
+            props = obj.get("properties", {})
             patrol_tiles = int(props.get("patrol_length", props.get("patrol length", 1)))
             direction = props.get("direction", "horizontal").lower()
             start_dir = props.get("start_direction", "right").lower()
@@ -411,5 +411,5 @@ def play_third_quest():
     pygame.quit()
     return result
 
-#play_third_quest()
+play_third_quest()
 
