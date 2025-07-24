@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="25" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="55">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="25" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="55">
  <tileset firstgid="1" source="maze tile set.tsx"/>
- <layer id="3" name="floor" width="25" height="20" tintcolor="#002556">
+ <layer id="3" name="floor" width="25" height="20">
   <data encoding="csv">
 28,29,30,41,41,28,29,30,28,28,41,28,29,30,29,28,29,28,29,30,28,29,28,29,30,
 28,29,30,29,41,28,29,30,41,41,42,28,29,30,28,28,29,41,28,29,28,29,28,29,30,
@@ -25,7 +25,7 @@
 28,29,30,28,41,42,43,43,43,28,41,42,43,43,43,43,43,43,43,43,28,41,41,42,43
 </data>
  </layer>
- <layer id="1" name="walls" width="25" height="20" tintcolor="#f2a179">
+ <layer id="1" name="walls" width="25" height="20">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,1,2,2,2,2,2,2,3,3,3,3,4,3,0,0,4,4,4,4,5,0,0,0,
@@ -211,13 +211,6 @@
     <property name="direction" value="horizontal"/>
     <property name="patrol_length" type="int" value="3"/>
     <property name="start_direction" value="right"/>
-   </properties>
-  </object>
-  <object id="52" name="npc4" type="npc" x="176" y="416" width="32" height="32" rotation="180.172">
-   <properties>
-    <property name="direction" value="vertical"/>
-    <property name="patrol_length" type="int" value="2"/>
-    <property name="start_direction" value="up"/>
    </properties>
   </object>
   <object id="53" name="walls" type="wall" x="640" y="264" width="48" height="56">
