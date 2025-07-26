@@ -289,13 +289,6 @@ class GameScene(Scene):
     def draw(self, screen):
         screen.fill((30, 30, 30))
         self.tile_map.draw(screen, self.camera_offset)
-
-        # Let each NPC handle its own update and draw
-        current_time = pygame.time.get_ticks()
-        for npc in self.npcs:
-            npc.update(current_time)
-            npc.draw(screen, self.camera_offset)
-            
         self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
         # Dynamically update fog radius based on cheese count
@@ -307,6 +300,11 @@ class GameScene(Scene):
         
         # Draw interaction prompt if it exists
         self.draw_prompt(screen)
+        # Let each NPC handle its own update and draw
+        current_time = pygame.time.get_ticks()
+        for npc in self.npcs:
+            npc.update(current_time)
+            npc.draw(screen, self.camera_offset)
         
         
         # Draw cheese count
