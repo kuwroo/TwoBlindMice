@@ -150,9 +150,13 @@ class GameScene(Scene):
         self.player.player_y = SCREEN_HEIGHT // 4
         self.player.rect.topleft = (self.player.player_x, self.player.player_y)
         self.fog = FogOfWar()
+        
+        #sprites and NPCS
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
+        self.npcs = self.tile_map.load_npcs()
         self.cheese_count = 1
+        # to edit!!
         self.near_bin = False
         self.near_hole = False  # Add near_hole attribute
         self.cheese_sprite = pygame.image.load("resources/cheese.png")
@@ -227,6 +231,47 @@ class GameScene(Scene):
                         self.cheese_count += 1
                     self.quest2_completed = True
         return None
+    
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            # 🗨️ First handle dialogue input (if currently showing)
+            if event.key in (pygame.K_e, pygame.K_SPACE):
+                for npc in self.npcs:
+                    if npc.showing_dialogue:
+                        result = npc.dialogue.handle_input(event.key)
+                        if result == "CLOSE":
+                            npc.showing_dialogue = False
+                            self.player.can_move = True
+                        return result
+
+            # 🧀 Then check for quest triggers (only if no dialogue is showing)
+            if event.key == pygame.K_e:
+                if self.near_bin:
+                    print("Starting first quest!")
+                    result = play_first_quest()
+                    print("Quest result:", result)
+                    if result == "win":
+                        if not self.quest1_completed:
+                            self.cheese_count += 1
+                        self.quest1_completed = True
+
+                elif self.near_hole:
+                    print("Starting second quest!")
+                    result = play_second_quest()
+                    print("Quest result:", result)
+                    if result == "win":
+                        if not self.quest2_completed:
+                            self.cheese_count += 1
+                        self.quest2_completed = True
+
+                # 🐸 Lastly, check for nearby NPCs to talk to (if no dialogue currently showing)
+                for npc in self.npcs:
+                    if npc.is_near_player(self.player.rect):
+                        npc.interact()
+                        return "NPC_INTERACTED"
+
+        return None
+
         
     def update(self):
         keys = pygame.key.get_pressed()
@@ -244,6 +289,13 @@ class GameScene(Scene):
     def draw(self, screen):
         screen.fill((30, 30, 30))
         self.tile_map.draw(screen, self.camera_offset)
+
+        # Let each NPC handle its own update and draw
+        current_time = pygame.time.get_ticks()
+        for npc in self.npcs:
+            npc.update(current_time)
+            npc.draw(screen, self.camera_offset)
+            
         self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
         # Dynamically update fog radius based on cheese count
@@ -255,6 +307,7 @@ class GameScene(Scene):
         
         # Draw interaction prompt if it exists
         self.draw_prompt(screen)
+        
         
         # Draw cheese count
         cheese_x = 10

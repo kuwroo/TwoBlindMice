@@ -120,9 +120,7 @@ def play_first_quest():
         # --- DRAW EVERYTHING ---
         tmx.draw(win, pygame.Vector2(0, camera_offset))
         tmx.draw_texts(win, pygame.Vector2(0, camera_offset))
-
-        win.blit(font.render("press SPACE to start", True, WHITE), (50, 50))
-
+        
         # Check collision with obstacles
         for obs in obstacles:
             obs_screen = obs.copy()
