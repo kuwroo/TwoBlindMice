@@ -234,43 +234,60 @@ class GameScene(Scene):
     
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
-            # 🗨️ First handle dialogue input (if currently showing)
-            if event.key in (pygame.K_e, pygame.K_SPACE):
+            # 1. Handle dialogue input (if any NPC is showing dialogue)
+            if event.key in (pygame.K_e, pygame.K_SPACE, pygame.K_RETURN):  # Added K_RETURN here
                 for npc in self.npcs:
                     if npc.showing_dialogue:
                         result = npc.dialogue.handle_input(event.key)
                         if result == "CLOSE":
                             npc.showing_dialogue = False
                             self.player.can_move = True
+                            return result
+                        elif result == "PLAY_QUEST":
+                            npc.showing_dialogue = False
+                            self.player.can_move = True
+                            # Start the quest related to this NPC
+                            if npc.name == "Frog":  # example NPC name, adapt as needed
+                                print("Starting frog quest...")
+                                result = play_second_quest()
+                                if result == "win" and not self.quest2_completed:
+                                    self.cheese_count += 1
+                                    self.quest2_completed = True
+                            elif npc.name == "TrashRat":  # example NPC name, adapt as needed
+                                print("Starting trash quest...")
+                                result = play_first_quest()
+                                if result == "win" and not self.quest1_completed:
+                                    self.cheese_count += 1
+                                    self.quest1_completed = True
+                            return "QUEST_STARTED"
                         return result
 
-            # 🧀 Then check for quest triggers (only if no dialogue is showing)
+            # 2. If no dialogue showing, handle quest start by pressing E near bins or holes
             if event.key == pygame.K_e:
                 if self.near_bin:
                     print("Starting first quest!")
                     result = play_first_quest()
                     print("Quest result:", result)
-                    if result == "win":
-                        if not self.quest1_completed:
-                            self.cheese_count += 1
+                    if result == "win" and not self.quest1_completed:
+                        self.cheese_count += 1
                         self.quest1_completed = True
 
                 elif self.near_hole:
                     print("Starting second quest!")
                     result = play_second_quest()
                     print("Quest result:", result)
-                    if result == "win":
-                        if not self.quest2_completed:
-                            self.cheese_count += 1
+                    if result == "win" and not self.quest2_completed:
+                        self.cheese_count += 1
                         self.quest2_completed = True
 
-                # 🐸 Lastly, check for nearby NPCs to talk to (if no dialogue currently showing)
+                # Check for NPC interaction if no dialogue is active
                 for npc in self.npcs:
                     if npc.is_near_player(self.player.rect):
                         npc.interact()
                         return "NPC_INTERACTED"
 
         return None
+
 
         
     def update(self):
