@@ -4,7 +4,7 @@ from tilemap import TileMap
 from player import PlayerMovement
 from cursor import Cursor
 from visibility import FogOfWar
-from quest import play_first_quest, play_second_quest
+from quest import *
 from button import Button
 from camera import Camera
 import pytmx
@@ -157,80 +157,59 @@ class GameScene(Scene):
         self.npcs = self.tile_map.load_npcs()
         self.cheese_count = 1
         # to edit!!
-        self.near_bin = False
-        self.near_hole = False  # Add near_hole attribute
         self.cheese_sprite = pygame.image.load("resources/cheese.png")
         self.cheese_sprite = pygame.transform.scale(self.cheese_sprite, (24, 24))
         self.quest1_completed = False
         self.quest2_completed = False
+        self.quest3_completed = False
 
-    def check_bin_proximity(self):
-        # Get player position in world coordinates
-        player_pos = pygame.Rect(
-            self.player.player_x,
-            self.player.player_y,
-            self.player.rect.width,
-            self.player.rect.height
-        )
-        #print(f"Player pos: {player_pos}")
+    # def check_bin_proximity(self):
+    #     # Get player position in world coordinates
+    #     player_pos = pygame.Rect(
+    #         self.player.player_x,
+    #         self.player.player_y,
+    #         self.player.rect.width,
+    #         self.player.rect.height
+    #     )
+    #     #print(f"Player pos: {player_pos}")
         
-        # Check each bin
-        for obj in self.tile_map.interactables:
-            if obj["type"].lower() == "bin":
-                bin_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                #print(f"Bin rect: {bin_rect}")
-                if player_pos.colliderect(bin_rect):
-                    #print("Near bin - showing prompt")
-                    self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
-                    self.near_bin = True
-                    return
+    #     # Check each bin
+    #     for obj in self.tile_map.interactables:
+    #         if obj["type"].lower() == "bin":
+    #             bin_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
+    #             #print(f"Bin rect: {bin_rect}")
+    #             if player_pos.colliderect(bin_rect):
+    #                 #print("Near bin - showing prompt")
+    #                 self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
+    #                 self.near_bin = True
+    #                 return
         
-        # No bin nearby
-        self.prompt_text = None
-        self.near_bin = False
+    #     # No bin nearby
+    #     self.prompt_text = None
+    #     self.near_bin = False
         
-    def check_hole_proximity(self):
-        # Get player position in world coordinates
-        player_pos = pygame.Rect(
-            self.player.player_x,
-            self.player.player_y,
-            self.player.rect.width,
-            self.player.rect.height
-        )
+    # def check_hole_proximity(self):
+    #     # Get player position in world coordinates
+    #     player_pos = pygame.Rect(
+    #         self.player.player_x,
+    #         self.player.player_y,
+    #         self.player.rect.width,
+    #         self.player.rect.height
+    #     )
         
-        # Check each hole
-        for obj in self.tile_map.interactables:
-            if obj["type"].lower() == "hole":
-                hole_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                if player_pos.colliderect(hole_rect):
-                    self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
-                    self.near_hole = True
-                    return
+    #     # Check each hole
+    #     for obj in self.tile_map.interactables:
+    #         if obj["type"].lower() == "hole":
+    #             hole_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
+    #             if player_pos.colliderect(hole_rect):
+    #                 self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
+    #                 self.near_hole = True
+    #                 return
         
-        # Reset if not near any hole
-        if not self.near_bin:  # Only reset prompt if we're not near a bin
-            self.prompt_text = None
-        self.near_hole = False
-
-    def handle_event(self, event):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            if self.near_bin:
-                print("Starting first quest!")
-                result = play_first_quest()
-                print("Quest result:", result)
-                if result == "win":
-                    if not self.quest1_completed:  # Ensure cheese only increases once
-                        self.cheese_count += 1
-                    self.quest1_completed = True
-            elif self.near_hole:
-                print("Starting second quest!")
-                result = play_second_quest()
-                print("Quest result:", result)
-                if result == "win":
-                    if not self.quest2_completed:
-                        self.cheese_count += 1
-                    self.quest2_completed = True
-        return None
+    #     # Reset if not near any hole
+    #     if not self.near_bin:  # Only reset prompt if we're not near a bin
+    #         self.prompt_text = None
+    #     self.near_hole = False
     
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
@@ -248,37 +227,43 @@ class GameScene(Scene):
                             self.player.can_move = True
                             # Start the quest related to this NPC
                             if npc.name == "Frog":  # example NPC name, adapt as needed
-                                print("Starting frog quest...")
+                                print("Starting Pac-mouse...")
                                 result = play_second_quest()
                                 if result == "win" and not self.quest2_completed:
                                     self.cheese_count += 1
                                     self.quest2_completed = True
-                            elif npc.name == "TrashRat":  # example NPC name, adapt as needed
-                                print("Starting trash quest...")
+                            elif npc.name == "Quest1mansion":  # example NPC name, adapt as needed
+                                print("Starting Rabbit-hole...")
                                 result = play_first_quest()
                                 if result == "win" and not self.quest1_completed:
                                     self.cheese_count += 1
                                     self.quest1_completed = True
+                            elif npc.name == "Quest3":  # example NPC name, adapt as needed
+                                print("Starting Mouse-Heist...")
+                                result = play_third_quest()
+                                if result == "win" and not self.quest3_completed:
+                                    self.cheese_count += 1
+                                    self.quest3_completed = True
                             return "QUEST_STARTED"
                         return result
 
             # 2. If no dialogue showing, handle quest start by pressing E near bins or holes
-            if event.key == pygame.K_e:
-                if self.near_bin:
-                    print("Starting first quest!")
-                    result = play_first_quest()
-                    print("Quest result:", result)
-                    if result == "win" and not self.quest1_completed:
-                        self.cheese_count += 1
-                        self.quest1_completed = True
+            # if event.key == pygame.K_e:
+            #     if self.near_bin:
+            #         print("Starting first quest!")
+            #         result = play_first_quest()
+            #         print("Quest result:", result)
+            #         if result == "win" and not self.quest1_completed:
+            #             self.cheese_count += 1
+            #             self.quest1_completed = True
 
-                elif self.near_hole:
-                    print("Starting second quest!")
-                    result = play_second_quest()
-                    print("Quest result:", result)
-                    if result == "win" and not self.quest2_completed:
-                        self.cheese_count += 1
-                        self.quest2_completed = True
+            #     elif self.near_hole:
+            #         print("Starting second quest!")
+            #         result = play_second_quest()
+            #         print("Quest result:", result)
+            #         if result == "win" and not self.quest2_completed:
+            #             self.cheese_count += 1
+            #             self.quest2_completed = True
 
                 # Check for NPC interaction if no dialogue is active
                 for npc in self.npcs:
@@ -301,8 +286,8 @@ class GameScene(Scene):
         self.center_camera_on_player()
         
         # Check for bin and hole proximity
-        self.check_bin_proximity()
-        self.check_hole_proximity()
+        # self.check_bin_proximity()
+        # self.check_hole_proximity()
         return None
 
     def draw(self, screen):
