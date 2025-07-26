@@ -19,25 +19,17 @@ class TileMap:
     def load_interactables(self):
         interactables = []
         for obj in self.tmx_data.objects:
+            # print(f"Found object: {obj.name} {obj.type}")
             if obj.type:  # Only include objects with a type
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-                
-                # Access properties as a dictionary
-                props = obj.properties if hasattr(obj, "properties") else {}
-
-                # Extract text content from 'Text' or 'text' property
-                text_value = props.get("Text") or props.get("text")
-
                 interactables.append({
                     "rect": rect,
                     "type": obj.type,
-                    "name": obj.name,
-                    "properties": props,      # ✅ use dictionary directly
-                    "text": text_value
+                    "name": obj.name
                 })
+
+        #print("Loaded interactables:", interactables)
         return interactables
-
-
 
     def load_npcs(self):
         """Load NPCs from the map's object layer."""
@@ -99,7 +91,7 @@ class TileMap:
                 elif interactable["type"].lower() == "hole":
                     return "Press E to start second quest!"
                 elif interactable["type"].lower() == "door":
-                    return "Press E to start third quest!"
+                    return "Press E to enter"
                 else:
                     return "Press E to interact!"
         return ""  # no prompt if no nearby interactable
@@ -143,4 +135,3 @@ class TileMap:
                         )
                         ladder_rects.append(ladder_rect)
         return ladder_rects
-

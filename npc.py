@@ -63,4 +63,3 @@ class NPC():
         """Check if player is within interaction distance"""
         return self.rect.inflate(interaction_distance, interaction_distance).colliderect(player_rect)
 
-

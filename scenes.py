@@ -4,7 +4,7 @@ from tilemap import TileMap
 from player import PlayerMovement
 from cursor import Cursor
 from visibility import FogOfWar
-from quest import play_first_quest, play_second_quest, play_third_quest
+from quest import play_first_quest, play_second_quest
 from button import Button
 from camera import Camera
 import pytmx
@@ -153,27 +153,14 @@ class GameScene(Scene):
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.cheese_count = 1
-        self.near_mansion = False
+        self.near_bin = False
         self.near_hole = False  # Add near_hole attribute
-        self.near_wall = False
         self.cheese_sprite = pygame.image.load("resources/cheese.png")
         self.cheese_sprite = pygame.transform.scale(self.cheese_sprite, (24, 24))
         self.quest1_completed = False
         self.quest2_completed = False
-        self.quest3_completed = False
 
-        self.npcs = self.tile_map.load_npcs()
-
-    def check_NPC_proximity(self):
-        # Get player position in world coordinates
-        player_pos = pygame.Rect(
-            self.player.player_x,
-            self.player.player_y,
-            self.player.rect.width,
-            self.player.rect.height
-        )
-
-    def check_mansion_proximity(self):
+    def check_bin_proximity(self):
         # Get player position in world coordinates
         player_pos = pygame.Rect(
             self.player.player_x,
@@ -183,20 +170,20 @@ class GameScene(Scene):
         )
         #print(f"Player pos: {player_pos}")
         
-        # Check each mansion
+        # Check each bin
         for obj in self.tile_map.interactables:
-            if obj["type"].lower() == "mansion":
-                mansion_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                print(f"Mansion rect: {mansion_rect}")
-                if player_pos.colliderect(mansion_rect):
-                    print("Near mansion - showing prompt")
+            if obj["type"].lower() == "bin":
+                bin_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
+                #print(f"Bin rect: {bin_rect}")
+                if player_pos.colliderect(bin_rect):
+                    #print("Near bin - showing prompt")
                     self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
-                    self.near_mansion = True
+                    self.near_bin = True
                     return
         
-        # No mansion nearby
+        # No bin nearby
         self.prompt_text = None
-        self.near_mansion = False
+        self.near_bin = False
         
     def check_hole_proximity(self):
         # Get player position in world coordinates
@@ -217,36 +204,13 @@ class GameScene(Scene):
                     return
         
         # Reset if not near any hole
-        if not self.near_hole:  # Only reset prompt if we're not near a hole
+        if not self.near_bin:  # Only reset prompt if we're not near a bin
             self.prompt_text = None
         self.near_hole = False
 
-    def check_thirdquest_proximity(self):
-        # Get player position in world coordinates
-        player_pos = pygame.Rect(
-            self.player.player_x,
-            self.player.player_y,
-            self.player.rect.width,
-            self.player.rect.height
-        )
-        
-        # Check each hole
-        for obj in self.tile_map.interactables:
-            if obj["type"].lower() == "wall":
-                wall_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                if player_pos.colliderect(wall_rect):
-                    self.prompt_text = self.font.render("Press E to start quest", True, (255, 255, 255))
-                    self.near_wall = True
-                    return
-        
-        # Reset if not near any wall
-        if not self.near_wall:  # Only reset prompt if we're not near a wall
-            self.prompt_text = None
-        self.near_wall = False
-
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            if self.near_mansion:
+            if self.near_bin:
                 print("Starting first quest!")
                 result = play_first_quest()
                 print("Quest result:", result)
@@ -262,18 +226,6 @@ class GameScene(Scene):
                     if not self.quest2_completed:
                         self.cheese_count += 1
                     self.quest2_completed = True
-            elif self.near_wall:
-                print("Starting third quest!")
-                result = play_third_quest()
-                if result == "win":
-                    if not self.quest3_completed:
-                        self.cheese_count += 1
-                    self.quest3_completed = True
-
-            for npc in self.npcs:
-                if npc.is_near_player(self.player.rect):
-                    npc.interact()
-                    return "NPC_INTERACTED"
         return None
         
     def update(self):
@@ -284,23 +236,14 @@ class GameScene(Scene):
         self.update_player_position(keys)
         self.center_camera_on_player()
         
-        # Check for quest + NPC proximity
-        self.check_mansion_proximity()
+        # Check for bin and hole proximity
+        self.check_bin_proximity()
         self.check_hole_proximity()
-        self.check_thirdquest_proximity()
-        self.check_NPC_proximity()
         return None
 
     def draw(self, screen):
         screen.fill((30, 30, 30))
         self.tile_map.draw(screen, self.camera_offset)
-
-        # Let each NPC handle its own update and draw
-        current_time = pygame.time.get_ticks()
-        for npc in self.npcs:
-            npc.update_and_draw(screen, self.camera_offset, current_time)
-
-        # Draw player
         self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
         # Dynamically update fog radius based on cheese count
@@ -312,7 +255,6 @@ class GameScene(Scene):
         
         # Draw interaction prompt if it exists
         self.draw_prompt(screen)
-        
         
         # Draw cheese count
         cheese_x = 10
