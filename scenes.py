@@ -277,6 +277,8 @@ class GameScene(Scene):
         keys = pygame.key.get_pressed()
         
         # Use common update logic from superclass
+        if any(npc.showing_dialogue for npc in self.npcs):
+            self.player.can_move = False
         self.handle_input_and_gravity(keys)
         self.update_player_position(keys)
         self.center_camera_on_player()

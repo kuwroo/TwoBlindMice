@@ -182,7 +182,7 @@
  </layer>
  <objectgroup id="2" name="quest_ob">
   <object id="1" name="enter_quest1" type="mansion" x="1408" y="648" width="160" height="128"/>
-  <object id="6" name="enter_quest2" type="Hole" x="248" y="264" width="100" height="121.333"/>
+  <object id="6" name="enter_quest2" type="Hole" x="568" y="264" width="100" height="121.333"/>
   <object id="8" name="enter_quest3" type="wall" x="715" y="305" width="77" height="95"/>
  </objectgroup>
  <objectgroup id="8" name="NPC">
