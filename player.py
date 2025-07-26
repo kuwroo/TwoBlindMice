@@ -282,4 +282,3 @@ class PlayerMovement(pygame.sprite.Sprite):
         )
         screen.blit(frame, sprite_rect)
 
-
