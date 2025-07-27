@@ -45,14 +45,18 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.idle_frames = self.load_spritesheet('resources/idle.png', 4, 32, 32)
         self.movement_frames = self.load_spritesheet('resources/MOUSE.png', 8, 32, 32)
         self.climbing_frames = self.load_spritesheet('resources/CLIMB.png', 8, 32, 32)
+        self.attack_frames = self.load_spritesheet('resources/attack.png', 7, 32, 32)
         # Ensure current_frame is within bounds of both animations
         self.idle_frame_count = len(self.idle_frames)
         self.movement_frame_count = len(self.movement_frames)
         self.climbing_frame_count = len(self.climbing_frames)
+        self.attack_frame_count = len(self.attack_frames)
+        
         
         self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.idle_frames]
         self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.movement_frames]
         self.climbing_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.climbing_frames]
+        self.attack_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.attack_frames]
         
         # Set initial image and rect
         self.image = self.idle_frames[0]

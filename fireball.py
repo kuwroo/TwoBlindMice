@@ -77,6 +77,7 @@ class MouseGodBoss:
     def init_game(self):
         # Player
         self.player = PlayerMovement(self.WIDTH, self.HEIGHT, self.WIDTH)
+        self.player.PLAYER_SPEED = 7
         self.player.player_x = self.WIDTH // 2
         self.player.player_y = 400
         self.player.rect.topleft = (self.player.player_x, self.player.player_y)
@@ -225,15 +226,24 @@ class MouseGodBoss:
             if (cheeseball['x'] < -100 or cheeseball['x'] > self.WIDTH + 100 or
                 cheeseball['y'] < -100 or cheeseball['y'] > self.HEIGHT + 100):
                 self.fire_cheeseballs.remove(cheeseball)
-
+                
     def check_collisions(self):
         if self.game_state != "playing":
             return
-        player_rect = self.player.rect
+        def get_shrunk_hitbox(rect, shrink=0.6):
+            w = int(rect.width * shrink)
+            h = int(rect.height * shrink)
+            return pygame.Rect(
+                rect.centerx - w // 2,
+                rect.centery - h // 2,
+                w, h
+            )
+        player_rect = get_shrunk_hitbox(self.player.rect, shrink=0.6)
+
         for cheeseball in self.fire_cheeseballs:
             cheeseball_rect = pygame.Rect(cheeseball['x'] - cheeseball['size']//2,
                                         cheeseball['y'] - cheeseball['size']//2,
-                                        cheeseball['size']-10, cheeseball['size']-10)
+                                        cheeseball['size']*0.4, cheeseball['size']*0.4)
             if player_rect.colliderect(cheeseball_rect):
                 self.game_state = "dead"
                 return
@@ -247,6 +257,7 @@ class MouseGodBoss:
         if self.game_state == "playing":
             self.draw_game()
         elif self.game_state == "dead":
+            
             self.draw_game_over()
         elif self.game_state == "victory":
             self.draw_victory()
@@ -260,7 +271,7 @@ class MouseGodBoss:
         # Player attack animation
         if self.player_attacking:
             self.attack_anim_timer += 1
-            if self.attack_anim_timer >= 3:
+            if self.attack_anim_timer >= 6:
                 self.attack_anim_timer = 0
                 self.attack_anim_index += 1
                 if self.attack_anim_index >= len(self.attack_frames):
