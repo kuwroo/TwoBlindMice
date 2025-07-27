@@ -25,8 +25,10 @@ class TileMap:
                 interactables.append({
                     "rect": rect,
                     "type": obj.type,
-                    "name": obj.name
+                    "name": obj.name,
+                    "properties": getattr(obj, "properties", {})
                 })
+
 
         #print("Loaded interactables:", interactables)
         return interactables
