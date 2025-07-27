@@ -50,18 +50,20 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.movement_frames = self.load_spritesheet('resources/MOUSE.png', 8, 32, 32)
         self.climbing_frames = self.load_spritesheet('resources/CLIMB.png', 8, 32, 32)
         self.attack_frames = self.load_spritesheet('resources/attack.png', 7, 64, 64)
+        self.jumping_frames = load_spritesheet('resources/jump5.png', 7, 32, 32)  # Assuming you have a jumping animation
         # Ensure current_frame is within bounds of both animations
         self.idle_frame_count = len(self.idle_frames)
         self.movement_frame_count = len(self.movement_frames)
         self.climbing_frame_count = len(self.climbing_frames)
         self.attack_frame_count = len(self.attack_frames)
-        
+        self.jumping_frame_count = len(self.jumping_frames)
         
         self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.idle_frames]
         self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.movement_frames]
         self.climbing_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.climbing_frames]
         self.attack_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 6, self.PLAYER_HEIGHT * 6)) for frame in self.attack_frames]
-        
+        self.jumping_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.jumping_frames]
+
         # Set initial image and rect
         self.image = self.idle_frames[0]
         self.rect = self.image.get_rect()
@@ -72,7 +74,14 @@ class PlayerMovement(pygame.sprite.Sprite):
         # Collision box size (smaller than sprite)
         self.COLLISION_WIDTH = self.PLAYER_WIDTH * 1.5  # Make hitbox 2/3 of sprite width
         self.COLLISION_HEIGHT = self.PLAYER_HEIGHT * 1.5  # Make hitbox 2/3 of sprite height
-
+    
+    def load_spritesheet(self, image_path, frame_count, frame_width, frame_height):
+        spritesheet = pygame.image.load(image_path)
+        frames = []
+        for i in range(frame_count):
+            frame = spritesheet.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height))
+            frames.append(frame)
+        return frames
 
     def handle_input(self, keys):
         self.player_velocity_x = 0
@@ -239,10 +248,21 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.frame_timer = 0
             if is_idle:
                 self.current_frame = (self.current_frame + 1) % self.idle_frame_count
-            elif self.on_ladder:
-                self.current_frame = (self.current_frame + 1) % self.climbing_frame_count
             elif self.is_attacking:
                 self.current_frame = (self.current_frame + 1) % self.attack_frame_count
+            elif self.climbing:
+                # Only advance climbing animation if moving
+                if abs(self.player_velocity_y) > 0:
+                    self.current_frame = (self.current_frame + 1) % len(self.climbing_frames)
+                # If not moving, keep current frame within bounds
+                else:
+                    self.current_frame = min(self.current_frame, len(self.climbing_frames) - 1)
+            elif self.is_jumping and not self.on_ladder:
+                self.current_frame = self.get_air_sprite()
+            elif self.player_velocity_x < 0:  # Moving left
+                self.current_frame = (self.current_frame + 1) % self.movement_frame_count
+                if not self.last_direction_left:
+                    self.last_direction_left = True
             else:
                 self.current_frame = (self.current_frame + 1) % self.movement_frame_count
         
@@ -251,7 +271,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         draw_y = self.player_y - camera_offset.y  # Added 32 pixels (1 tile height) to move sprite down
         
         # Check if we should use idle animation
-        is_idle = self.player_velocity_x == 0 and not self.on_ladder
+        is_idle = self.player_velocity_x == 0 and not self.on_ladder and not self.is_jumping
         
         if self.is_attacking:
             frame_index = self.current_frame % self.attack_frame_count
@@ -260,14 +280,15 @@ class PlayerMovement(pygame.sprite.Sprite):
                 frame = pygame.transform.flip(frame, True, False)
             elif self.player_velocity_x == 0 and self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)
+        elif self.climbing:
+        # Ensure frame index is within bounds for climbing animation
+            frame_index = min(self.current_frame, len(self.climbing_frames) - 1)
+            frame = self.climbing_frames[frame_index]
         elif is_idle:
             frame_index = self.current_frame % self.idle_frame_count
             frame = self.idle_frames[frame_index]
             if self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)
-        elif self.on_ladder:
-            frame_index = self.current_frame % self.climbing_frame_count
-            frame = self.climbing_frames[frame_index]
         elif self.is_attacking:
             frame_index = self.current_frame % self.attack_frame_count
             frame = self.attack_frames[frame_index]
@@ -275,6 +296,14 @@ class PlayerMovement(pygame.sprite.Sprite):
                 frame = pygame.transform.flip(frame, True, False)
             elif self.player_velocity_x == 0 and self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)  
+        elif self.is_jumping and not self.on_ladder:
+            frame_index = self.current_frame
+            if self.jumping_frames and 0 <= frame_index < len(self.jumping_frames):
+                frame = self.jumping_frames[frame_index]
+            else:
+                frame = self.idle_frames[0]
+            if self.player_velocity_x < 0 or self.last_direction_left:
+                frame = pygame.transform.flip(frame, True, False)
         else:
             frame_index = self.current_frame % self.movement_frame_count
             frame = self.movement_frames[frame_index]
