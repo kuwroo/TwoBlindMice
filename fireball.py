@@ -51,9 +51,8 @@ class MouseGodBoss:
         self.small_font = pygame.font.Font(None, 24)
         
 
-        self.boss_frames = self.load_spritesheet('resources/boss.png', 2, 32, 32)
-        self.boss_frames = [pygame.transform.scale(frame, (600, 800)) for frame in self.boss_frames]
-        self.boss_rect = self.boss_frames[0].get_rect()
+        self.boss_frames = self.load_spritesheet('resources/boss.png', 2, 200, 150)
+        self.boss_frames = [pygame.transform.scale(frame, (800, 600)) for frame in self.boss_frames]
         
         self.attack_frames = self.load_spritesheet('resources/attack.png', 7, 32, 32)
         self.attack_frames = [pygame.transform.scale(frame, (32*4, 32*4)) for frame in self.attack_frames]
@@ -62,11 +61,11 @@ class MouseGodBoss:
         self.deahth_frames = [pygame.transform.scale(frame, (32*4, 32*4)) for frame in self.death_frames]
 
         # Animation state variables
-        self.boss_anim_index = 0
-        self.boss_anim_timer = 0
-        self.attack_anim_index = 0
-        self.attack_anim_timer = 0
+        self.boss_current_frame = 0
+        
         self.is_attacking = False
+        self.frame_timer = 0
+        self.frame_delay = 6 # Delay for boss animation frames
         self.death_anim_index = 0
         self.death_anim_timer = 0
         self.is_boss_dead = False
@@ -77,28 +76,36 @@ class MouseGodBoss:
     def init_game(self):
         # Player
         self.player = PlayerMovement(self.WIDTH, self.HEIGHT, self.WIDTH)
+        
+    
         self.player.PLAYER_SPEED = 7
+        self.player.PLAYER_JUMP_POWER = 1
         self.player.player_x = self.WIDTH // 2
         self.player.player_y = 400
         self.player.rect.topleft = (self.player.player_x, self.player.player_y)
         self.player_attack_cooldown = 0
         self.player_attacking = False
+        self.player.allow_attack = True
+        
         
       
         # Mouse God Boss
         self.boss = {
             'x': self.WIDTH // 2 - 150,
-            'y': 0,
-            'size': 300,
+            'y': 200,
+            'width': 700,
+            'height':500,
             'health': 100,
             'max_health': 100,
             'shoot_cooldown': 0,
             'move_timer': 0,
             'move_direction': 1,
-            'phase': 1  # Gets harder as health decreases
+            'phase': 1 
+        # Gets harder as health decreases
         }
         self.boss['x'] = (self.WIDTH - self.boss_frames[0].get_width()) // 2
         self.boss['y'] = 0
+        self.boss_rect = pygame.Rect(self.boss['x'], self.boss['y'], self.boss['width'], self.boss['height'])
         self.boss_rect.topleft = (self.boss['x'], self.boss['y'])
         
         # Projectiles
@@ -121,7 +128,7 @@ class MouseGodBoss:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r and self.game_state != "playing":
                     self.restart_game()
-                if event.key == pygame.K_SPACE and self.game_state == "playing":
+                if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT and self.game_state == "playing":
                     self.try_player_attack()
         return True
 
@@ -129,10 +136,24 @@ class MouseGodBoss:
         # Only allow attack if cooldown is 0 and player is near boss
         if self.player_attack_cooldown == 0:
             player_rect = self.player.rect
+            # Base size of sword
+            sword_width = 10
+            sword_height = 32
+
+            # Position: top-right corner of player
+            sword_x = player_rect.right
+            sword_y = player_rect.top
+
+            # Create sword hitbox
+            sword_hitbox = pygame.Rect(sword_x, sword_y, sword_width, sword_height)
+
+            # Inflate the hitbox (expand in all directions)
+            sword_hitbox = sword_hitbox.inflate(64 * 3, 64 * 3)
+
             boss_rect = self.boss_rect
             # Check if player is close enough to boss (simple collision or range check)
             attack_range = 60
-            if player_rect.colliderect(boss_rect.inflate(attack_range, attack_range)):
+            if sword_hitbox.colliderect(boss_rect.inflate(attack_range, attack_range)):
                 self.player_attacking = True
                 self.boss['health'] -= 5
                 self.player_attack_cooldown = 30  # Cooldown frames
@@ -163,7 +184,7 @@ class MouseGodBoss:
         if self.boss['move_timer'] % 120 == 0:
             self.boss['move_direction'] *= -1
         self.boss['x'] += self.boss['move_direction'] * 2
-        if self.boss['x'] <= 0 or self.boss['x'] >= self.WIDTH - self.boss['size']:
+        if self.boss['x'] <= 0 or self.boss['x'] >= self.WIDTH - self.boss['width']:
             self.boss['move_direction'] *= -1
         self.boss_rect.topleft = (self.boss['x'], self.boss['y'])
         # Determine boss phase based on health
@@ -176,7 +197,7 @@ class MouseGodBoss:
             shoot_delay = 40
         else:
             self.boss['phase'] = 3
-            shoot_delay = 25
+            shoot_delay = 30
         # Boss shooting
         if self.boss['shoot_cooldown'] <= 0:
             self.shoot_fire_cheeseball()
@@ -186,14 +207,14 @@ class MouseGodBoss:
 
     def shoot_fire_cheeseball(self):
         # Fireball spawns from boss mouth (center top of boss sprite)
-        mouth_x = self.boss['x'] + self.boss['size'] // 2
-        mouth_y = self.boss['y'] + 80  # Adjust for mouth position
+        mouth_x = self.boss['x'] + 400  # 800 / 2
+        mouth_y = self.boss['y'] + 170 
         dx = self.player.player_x + self.player.PLAYER_WIDTH // 2 - mouth_x
         dy = self.player.player_y + self.player.PLAYER_HEIGHT // 2 - mouth_y
         angle = math.atan2(dy, dx)
         if self.boss['phase'] >= 2:
             angle += random.uniform(-0.3, 0.3)
-        speed = 5 + self.boss['phase']
+        speed = 3 + self.boss['phase']
         cheeseball = {
             'x': mouth_x,
             'y': mouth_y,
@@ -267,38 +288,19 @@ class MouseGodBoss:
         # Draw ground
         pygame.draw.rect(self.screen, (60, 40, 20), (0, 500, self.WIDTH, 100))
         # Draw player (mouse avatar)
-        self.player.draw(self.screen, pygame.key.get_pressed(), pygame.Vector2(0, 0))
-        # Player attack animation
-        if self.player_attacking:
-            self.attack_anim_timer += 1
-            if self.attack_anim_timer >= 6:
-                self.attack_anim_timer = 0
-                self.attack_anim_index += 1
-                if self.attack_anim_index >= len(self.attack_frames):
-                    self.attack_anim_index = 0
-                    self.player_attacking = False
-            attack_frame = self.attack_frames[self.attack_anim_index]
-            self.screen.blit(attack_frame, (self.player.player_x, self.player.player_y - 40))
+        
         # Boss death animation
         if self.boss['health'] <= 0:
             self.is_boss_dead = True
-        if self.is_boss_dead:
-            self.death_anim_timer += 1
-            if self.death_anim_timer >= 5:
-                self.death_anim_timer = 0
-                self.death_anim_index += 1
-                if self.death_anim_index >= len(self.deahth_frames):
-                    self.death_anim_index = len(self.deahth_frames) - 1
-            death_frame = self.deahth_frames[self.death_anim_index]
-            self.screen.blit(death_frame, (self.boss['x'], self.boss['y']))
-        else:
-            # Boss animation
-            self.boss_anim_timer += 1
-            if self.boss_anim_timer >= 10:
-                self.boss_anim_timer = 0
-                self.boss_anim_index = (self.boss_anim_index + 1) % len(self.boss_frames)
-            boss_frame = self.boss_frames[self.boss_anim_index]
-            self.screen.blit(boss_frame, (self.boss['x'], self.boss['y']))
+        self.frame_timer += 1
+        if self.frame_timer >= self.frame_delay:
+            self.frame_timer = 0
+            if not self.is_boss_dead:
+                self.boss_current_frame += 1
+
+        frame_index = self.boss_current_frame % len(self.boss_frames)
+        frame = self.boss_frames[frame_index]
+        self.screen.blit(frame, (self.boss['x'], self.boss['y']))
         # Draw fire cheeseballs with trails
         for cheeseball in self.fire_cheeseballs:
             for i, (tx, ty) in enumerate(cheeseball['trail']):
@@ -315,6 +317,8 @@ class MouseGodBoss:
             pygame.draw.circle(self.screen, self.RED,
                              (int(cheeseball['x']), int(cheeseball['y'])), 
                              cheeseball['size'] - 16)
+        self.player.draw(self.screen, pygame.key.get_pressed(), pygame.Vector2(0, 0))
+        # Player attack animation
         self.draw_ui()
 
     def draw_ui(self):
