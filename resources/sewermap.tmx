@@ -198,7 +198,7 @@ and I’ll reward you with a cheese! //
 Happy falling!</property>
    </properties>
   </object>
-  <object id="17" name="Rat" type="NPC" x="1296" y="288" width="96" height="96">
+  <object id="17" name="Rat" type="NPC" x="1448" y="296" width="96" height="96">
    <properties>
     <property name="dialogue">A Mouse God summoned with cheese? /n ...sounds fake. //
 Anyway, there’s a cheese stash in that maze — but it’s heavily guarded. /n
