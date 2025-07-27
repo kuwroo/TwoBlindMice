@@ -220,7 +220,8 @@ async def main():
     scene_manager = SceneManager()
     title_scene = TitleScene(screen)
     game_scene = GameScene(screen)
-    scene_manager.switch_to(title_scene)
+    boss_scene = MouseGodBoss(screen)
+    scene_manager.switch_to(boss_scene)
     
     running = True
 
@@ -238,7 +239,7 @@ async def main():
                     settings_menu.active = False
                 continue
                 
-            # Handle global F1 key for settings
+            # Handle global ESC key for settings
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and not settings_menu.active == True:
                 settings_menu.active = True
                 continue

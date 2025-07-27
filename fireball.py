@@ -136,14 +136,13 @@ class MouseGodBoss:
                     elif self.game_state == "paused":
                         self.game_state = "playing"
                         self.pause_menu_active = False
-                elif event.key == pygame.K_g and self.game_state == "paused":
-                    return "OPEN_GLOBAL_SETTINGS"
                 elif event.key == pygame.K_q and self.game_state == "paused":
                     return False  # Quit game
                 elif event.key == pygame.K_r and self.game_state != "playing":
                     self.restart_game()
-                if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT and self.game_state == "playing":
-                    self.try_player_attack()
+                if self.game_state == "playing":
+                    if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+                        self.try_player_attack()
         return True
 
     def try_player_attack(self):
@@ -173,6 +172,9 @@ class MouseGodBoss:
                 self.player_attack_cooldown = 30  # Cooldown frames
                 if self.boss['health'] <= 0:
                     self.game_state = "victory"
+                    self.end_state_timer += 1
+                    if self.end_state_timer > 120:  # 2 seconds at 60fps
+                        return "POP_SCENE"
 
     def update_player(self):
         if self.game_state != "playing":
@@ -281,7 +283,10 @@ class MouseGodBoss:
                                         cheeseball['size']*0.4, cheeseball['size']*0.4)
             if player_rect.colliderect(cheeseball_rect):
                 self.game_state = "dead"
-                return
+                self.end_state_timer += 1
+                if self.end_state_timer > 120:  # 2 seconds at 60fps
+                    return "POP_SCENE"
+             
 
     def draw(self):
         self.screen.fill((20, 10, 40))
@@ -415,7 +420,7 @@ class MouseGodBoss:
         options = [
             "Press ESC to Resume",
             "Press R to Restart Game",
-            "Press G for Global Settings",
+            "Press G for Game Settings",
             "Press Q to Quit"
         ]
         
