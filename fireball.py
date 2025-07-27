@@ -46,7 +46,10 @@ class MouseGodBoss:
         self.DARK_RED = (150, 0, 0)
         
         # Game state
-        self.game_state = "playing"  # "playing", "dead", "victory"
+        self.game_state = "playing"  # "playing", "dead", "victory", "paused"
+        self.pause_menu_active = False
+        self.settings_font = pygame.font.Font(None, 48)
+        self.settings_small_font = pygame.font.Font(None, 32)
         self.font = pygame.font.Font(None, 36)
         self.small_font = pygame.font.Font(None, 24)
         
@@ -126,7 +129,18 @@ class MouseGodBoss:
             if event.type == pygame.QUIT:
                 return False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r and self.game_state != "playing":
+                if event.key == pygame.K_ESCAPE:
+                    if self.game_state == "playing":
+                        self.game_state = "paused"
+                        self.pause_menu_active = True
+                    elif self.game_state == "paused":
+                        self.game_state = "playing"
+                        self.pause_menu_active = False
+                elif event.key == pygame.K_g and self.game_state == "paused":
+                    return "OPEN_GLOBAL_SETTINGS"
+                elif event.key == pygame.K_q and self.game_state == "paused":
+                    return False  # Quit game
+                elif event.key == pygame.K_r and self.game_state != "playing":
                     self.restart_game()
                 if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT and self.game_state == "playing":
                     self.try_player_attack()
@@ -275,13 +289,17 @@ class MouseGodBoss:
             x = (i * 123) % self.WIDTH
             y = (i * 456) % self.HEIGHT
             pygame.draw.circle(self.screen, (100, 100, 150), (x, y), 1)
+        
         if self.game_state == "playing":
             self.draw_game()
+        elif self.game_state == "paused":
+            self.draw_game()  # Draw the game in background
+            self.draw_pause_menu()  # Draw pause menu on top
         elif self.game_state == "dead":
-            
             self.draw_game_over()
         elif self.game_state == "victory":
             self.draw_victory()
+        
         pygame.display.flip()
 
     def draw_game(self):
@@ -372,8 +390,52 @@ class MouseGodBoss:
         text_rect = restart_text.get_rect(center=(self.WIDTH//2, self.HEIGHT//2 + 50))
         self.screen.blit(restart_text, text_rect)
 
+    def draw_pause_menu(self):
+        # Semi-transparent overlay
+        overlay = pygame.Surface((self.WIDTH, self.HEIGHT))
+        overlay.set_alpha(128)
+        overlay.fill((0, 0, 0))
+        self.screen.blit(overlay, (0, 0))
+        
+        # Menu background
+        menu_width = 400
+        menu_height = 350  # Increased height for new option
+        menu_x = (self.WIDTH - menu_width) // 2
+        menu_y = (self.HEIGHT - menu_height) // 2
+        
+        pygame.draw.rect(self.screen, (50, 50, 50), (menu_x, menu_y, menu_width, menu_height))
+        pygame.draw.rect(self.screen, (100, 100, 100), (menu_x, menu_y, menu_width, menu_height), 3)
+        
+        # Menu title
+        title_text = self.settings_font.render("PAUSED", True, self.WHITE)
+        title_rect = title_text.get_rect(center=(self.WIDTH//2, menu_y + 50))
+        self.screen.blit(title_text, title_rect)
+        
+        # Menu options
+        options = [
+            "Press ESC to Resume",
+            "Press R to Restart Game",
+            "Press G for Global Settings",
+            "Press Q to Quit"
+        ]
+        
+        for i, option in enumerate(options):
+            option_text = self.settings_small_font.render(option, True, self.WHITE)
+            option_rect = option_text.get_rect(center=(self.WIDTH//2, menu_y + 120 + i * 40))
+            self.screen.blit(option_text, option_rect)
+
     def restart_game(self):
         self.game_state = "playing"
+        self.pause_menu_active = False
+        self.is_boss_dead = False
+        self.boss_current_frame = 0
+        self.frame_timer = 0
+        self.death_anim_index = 0
+        self.death_anim_timer = 0
+        self.player_attacking = False
+        self.player_attack_cooldown = 0
+        self.player.allow_attack = True
+        self.fire_cheeseballs.clear()
         self.init_game()
 
     def run(self):
