@@ -112,7 +112,7 @@ def play_first_quest():
             for tile in floor_tiles:
                 if player_feet.colliderect(tile.move(0, -camera_offset)):
                     on_floor = True
-                    print("You landed on the floor! Press E to win.")
+                    print("You landed on the floor! Press E to leave.")
                     break
             else:
                 camera_offset += scroll_speed

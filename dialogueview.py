@@ -171,4 +171,3 @@ def test_dialogue_view():
 
     pygame.quit()
 
-test_dialogue_view()
