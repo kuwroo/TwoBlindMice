@@ -8,8 +8,7 @@ from quest import *
 from button import Button
 from camera import Camera
 import pytmx
-from saving import save_game
-import shelve
+
 
 class Scene:
     """Base class for all game scenes with common functionality."""
@@ -165,25 +164,6 @@ class GameScene(Scene):
         self.quest2_completed = False
         self.quest3_completed = False
 
-    def load_game(self, filename="savefile"):
-        with shelve.open(filename) as save:
-            self.player.rect.topleft = save.get("player_pos", (100, 100))
-            self.cheese_count = save.get("cheese_count", 1)
-            self.quest1_completed = save.get("quest1_completed", False)
-            self.quest2_completed = save.get("quest2_completed", False)
-            self.quest3_completed = save.get("quest3_completed", False)
-        print("Game loaded.")
-
-    def save_game(self, filename="savefile"):
-        with shelve.open(filename) as save:
-            save["player_pos"] = self.player.rect.topleft
-            save["cheese_count"] = self.cheese_count
-            save["quest1_completed"] = self.quest1_completed
-            save["quest2_completed"] = self.quest2_completed
-            save["quest3_completed"] = self.quest3_completed
-        print("Game saved.")
-
-
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             # 1. Handle dialogue input (if any NPC is showing dialogue)
@@ -205,21 +185,18 @@ class GameScene(Scene):
                                 if result == "win" and not self.quest2_completed:
                                     self.cheese_count += 1
                                     self.quest2_completed = True
-                                    self.save_game()
                             elif npc.name == "Rabbit":  # example NPC name, adapt as needed
                                 print("Starting Rabbit-hole...")
                                 result = play_first_quest()
                                 if result == "win" and not self.quest1_completed:
                                     self.cheese_count += 1
                                     self.quest1_completed = True
-                                    self.save_game()
                             elif npc.name == "Rat":  # example NPC name, adapt as needed
                                 print("Starting Mouse-Heist...")
                                 result = play_third_quest()
                                 if result == "win" and not self.quest3_completed:
                                     self.cheese_count += 1
                                     self.quest3_completed = True
-                                    self.save_game()
                             return "QUEST_STARTED"
                         return result
 
@@ -231,8 +208,7 @@ class GameScene(Scene):
 
         return None
 
-
-        
+   
     def update(self):
         keys = pygame.key.get_pressed()
         
@@ -243,10 +219,6 @@ class GameScene(Scene):
         self.update_player_position(keys)
         self.center_camera_on_player()
         
-        if keys[pygame.K_F5]:
-            self.save_game()
-        if keys[pygame.K_F9]:
-            self.load_game()
         return None
 
     def draw(self, screen):

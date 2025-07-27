@@ -1,5 +1,0 @@
-'player_pos', (0, 19)
-'cheese_count', (512, 5)
-'quest1_completed', (1024, 4)
-'quest2_completed', (1536, 4)
-'quest3_completed', (2048, 4)
