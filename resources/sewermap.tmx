@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="40" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="22">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="40" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="23">
  <tileset firstgid="1" source="sewer.tsx"/>
  <tileset firstgid="577" source="dank.tsx"/>
  <tileset firstgid="1153" source="quest1well.tsx"/>
@@ -180,14 +180,12 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="2" name="quest_ob">
-  <object id="18" name="boss_entry_zone" x="728" y="304" width="48" height="80"/>
- </objectgroup>
+ <objectgroup id="2" name="quest_ob"/>
  <objectgroup id="8" name="NPC">
   <object id="15" name="Frog" type="NPC" x="136" y="288" width="96" height="96">
    <properties>
-    <property name="dialogue">Help me win this game! /n
-I’ll even share part of the prize with you if you do! //
+    <property name="dialogue">RIBBIT i have been here for hours! /n
+Help me win this game and i will share the prizes with you! //LISTEN UP //
 Use WASD to move the yellow dot. /n
 Avoid the red and pink ghosts, and collect all the points to win. //
 Good luck!</property>
@@ -202,8 +200,8 @@ Happy falling!</property>
   </object>
   <object id="17" name="Rat" type="NPC" x="1448" y="296" width="96" height="96">
    <properties>
-    <property name="dialogue">A Mouse God summoned with cheese? /n ...sounds fake. //
-Anyway, there’s a cheese stash in that maze — but it’s heavily guarded. /n
+    <property name="dialogue">Hey cuz! A Mouse God summoned with cheese? /n ...sounds fake. //
+Anyway, there is a cheese stash in that maze.. but it is heavily guarded. //
 Stay out of the guards’ sight — those rectangles in front of them? That’s their vision. /n 
 If you step in, you’re busted. /n
 Sneak in, grab the cheese, and get out. // Good luck, cuz.
@@ -213,10 +211,22 @@ Sneak in, grab the cheese, and get out. // Good luck, cuz.
 </property>
    </properties>
   </object>
-  <object id="21" name="Wiener" type="NPC" x="1056" y="1104" width="96" height="96">
+  <object id="21" name="Wiener" type="NPC" x="1056" y="1088" width="96" height="96">
    <properties>
-    <property name="dialogue">WIEN
+    <property name="dialogue">GOOD HEAVENS!!
+MY DOG!! 
+MY DOG!! 
+WHERE IS HE RUNNING OFF TO?! // 
+Play him his favourite song to lure him back!
+If you miss too many notes he wont return!! 
+A picky fella he is...
+
 </property>
+   </properties>
+  </object>
+  <object id="22" name="shrine" type="NPC" x="728" y="304" width="48" height="80">
+   <properties>
+    <property name="dialogue" value="You do not have enough cheese to offer the MouseGod!"/>
    </properties>
   </object>
  </objectgroup>
