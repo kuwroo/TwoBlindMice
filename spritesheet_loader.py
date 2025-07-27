@@ -37,3 +37,4 @@ def load_spritesheet(filename, frame_count, frame_width, frame_height, scale=1):
     """Helper function to quickly load all frames from a spritesheet."""
     sheet = SpriteSheet(filename)
     return sheet.get_all_frames(frame_count, frame_width, frame_height, scale)
+

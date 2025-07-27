@@ -30,6 +30,8 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.at_ladder = False  # Flag to indicate if the player is near a ladder
         self.on_ladder = False  # Flag to indicate if the player is on a ladder
         self.climbing = False
+        self.allow_attack = False  # default = no attacking
+        self.is_attacking = False
 
         # Initial player position and velocity
         self.player_x = 300
@@ -48,16 +50,19 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.movement_frames = load_spritesheet('resources/MOUSE.png', 8, 32, 32)
         self.climbing_frames = load_spritesheet('resources/CLIMB.png', 8, 32, 32)
         self.jumping_frames = load_spritesheet('resources/jump5.png', 7, 32, 32)  # Assuming you have a jumping animation
+        self.attack_frames = self.load_spritesheet('resources/attack.png', 7, 64, 64)
         # Ensure current_frame is within bounds of both animations
         self.idle_frame_count = len(self.idle_frames)
         self.movement_frame_count = len(self.movement_frames)
         self.climbing_frame_count = len(self.climbing_frames)
+        self.attack_frame_count = len(self.attack_frames)
         self.jumping_frame_count = len(self.jumping_frames)
         
         self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.idle_frames]
         self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.movement_frames]
         self.climbing_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.climbing_frames]
         self.jumping_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.jumping_frames]
+        self.attack_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 6, self.PLAYER_HEIGHT * 6)) for frame in self.attack_frames]
         
         # Set initial image and rect
         self.image = self.idle_frames[0]
@@ -69,7 +74,14 @@ class PlayerMovement(pygame.sprite.Sprite):
         # Collision box size (smaller than sprite)
         self.COLLISION_WIDTH = self.PLAYER_WIDTH * 1.5  # Make hitbox 2/3 of sprite width
         self.COLLISION_HEIGHT = self.PLAYER_HEIGHT * 1.5  # Make hitbox 2/3 of sprite height
-
+   
+    def load_spritesheet(self, image_path, frame_count, frame_width, frame_height):
+        spritesheet = pygame.image.load(image_path)
+        frames = []
+        for i in range(frame_count):
+            frame = spritesheet.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height))
+            frames.append(frame)
+        return frames    
 
     def handle_input(self, keys):
         self.player_velocity_x = 0
@@ -84,7 +96,12 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.player_velocity_y = -self.JUMP_POWER
             self.is_jumping = True
             self.on_ground = False
-
+        
+        if self.allow_attack:
+            if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:  # Allow shift key for attack  # Allow shift key for attack
+                self.is_attacking = True
+        else:
+            self.is_attacking = False
     # Ladder movement
         if self.at_ladder:
             self.is_jumping = False
@@ -106,6 +123,9 @@ class PlayerMovement(pygame.sprite.Sprite):
         else:
             self.climbing = False
             self.on_ladder = False
+            
+        
+            
 
     def apply_gravity(self):
         if not self.on_ground and not self.on_ladder:
@@ -226,7 +246,9 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.frame_timer += 1
         if self.frame_timer >= self.frame_delay:
             self.frame_timer = 0
-            if is_idle:
+            if self.is_attacking:
+                self.current_frame = (self.current_frame + 1) % self.attack_frame_count
+            elif is_idle:
                 self.current_frame = (self.current_frame + 1) % self.idle_frame_count
             elif self.climbing:
                 # Only advance climbing animation if moving
@@ -247,9 +269,19 @@ class PlayerMovement(pygame.sprite.Sprite):
     def draw(self, screen, keys, camera_offset):
         draw_x = self.player_x - camera_offset.x
         draw_y = self.player_y - camera_offset.y  # Added 32 pixels (1 tile height) to move sprite down
-        is_idle = self.player_velocity_x == 0 and not self.on_ladder and not self.is_jumping
         
-        if self.climbing:
+        # Check if we should use idle animation
+        is_idle = self.player_velocity_x == 0 and not self.on_ladder
+        
+        
+        if self.is_attacking:
+            frame_index = self.current_frame % self.attack_frame_count
+            frame = self.attack_frames[frame_index]
+            if self.player_velocity_x < 0:  # Moving left
+                frame = pygame.transform.flip(frame, True, False)
+            elif self.player_velocity_x == 0 and self.last_direction_left:
+                frame = pygame.transform.flip(frame, True, False)
+        elif self.climbing:
         # Ensure frame index is within bounds for climbing animation
             frame_index = min(self.current_frame, len(self.climbing_frames) - 1)
             frame = self.climbing_frames[frame_index]
