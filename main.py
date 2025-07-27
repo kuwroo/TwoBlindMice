@@ -3,8 +3,8 @@ import asyncio
 from scenes import *
 from scene_manager import SceneManager
 from misc import SCREEN_WIDTH, SCREEN_HEIGHT
-
-
+import pickle
+import os
 
 async def main():
     pygame.init()
@@ -38,9 +38,13 @@ async def main():
                     game_scene = GameScene(screen)
                     scene_manager.switch_to(game_scene)
                 elif result == "ENTER_BOSS":
+                    current_scene = scene_manager.current_scene
+                    if hasattr(current_scene, "save_game"):
+                        current_scene.save_game()  # ✅ Save here
                     boss_scene = MouseGodBoss(screen)
                     scene_manager.push(boss_scene)
                     break
+
                
         # Update current scene
         if scene_manager.current_scene:

@@ -8,7 +8,10 @@ from quest import *
 from button import Button
 from camera import Camera
 import pytmx
+import pickle
+import os
 
+SAVE_FILE = "savegame.sav"
 
 class Scene:
     """Base class for all game scenes with common functionality."""
@@ -145,6 +148,7 @@ class TitleScene(Scene):
             self.draw_prompt(screen)
             
 class GameScene(Scene):
+    
     def __init__(self, screen):
         super().__init__(screen, "resources/sewermap.tmx")
         # Set initial spawn position higher
@@ -165,11 +169,41 @@ class GameScene(Scene):
         self.quest2_completed = False
         self.quest3_completed = False
         self.quest4_completed = False
+        self.player_start_tile = (0, 0)  # Default value
+        self.load_game()  # ✅ Auto-load on creation
         # After self.tile_map is initialized
         for obj in self.tile_map.tmx_data.objects:
             if obj.name == "boss_entry_zone":
                 self.boss_entry_zone = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-        
+    
+    def save_game(self):
+        data = {
+            'player_position': self.player.rect.topleft,
+            'cheese_count': self.cheese_count,
+            'quest1_completed': self.quest1_completed,
+            'quest2_completed': self.quest2_completed,
+            'quest3_completed': self.quest3_completed,
+            'quest4_completed': self.quest4_completed
+        }
+        with open(SAVE_FILE, 'wb') as f:
+            pickle.dump(data, f)
+        print("Game saved.")
+
+    def load_game(self):
+        if os.path.exists(SAVE_FILE):
+            with open(SAVE_FILE, 'rb') as f:
+                data = pickle.load(f)
+                self.player.rect.topleft = data['player_position']
+                self.player.player_x, self.player.player_y = data['player_position']
+                self.cheese_count = data['cheese_count']
+                self.quest1_completed = data['quest1_completed']
+                self.quest2_completed = data['quest2_completed']
+                self.quest3_completed = data['quest3_completed']
+                self.quest4_completed = data['quest4_completed']
+                print("Game loaded.")
+        else:
+            print("No save file found.")
+  
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             # 1. Handle dialogue input (if any NPC is showing dialogue)
@@ -191,24 +225,32 @@ class GameScene(Scene):
                                 if result == "win" and not self.quest2_completed:
                                     self.cheese_count += 1
                                     self.quest2_completed = True
+                                    self.save_game()
+                                    
                             elif npc.name == "Rabbit":  # example NPC name, adapt as needed
                                 print("Starting Rabbit-hole...")
                                 result = play_first_quest()
                                 if result == "win" and not self.quest1_completed:
                                     self.cheese_count += 1
                                     self.quest1_completed = True
+                                    self.save_game()
+
                             elif npc.name == "Rat":  # example NPC name, adapt as needed
                                 print("Starting Mouse-Heist...")
                                 result = play_third_quest()
                                 if result == "win" and not self.quest3_completed:
                                     self.cheese_count += 1
                                     self.quest3_completed = True
+                                    self.save_game()
+
                             # elif npc.name == "WIENERDOG":  # example NPC name, adapt as needed
                             #     print("Starting Wiener Mouse...")
                             #     result = play_fourth_quest()
                             #     if result == "win" and not self.quest4_completed:
                             #         self.cheese_count += 1
                             #         self.quest4_completed = True
+                            #         self.save_game()
+
                             return "QUEST_STARTED"
                         return result
 
