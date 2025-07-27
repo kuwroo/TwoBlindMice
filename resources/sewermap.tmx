@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="40" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="21">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="40" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="22">
  <tileset firstgid="1" source="sewer.tsx"/>
  <tileset firstgid="577" source="dank.tsx"/>
  <tileset firstgid="1153" source="quest1well.tsx"/>
@@ -210,6 +210,12 @@ Sneak in, grab the cheese, and get out. // Good luck, cuz.
 
 
 
+</property>
+   </properties>
+  </object>
+  <object id="21" name="Wiener" type="NPC" x="1056" y="1104" width="96" height="96">
+   <properties>
+    <property name="dialogue">WIEN
 </property>
    </properties>
   </object>

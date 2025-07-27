@@ -243,13 +243,13 @@ class GameScene(Scene):
                                     self.quest3_completed = True
                                     self.save_game()
 
-                            # elif npc.name == "WIENERDOG":  # example NPC name, adapt as needed
-                            #     print("Starting Wiener Mouse...")
-                            #     result = play_fourth_quest()
-                            #     if result == "win" and not self.quest4_completed:
-                            #         self.cheese_count += 1
-                            #         self.quest4_completed = True
-                            #         self.save_game()
+                            elif npc.name == "Wiener":  # example NPC name, adapt as needed
+                                print("Starting Wiener Mouse...")
+                                result = play_fourth_quest()
+                                if result == "win" and not self.quest4_completed:
+                                    self.cheese_count += 1
+                                    self.quest4_completed = True
+                                    self.save_game()
 
                             return "QUEST_STARTED"
                         return result
@@ -262,7 +262,7 @@ class GameScene(Scene):
             # After checking NPC interaction...
             if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
                 if self.boss_entry_zone and self.boss_entry_zone.colliderect(self.player.rect):
-                    if self.cheese_count >= 4:
+                    if self.cheese_count >= 5:
                         return "ENTER_BOSS"
 
         return None
