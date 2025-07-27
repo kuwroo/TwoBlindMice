@@ -864,10 +864,17 @@ def play_fourth_quest():
             
             
             max_combo_text = font_medium.render(f"Max Combo: {max_combo}", True, (255, 255, 255))
-            max_combo_rect = max_combo_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60))
+            max_combo_rect = max_combo_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 65))
             win.blit(max_combo_text, max_combo_rect)
             
+            quit_text = font_medium.render(f"Press E to return", True, (255, 255, 255))
+            quit_rect = max_combo_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
+            win.blit(quit_text, quit_rect)
+            
             quest_result = 'win'
+            
+            if k[pygame.K_e]:
+                run = False
             
         
         pygame.display.update()
