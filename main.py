@@ -21,7 +21,6 @@ async def main():
     # from game
     game_scene = GameScene(screen) # Assuming GameScene is your main game scene
     scene_manager.switch_to(game_scene)
-
     
     running = True
 
@@ -38,14 +37,21 @@ async def main():
                 if result == "SWITCH_TO_GAME":
                     game_scene = GameScene(screen)
                     scene_manager.switch_to(game_scene)
-        
+                elif result == "ENTER_BOSS":
+                    boss_scene = MouseGodBoss(screen)
+                    scene_manager.push(boss_scene)
+                    break
+               
         # Update current scene
         if scene_manager.current_scene:
-            result = scene_manager.current_scene.update()
-            if result == "SWITCH_TO_GAME":
+            update_result = scene_manager.current_scene.update()
+            if update_result == "SWITCH_TO_GAME":
                 game_scene = GameScene(screen)
                 scene_manager.switch_to(game_scene)
-        
+            # After update result check
+            if update_result == "POP_SCENE":
+                scene_manager.pop()
+
         # Draw current scene
         screen.fill((0, 0, 0))  # Clear screen each frame
         if scene_manager.current_scene:

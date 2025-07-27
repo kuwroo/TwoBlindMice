@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="40" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="18">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="40" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="21">
  <tileset firstgid="1" source="sewer.tsx"/>
  <tileset firstgid="577" source="dank.tsx"/>
  <tileset firstgid="1153" source="quest1well.tsx"/>
@@ -180,7 +180,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="2" name="quest_ob"/>
+ <objectgroup id="2" name="quest_ob">
+  <object id="18" name="boss_entry_zone" x="728" y="304" width="48" height="80"/>
+ </objectgroup>
  <objectgroup id="8" name="NPC">
   <object id="15" name="Frog" type="NPC" x="136" y="288" width="96" height="96">
    <properties>
