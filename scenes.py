@@ -232,13 +232,13 @@ class GameScene(Scene):
                                 if result == "win" and not self.quest2_completed:
                                     self.cheese_count += 1
                                     self.quest2_completed = True
-                            elif npc.name == "Quest1mansion":  # example NPC name, adapt as needed
+                            elif npc.name == "Rabbit":  # example NPC name, adapt as needed
                                 print("Starting Rabbit-hole...")
                                 result = play_first_quest()
                                 if result == "win" and not self.quest1_completed:
                                     self.cheese_count += 1
                                     self.quest1_completed = True
-                            elif npc.name == "Quest3":  # example NPC name, adapt as needed
+                            elif npc.name == "Rat":  # example NPC name, adapt as needed
                                 print("Starting Mouse-Heist...")
                                 result = play_third_quest()
                                 if result == "win" and not self.quest3_completed:
@@ -246,24 +246,6 @@ class GameScene(Scene):
                                     self.quest3_completed = True
                             return "QUEST_STARTED"
                         return result
-
-            # 2. If no dialogue showing, handle quest start by pressing E near bins or holes
-            # if event.key == pygame.K_e:
-            #     if self.near_bin:
-            #         print("Starting first quest!")
-            #         result = play_first_quest()
-            #         print("Quest result:", result)
-            #         if result == "win" and not self.quest1_completed:
-            #             self.cheese_count += 1
-            #             self.quest1_completed = True
-
-            #     elif self.near_hole:
-            #         print("Starting second quest!")
-            #         result = play_second_quest()
-            #         print("Quest result:", result)
-            #         if result == "win" and not self.quest2_completed:
-            #             self.cheese_count += 1
-            #             self.quest2_completed = True
 
                 # Check for NPC interaction if no dialogue is active
                 for npc in self.npcs:

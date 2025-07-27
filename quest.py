@@ -7,6 +7,7 @@ from tilemap import TileMap
 from spritesheet_loader import SpriteSheet
 from colours import *
 from spritesheet_loader import *
+import pytmx
 
 def play_first_quest():
     pygame.init()
@@ -334,17 +335,15 @@ def play_third_quest():
     pygame.display.set_caption("Stealth Heist")
     FPS = 60
 
-    tmx = TileMap("resources/mazemap.tmx")
+    tmx = TileMap("resources/mazemap2.tmx")
 
     player = None
     exit_rects = []
-    walls = []
     npcs = []
+    walls = tmx.floor_rects 
 
     for obj in tmx.interactables:
-        if obj["type"].lower() == "wall":
-            walls.append(obj["rect"])
-        elif obj["type"].lower() == "spawn":
+        if obj["type"].lower() == "spawn":
             PLAYER_SIZE = 32  # or any value you want
             player = pygame.Rect(obj["rect"].x, obj["rect"].y, PLAYER_SIZE, PLAYER_SIZE)
         elif obj["type"].lower() == "exit":
@@ -370,7 +369,6 @@ def play_third_quest():
             }
             npcs.append(npc)
 
-    print("Walls loaded:", walls)
     print("Player spawn:", player)
     print("Exits loaded:", exit_rects)
     print("NPCs loaded:", npcs)
@@ -486,4 +484,6 @@ def play_third_quest():
 
     pygame.quit()
     return result
+
+play_third_quest()
 

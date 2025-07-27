@@ -184,23 +184,29 @@
  <objectgroup id="8" name="NPC">
   <object id="15" name="Frog" type="NPC" x="136" y="288" width="96" height="96">
    <properties>
-    <property name="dialogue">help me win this game! /n
-i will give you a part of the prizes if you do //
-press SPACE to start the game, and WASD to move! remember to avoid the pink and red ghosts!</property>
+    <property name="dialogue">Help me win this game! /n
+I’ll even share part of the prize with you if you do! //
+Use WASD to move the yellow dot. /n
+Avoid the red and pink ghosts, and collect all the points to win. //
+Good luck!</property>
    </properties>
   </object>
-  <object id="16" name="Quest1mansion" type="NPC" x="1256" y="672" width="96" height="96">
+  <object id="16" name="Rabbit" type="NPC" x="1288" y="664" width="96" height="96">
    <properties>
-    <property name="dialogue">if you dare to drop into this well i'll give you a cheese! //
-remember to avoid all the obstacles or you'll die! /n 
-good luck!</property>
+    <property name="dialogue">Drop into this well if you dare... /n 
+and I’ll reward you with a cheese! //
+Happy falling!</property>
    </properties>
   </object>
-  <object id="17" name="Quest3" type="NPC" x="728" y="1120" width="96" height="96">
+  <object id="17" name="Rat" type="NPC" x="1296" y="288" width="96" height="96">
    <properties>
-    <property name="dialogue">hmm i heard of one in a maze.../n
-but it's heavily guarded... /n your only shot is to sneak past them and reach the exit. no fighting. get to the end and the cheese is yours. //
-to win, avoid getting seen by the guards. the guard's line of sight are shown by the rectangles from the red guards. avoid them and the prize is yours. 
+    <property name="dialogue">A Mouse God summoned with cheese? /n ...sounds fake. //
+Anyway, there’s a cheese stash in that maze — but it’s heavily guarded. /n
+Stay out of the guards’ sight — those rectangles in front of them? That’s their vision. /n 
+If you step in, you’re busted. /n
+Sneak in, grab the cheese, and get out. // Good luck, cuz.
+
+
 
 </property>
    </properties>
