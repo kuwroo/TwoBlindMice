@@ -85,6 +85,7 @@ class DialogueView:
         elif key == pygame.K_RETURN:
             if self.can_close:
                 return "PLAY_QUEST"
+            
         return "NO_ACTION"
     
     
@@ -135,7 +136,7 @@ class DialogueView:
             if (pygame.time.get_ticks() // 500) % 2 == 0:
                 close = self.font.render("Press E to close", True, (255, 255, 255))
                 enter = self.font.render("Press ENTER to start", True, (255, 255, 255))
-                screen.blit(close, (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 100))
+                screen.blit(close, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 100))
                 screen.blit(enter, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 140))
 
 

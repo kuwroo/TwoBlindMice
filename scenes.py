@@ -54,10 +54,11 @@ class Scene:
 
 class TitleScene(Scene):
     def __init__(self, screen):
-        super().__init__(screen, "resources/titleTEST.tmx")
+        super().__init__(screen, "resources/entry.tmx")
         #print("Loaded tilemap, interactables:", self.tile_map.interactables)  # Debug print
         self.is_mouse = True
         self.cursor = Cursor()
+        
         
         # Create buttons
         button_width = 200
@@ -71,34 +72,10 @@ class TitleScene(Scene):
         game_y = start_y + button_height + 20  # 20 pixels padding
         self.game_button = Button(start_x, game_y, button_width, button_height, "Enter Game")
         
-        self.near_door = False
-        #print("TitleScene initialized with door prompt")
-        
-    def check_door_proximity(self):
-        if not self.is_mouse:
-            # Get player position in world coordinates
-            player_pos = pygame.Rect(
-                self.player.player_x,
-                self.player.player_y,
-                self.player.rect.width,
-                self.player.rect.height
-            )
-            #print(f"Player pos: {player_pos}")
-            
-            # Check each door
-            for obj in self.tile_map.interactables:
-                if obj["type"].lower() == "door":
-                    door_rect = obj["rect"].inflate(100, 100)  # Expanded interaction zone
-                    if player_pos.colliderect(door_rect):
-                        #print("Near door - showing prompt")
-                        self.prompt_text = self.font.render("Press E to enter", True, (255, 255, 255))
-                        self.near_door = True
-                        return
-            
-            # No door nearby
-            self.prompt_text = None
-            self.near_door = False
+        self.npcs = self.tile_map.load_npcs()
+        self.NPC_interacted = False
 
+  
     def handle_event(self, event):
         if self.is_mouse:
             # Handle start button click to switch to player mouse
@@ -111,13 +88,34 @@ class TitleScene(Scene):
                 self.player.rect.topleft = (self.player.player_x, self.player.player_y)
                 self.is_mouse = False
                 return None
-        else:
-            # Handle door interaction when 'E' is pressed
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_e and self.near_door:
-                print("Door interaction - switching to game scene!")
-                return "SWITCH_TO_GAME"
-        return None
+        else:  
+            self.cursor.is_mouse = False
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_e, pygame.K_SPACE, pygame.K_RETURN):
+                    for npc in self.npcs:
+                        if npc.showing_dialogue:
+                            result = npc.dialogue.handle_input(event.key)
+                            if result == "CLOSE":
+                                npc.showing_dialogue = False
+                                self.player.can_move = True
+                                # Check if dialogue is completely finished
+                                if npc.name == "SusMouse":  # example NPC name, adapt as needed
+                                    result = "SWITCH_TO_GAME"
+                                # Otherwise continue the dialogue
+                                return result
+                            # Handle other dialogue results if needed
+                       
+                
+                # Check for NPC interaction if no dialogue is active (only if no NPC is showing dialogue)
+                if not any(npc.showing_dialogue for npc in self.npcs):
+                    if event.key in (pygame.K_e, pygame.K_SPACE, pygame.K_RETURN):
+                        for npc in self.npcs:
+                            if npc.is_near_player(self.player.rect):
+                                npc.interact()
+                                return "NPC_INTERACTED"
 
+        return None
+    
     def update(self):
         keys = pygame.key.get_pressed()
         if self.is_mouse:
@@ -125,27 +123,45 @@ class TitleScene(Scene):
             self.start_button.update_position(self.camera_offset)
         else:
             # Use common update logic from superclass
+            # Use common update logic from superclass
+            if any(npc.showing_dialogue for npc in self.npcs):
+                self.player.can_move = False
             self.handle_input_and_gravity(keys)
             self.update_player_position(keys)
             self.center_camera_on_player()
-            
-            # Check for door proximity
-            self.check_door_proximity()
-        
         return None
+        
         
     def draw(self, screen):
         screen.fill((30, 30, 30))
         self.tile_map.draw(screen, self.camera_offset)
+        # Update and draw fog of war
+        self.fog.visibility_radius = 0  # No fog in title scene
+        self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
+        self.fog.draw(screen)
         
         if self.is_mouse:
             self.start_button.draw(screen)
             self.cursor.draw()
         else:
-            self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
             
-            # Draw interaction prompt if it exists
-            self.draw_prompt(screen)
+            
+            screen.fill((0, 0, 0))
+            self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
+        
+        
+        # Draw interaction prompt if it exists
+        self.draw_prompt(screen)
+        # Let each NPC handle its own update and draw
+        current_time = pygame.time.get_ticks()
+        for npc in self.npcs:
+            npc.update(current_time)
+            npc.draw(screen, self.camera_offset)
+            
+         
+        
+        
+              
             
 class GameScene(Scene):
     
@@ -337,7 +353,6 @@ class Entry(Scene):
         return None
     
     def update(self):
-        
         keys = pygame.key.get_pressed()
         # Use common update logic from superclass
         if any(npc.showing_dialogue for npc in self.npcs):
@@ -354,6 +369,8 @@ class Entry(Scene):
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_e, pygame.K_SPACE):
                 for npc in self.npcs:
+                    if npc.is_near_player(self.player.rect):
+                        npc.interact()
                     if npc.showing_dialogue:
                         result = npc.dialogue.handle_input(event.key)
                         if result == "CLOSE":
@@ -361,12 +378,7 @@ class Entry(Scene):
                             self.player.can_move = True
                         return result
 
-            # Only try to interact if no dialogue is showing
-            if event.key == pygame.K_e:
-                for npc in self.npcs:
-                    if npc.is_near_player(self.player.rect):
-                        npc.interact()
-                        return "NPC_INTERACTED"
+           
         return None
 
 

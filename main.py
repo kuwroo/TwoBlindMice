@@ -16,11 +16,11 @@ async def main():
     scene_manager = SceneManager()
     # from title 
     # entry_scene = Entry(screen)
-    # #title_scene = TitleScene(screen)
+    title_scene = TitleScene(screen)
     # scene_manager.switch_to(entry_scene)
     # from game
     game_scene = GameScene(screen) # Assuming GameScene is your main game scene
-    scene_manager.switch_to(game_scene)
+    scene_manager.switch_to(title_scene)
     
     running = True
 
