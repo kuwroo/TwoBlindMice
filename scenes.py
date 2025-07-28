@@ -306,11 +306,11 @@ class GameScene(Scene):
                     if npc.is_near_player(self.player.rect):
                         npc.interact()
                         return "NPC_INTERACTED"
-            # After checking NPC interaction...
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-                if self.Shrine and self.Shrine.colliderect(self.player.rect):
-                    if self.cheese_count >= 5:
-                        return "ENTER_BOSS"
+            # # After checking NPC interaction...
+            # if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+            #     if self.Shrine and self.Shrine.colliderect(self.player.rect):
+            #         if self.cheese_count >= 5:
+            #             return "ENTER_BOSS"
 
         return None
 
