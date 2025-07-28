@@ -12,6 +12,7 @@ import pickle
 import os
 import math
 import random
+from dialogueview import DialogueView
 
 SAVE_FILE = "savegame.sav"
 
@@ -187,6 +188,7 @@ class GameScene(Scene):
     def __init__(self, screen):
         super().__init__(screen, "resources/sewermap.tmx")
         # Set initial spawn position higher
+        self.player.player_x = SCREEN_WIDTH // 2
         self.player.player_y = SCREEN_HEIGHT // 4
         self.player.rect.topleft = (self.player.player_x, self.player.player_y)
         self.fog = FogOfWar()
@@ -210,6 +212,7 @@ class GameScene(Scene):
         for obj in self.tile_map.tmx_data.objects:
             if obj.name == "boss_entry_zone":
                 self.boss_entry_zone = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                
     
     def save_game(self):
         data = {
@@ -285,7 +288,16 @@ class GameScene(Scene):
                                     self.cheese_count += 1
                                     self.quest4_completed = True
                                     self.save_game()
-
+                            elif npc.name == "Shrine":  # example NPC name, adapt as needed
+                                if self.cheese_count >= 5:
+                                    print("Entering Boss Battle...")
+                                    return "ENTER_BOSS"
+                                    self.save_game()
+                                else:
+                                    dialogue_text = "You have not enough cheese to offer the Mouse God!"
+                                    font_path = "resources/Minecraft.ttf"
+                                    dialogue_box = DialogueView (font_path, dialogue_text)
+                                    dialogue_box.draw(self.screen)
                             return "QUEST_STARTED"
                         return result
 
@@ -296,7 +308,7 @@ class GameScene(Scene):
                         return "NPC_INTERACTED"
             # After checking NPC interaction...
             if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-                if self.boss_entry_zone and self.boss_entry_zone.colliderect(self.player.rect):
+                if self.Shrine and self.Shrine.colliderect(self.player.rect):
                     if self.cheese_count >= 5:
                         return "ENTER_BOSS"
 
