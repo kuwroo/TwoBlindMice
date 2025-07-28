@@ -137,18 +137,35 @@ class TitleScene(Scene):
     def draw(self, screen):
         screen.fill((30, 30, 30))
         self.tile_map.draw(screen, self.camera_offset)
+        
         # Update and draw fog of war
         self.fog.visibility_radius = 0  # No fog in title scene
         self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
         self.fog.draw(screen)
-        
+        # Load image
+        my_image = pygame.image.load("resources/title.png").convert_alpha()
+
+        # World coordinates of image (e.g., a piece of cheese)
+        cheese_pos = pygame.Vector2(300, 200)
+
+        # Camera position (moves as player moves)
+        camera_x = self.player.rect.centerx - SCREEN_WIDTH // 2
+        camera_y = self.player.rect.centery - SCREEN_HEIGHT // 2
+        camera_offset = pygame.Vector2(camera_x, camera_y)
+
+        # Convert world to screen position
+        screen_pos = cheese_pos - camera_offset
+
+        # Draw
+        screen.blit(my_image, screen_pos)
+
         if self.is_mouse:
             self.start_button.draw(screen)
             self.cursor.draw()
         else:
             
             
-            screen.fill((0, 0, 0))
+            
             self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
         
         

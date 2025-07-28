@@ -221,7 +221,7 @@ async def main():
     title_scene = TitleScene(screen)
     game_scene = GameScene(screen)
     boss_scene = MouseGodBoss(screen)
-    scene_manager.switch_to(boss_scene)
+    scene_manager.switch_to(title_scene)
     
     running = True
 
