@@ -32,6 +32,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.climbing = False
         self.allow_attack = False  # default = no attacking
         self.is_attacking = False
+        self.death = False
 
         # Initial player position and velocity
         self.player_x = 300
@@ -51,19 +52,22 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.climbing_frames = self.load_spritesheet('resources/CLIMB.png', 8, 32, 32)
         self.attack_frames = self.load_spritesheet('resources/attack.png', 7, 64, 64)
         self.jumping_frames = load_spritesheet('resources/jump5.png', 7, 32, 32)  # Assuming you have a jumping animation
+        self.death_frames = self.load_spritesheet('resources/death.png', 7, 32, 32)
         # Ensure current_frame is within bounds of both animations
         self.idle_frame_count = len(self.idle_frames)
         self.movement_frame_count = len(self.movement_frames)
         self.climbing_frame_count = len(self.climbing_frames)
         self.attack_frame_count = len(self.attack_frames)
         self.jumping_frame_count = len(self.jumping_frames)
+        self.death_frame_count = len(self.death_frames)
         
         self.idle_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.idle_frames]
         self.movement_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.movement_frames]
         self.climbing_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.climbing_frames]
         self.attack_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 6, self.PLAYER_HEIGHT * 6)) for frame in self.attack_frames]
         self.jumping_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.jumping_frames]
-
+        self.death_frames = [pygame.transform.scale(frame, (self.PLAYER_WIDTH * 3, self.PLAYER_HEIGHT * 3)) for frame in self.death_frames]
+        
         # Set initial image and rect
         self.image = self.idle_frames[0]
         self.rect = self.image.get_rect()
@@ -136,7 +140,11 @@ class PlayerMovement(pygame.sprite.Sprite):
         else:
             self.is_attacking = False
             
-        
+        #death handling
+        if self.death:
+            self.player_velocity_x = 0
+            self.player_velocity_y = 0
+            
             
 
     def apply_gravity(self):
@@ -260,6 +268,8 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.frame_timer = 0
             if is_idle:
                 self.current_frame = (self.current_frame + 1) % self.idle_frame_count
+            elif self.death:
+                self.current_frame = (self.current_frame + 1) % self.death_frame_count
             elif self.is_attacking:
                 self.current_frame = (self.current_frame + 1) % self.attack_frame_count
             elif self.climbing:
@@ -269,6 +279,7 @@ class PlayerMovement(pygame.sprite.Sprite):
                 # If not moving, keep current frame within bounds
                 else:
                     self.current_frame = min(self.current_frame, len(self.climbing_frames) - 1)
+            
             elif self.is_jumping and not self.on_ladder:
                 self.current_frame = self.get_air_sprite()
             elif self.player_velocity_x < 0:  # Moving left
@@ -280,22 +291,38 @@ class PlayerMovement(pygame.sprite.Sprite):
         
     def draw(self, screen, keys, camera_offset):
         draw_x = self.player_x - camera_offset.x
-        draw_y = self.player_y - camera_offset.y  # Added 32 pixels (1 tile height) to move sprite down
-        
+        draw_y = self.player_y - camera_offset.y
+
         # Check if we should use idle animation
         is_idle = self.player_velocity_x == 0 and not self.on_ladder and not self.is_jumping
         
         if self.is_attacking:
             frame_index = self.current_frame % self.attack_frame_count
             frame = self.attack_frames[frame_index]
-            if self.player_velocity_x < 0:  # Moving left
+            if self.player_velocity_x < 0 or (self.player_velocity_x == 0 and self.last_direction_left):
                 frame = pygame.transform.flip(frame, True, False)
-            elif self.player_velocity_x == 0 and self.last_direction_left:
-                frame = pygame.transform.flip(frame, True, False)
-        elif self.climbing:
+            # Special positioning for attack frames since they're larger
+            sprite_rect = frame.get_rect()
+            sprite_rect.midbottom = (
+                draw_x + (self.PLAYER_WIDTH * 1.5),  # Center horizontally
+                draw_y + (self.PLAYER_HEIGHT) * 4    # Align with ground
+            )
+            # Offset attack animation to center on player
+            if self.last_direction_left:
+                sprite_rect.x -= self.PLAYER_WIDTH * 1.5
+            else:
+                sprite_rect.x -= self.PLAYER_WIDTH * 1.5
+            screen.blit(frame, sprite_rect)
+            return  # Exit early since we've handled the attack frame
+
+        # Handle all other animations
+        if self.climbing:
         # Ensure frame index is within bounds for climbing animation
             frame_index = min(self.current_frame, len(self.climbing_frames) - 1)
             frame = self.climbing_frames[frame_index]
+        elif self.death:
+            frame_index = self.current_frame % self.death_frame_count
+            frame = self.death_frames[frame_index]
         elif is_idle:
             frame_index = self.current_frame % self.idle_frame_count
             frame = self.idle_frames[frame_index]
@@ -308,6 +335,8 @@ class PlayerMovement(pygame.sprite.Sprite):
                 frame = pygame.transform.flip(frame, True, False)
             elif self.player_velocity_x == 0 and self.last_direction_left:
                 frame = pygame.transform.flip(frame, True, False)  
+        
+            
         elif self.is_jumping and not self.on_ladder:
             frame_index = self.current_frame
             if self.jumping_frames and 0 <= frame_index < len(self.jumping_frames):

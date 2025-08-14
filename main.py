@@ -254,6 +254,7 @@ async def main():
     title_scene = TitleScene(screen)
     game_scene = GameScene(screen)
     boss_scene = MouseGodBoss(screen)
+    shrine_scene = ShrineScene(screen)
     scene_manager.switch_to(title_scene)
     
     running = True
@@ -292,6 +293,9 @@ async def main():
                 if result == "SWITCH_TO_GAME":
                     game_scene = GameScene(screen)
                     scene_manager.switch_to(game_scene)
+                elif result == "ENTER_SHRINE":
+                    shrine_scene = ShrineScene(screen)
+                    scene_manager.switch_to(shrine_scene)
                 elif result == "ENTER_BOSS":
                     current_scene = scene_manager.current_scene
                     if hasattr(current_scene, "save_game"):
@@ -299,6 +303,12 @@ async def main():
                     boss_scene = MouseGodBoss(screen)
                     scene_manager.push(boss_scene)
                     break
+                elif result == "ENDING":
+                    ending_scene = Ending(screen)
+                    scene_manager.switch_to(ending_scene)
+                elif result == "FINAL_ENDING":
+                    final_ending_scene = FinalEnding(screen)
+                    scene_manager.switch_to(final_ending_scene)
                 elif result == "OPEN_GLOBAL_SETTINGS":
                     settings_menu.active = True
 

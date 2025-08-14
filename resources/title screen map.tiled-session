@@ -61,19 +61,53 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "Ending.tmx": {
+            "scale": 0.3929,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 454.31407482820043,
+                "y": 185.79791295495045
+            }
+        },
+        "Screenshot_2025-08-14_at_5.45.09 PM.tsx": {
+            "scaleInDock": 0.1788,
+            "scaleInEditor": 1
+        },
+        "TESTTEST.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 0.5487,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 618.7351922726446,
+                "y": 171.3140149444141
+            }
+        },
+        "ba3c9b7cbaf1e926f609461f54600304.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 0.3686
+        },
         "dank.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1
+        },
+        "detailed-pixel-art-city-sunset-featuring-futuristic-buildings-retro-vibes-blend-warm-cool-tones-nostalgic-visually-361000327.jpg.tsx": {
+            "scaleInEditor": 1
+        },
+        "e67e510aa0f8ff31e642980d0ab0d41a.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "entry.tmx": {
             "expandedObjectLayers": [
                 3
             ],
-            "scale": 0.2696,
+            "scale": 0.2106,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": -8911.350148367952,
-                "y": 330.1186943620178
+                "x": 795.346628679962,
+                "y": 52.23171889838568
             }
         },
         "maze tile set.tsx": {
@@ -111,6 +145,18 @@
             "scaleInDock": 0.3235,
             "scaleInEditor": 0.54
         },
+        "shrine.tmx": {
+            "scale": 0.4309,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": -31.32977488976553,
+                "y": -236.71385472267343
+            }
+        },
+        "shrine.tsx": {
+            "scaleInDock": 0.7773,
+            "scaleInEditor": 0.629
+        },
         "title.tmx": {
             "scale": 0.4049,
             "selectedLayer": 1,
@@ -127,10 +173,10 @@
                 8
             ],
             "scale": 0.4497,
-            "selectedLayer": 0,
+            "selectedLayer": -1,
             "viewCenter": {
-                "x": 1895.7082499444077,
-                "y": 724.9277295975095
+                "x": 703.802535023349,
+                "y": 1183.0108961529909
             }
         },
         "titleTEST.tmx#dank": {
@@ -139,11 +185,11 @@
     },
     "frame.defaultDuration": 120,
     "last.externalTilesetPath": "C:/Users/jacel/Downloads",
-    "last.imagePath": "C:/Users/jacel/Downloads/Telegram Desktop",
-    "map.fixedSize": false,
-    "map.height": 42,
+    "last.imagePath": "/Users/chloe/Downloads",
+    "map.fixedSize": true,
+    "map.height": 15,
     "map.lastUsedFormat": "tmx",
-    "map.width": 60,
+    "map.width": 37,
     "openFiles": [
         "titleTEST.tmx",
         "sewer.tsx",
@@ -152,18 +198,18 @@
     "project": "title screen map.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "Screenshot_2025-08-14_at_5.45.09 PM.tsx",
+        "e67e510aa0f8ff31e642980d0ab0d41a.tsx",
+        "detailed-pixel-art-city-sunset-featuring-futuristic-buildings-retro-vibes-blend-warm-cool-tones-nostalgic-visually-361000327.jpg.tsx",
+        "ba3c9b7cbaf1e926f609461f54600304.tsx",
+        "shrine.tsx",
         "mazemap2.tmx",
         "titleTEST.tmx",
         "sewer.tsx",
         "entry.tmx",
         "title.tmx",
         "sewermap.tsx",
-        "C:/Users/jacel/Downloads/fann.tsx",
-        "C:/Users/jacel/Downloads/start.tsx",
-        "C:/Users/jacel/Downloads/titlefont.tsx",
-        "C:/Users/jacel/Downloads/tite.tsx",
-        "C:/Users/jacel/Downloads/fan.tsx",
-        "C:/Users/jacel/Downloads/twt.tsx"
+        "C:/Users/jacel/Downloads/fann.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
