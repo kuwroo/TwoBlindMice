@@ -84,45 +84,57 @@ class PlayerMovement(pygame.sprite.Sprite):
         return frames
 
     def handle_input(self, keys):
+        # First handle horizontal movement
         self.player_velocity_x = 0
-        if keys[pygame.K_a] and self.player_x > self.PLAYER_SPEED:  # Change to 'A' for left
+        horizontal_movement = False
+        
+        if keys[pygame.K_a] and self.player_x > self.PLAYER_SPEED:
             self.player_velocity_x = -self.PLAYER_SPEED
             self.last_direction_left = True
-        if keys[pygame.K_d] and self.player_x < self.WORLD_WIDTH - self.PLAYER_WIDTH - self.PLAYER_SPEED:  # Change to 'D' for right
+            horizontal_movement = True
+        if keys[pygame.K_d] and self.player_x < self.WORLD_WIDTH - self.PLAYER_WIDTH - self.PLAYER_SPEED:
             self.player_velocity_x = self.PLAYER_SPEED
             self.last_direction_left = False
+            horizontal_movement = True
 
-        if keys[pygame.K_SPACE] and self.on_ground or keys[pygame.K_w] and self.on_ground:  # Allow both Space and W for jump
+        # Jumping
+        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
             self.player_velocity_y = -self.JUMP_POWER
             self.is_jumping = True
             self.on_ground = False
+            self.on_ladder = False  # Get off ladder when jumping
         
-        if self.allow_attack:
-            if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:  # Allow shift key for attack  # Allow shift key for attack
-                self.is_attacking = True
-        else:
-            self.is_attacking = False
-    # Ladder movement
-        if self.at_ladder:
+        # Ladder movement - only if not moving horizontally
+        if self.at_ladder and not horizontal_movement:
             self.is_jumping = False
+            
             if keys[pygame.K_w]:
                 self.climbing = True
                 self.player_velocity_y = -self.CLIMB_SPEED
                 self.on_ladder = True
-            elif self.on_ground and keys[pygame.K_s]:
-                self.climbing = False
-                self.on_ladder = False
-                self.player_velocity_y = 0
-            elif keys[pygame.K_s] and not self.on_ground:  # Only allow climbing down if not on ground
-                self.climbing = True
-                self.player_velocity_y = self.CLIMB_SPEED
-                self.on_ladder = True
+            elif keys[pygame.K_s]:
+                if not self.on_ground:  # Only climb down if not on ground
+                    self.climbing = True
+                    self.player_velocity_y = self.CLIMB_SPEED
+                    self.on_ladder = True
+                else:
+                    self.climbing = False
+                    self.on_ladder = False
+                    self.player_velocity_y = 0
             else:
                 if self.on_ladder:
                     self.player_velocity_y = 0
         else:
             self.climbing = False
-            self.on_ladder = False
+            if not self.is_jumping:
+                self.on_ladder = False
+
+        # Attack handling
+        if self.allow_attack:
+            if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+                self.is_attacking = True
+        else:
+            self.is_attacking = False
             
         
             
@@ -195,7 +207,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         
         self.at_ladder = False
         for ladder in ladder_rects:
-            if collision_rect.colliderect(ladder) and not self.on_ground:
+            if collision_rect.colliderect(ladder):
                 self.at_ladder = True
                 return True
         return False

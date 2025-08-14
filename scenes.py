@@ -91,32 +91,29 @@ class TitleScene(Scene):
                 self.player.rect.topleft = (self.player.player_x, self.player.player_y)
                 self.is_mouse = False
                 return None
-        else:  
+        else:
             self.cursor.is_mouse = False
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_e, pygame.K_SPACE, pygame.K_RETURN):
+                    # First check if any NPC is showing dialogue
                     for npc in self.npcs:
                         if npc.showing_dialogue:
                             result = npc.dialogue.handle_input(event.key)
+                            print(f"Dialogue result: {result} from NPC: {npc.name}")  # Debug print
                             if result == "CLOSE":
                                 npc.showing_dialogue = False
                                 self.player.can_move = True
-                                # Check if dialogue is completely finished
-                                if npc.name == "SusMouse":  # example NPC name, adapt as needed
-                                    result = "SWITCH_TO_GAME"
-                                # Otherwise continue the dialogue
-                                return result
-                            # Handle other dialogue results if needed
-                       
-                
-                # Check for NPC interaction if no dialogue is active (only if no NPC is showing dialogue)
-                if not any(npc.showing_dialogue for npc in self.npcs):
-                    if event.key in (pygame.K_e, pygame.K_SPACE, pygame.K_RETURN):
-                        for npc in self.npcs:
-                            if npc.is_near_player(self.player.rect):
-                                npc.interact()
-                                return "NPC_INTERACTED"
-
+                            elif result == "PLAY_QUEST" and npc.name == "SusMouse":
+                                npc.showing_dialogue = False
+                                print("SusMouse dialogue finished - switching to game")  # Debug print
+                                return "SWITCH_TO_GAME"
+                            return result
+                    
+                    # If no dialogue is showing, check for new NPC interactions
+                    for npc in self.npcs:
+                        if npc.is_near_player(self.player.rect):
+                            npc.interact()
+                            return "NPC_INTERACTED"
         return None
     
     def update(self):
@@ -186,7 +183,7 @@ class TitleScene(Scene):
 class GameScene(Scene):
     
     def __init__(self, screen):
-        super().__init__(screen, "resources/sewermap.tmx")
+        super().__init__(screen, "resources/titleTEST.tmx")
         # Set initial spawn position higher
         self.player.player_x = SCREEN_WIDTH // 2
         self.player.player_y = SCREEN_HEIGHT // 4
@@ -1262,11 +1259,10 @@ class MouseGodBoss(Scene):
         self.fire_cheeseballs.clear()
         self.end_state_timer = 0
         self.init_game()
-        
 
-        
-        
 
-        
-       
-        
+
+
+
+
+

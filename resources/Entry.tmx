@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="46" height="19" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="4">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="46" height="19" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="5">
  <tileset firstgid="1" source="sewer.tsx"/>
  <layer id="1" name="Tile Layer 1" width="46" height="19">
   <data encoding="csv">
@@ -69,14 +69,14 @@ The MouseGod is elusive, and only listens to those who give offerings at the Shr
   </properties>
   <object id="2" name="SusMouse" type="NPC" x="1088" y="256" width="96" height="96">
    <properties>
-    <property name="dialogue">you can't see…can you?//
-You: I...don't know how I got here… or what I was doing before …ACK! //
+    <property name="dialogue">you cant see...can you?//
+You: I...dont know how I got here... or what I was doing before ...ACK! //
 You: I-I remember now! We were looking for food… and got swept into here by the rain! My friend! I have to find him!//
 Hearsay...there lives a MouseGod in these sewers...
-He is all knowing, all seeing and all powerful… and if you bring him 5 golden cheese, he will grant you a single wish... //
+He is all knowing, all seeing and all powerful... and if you bring him 5 golden cheese, he will grant you a single wish... //
 The sewer miasma clouds your vision, but the cheese has a purifying effect and you will slowly regain sight, with the blessing of the Mousegod! Here, take this!//
 &lt;he puts a shiny, suspicious smelling cheese in your hands&gt;//
-The MouseGod is elusive, and only listens to those who give offerings at the Shrine… Let me show you where it is!</property>
+The MouseGod is elusive, and only listens to those who give offerings at the Shrine... Let me show you where it is!</property>
    </properties>
   </object>
  </objectgroup>
