@@ -148,8 +148,6 @@ def play_first_quest():
 
     return quest_result
 
-play_first_quest()
-
 def play_second_quest():
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -214,6 +212,8 @@ def play_second_quest():
     game_started = False
     ghost_move_timer = 0
     ghost_move_interval = 2
+    showing_dialogue = False
+    dialogue_box = None
 
     def can_move(rect, ignore_ghost=None):
         # Check walls and screen bounds as before
@@ -279,6 +279,10 @@ def play_second_quest():
             if event.type == pygame.QUIT:
                 run = False
                 quest_result = "quit"
+            elif event.type == pygame.KEYDOWN and showing_dialogue:
+                if dialogue_box.handle_input(event.key) == "CLOSE":
+                    showing_dialogue = False
+                    run = False  # end loop after dialogue
 
         keys = pygame.key.get_pressed()
         if not game_started and keys[pygame.K_SPACE]:
@@ -306,17 +310,26 @@ def play_second_quest():
             if not points:
                 print("You Win!")
                 quest_result = "win"
-                run = False
+                font_path = "resources/Minecraft.ttf"
+                dialogue_text = "Congrats! You landed safely. Press E to exit."
+                dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
+                showing_dialogue = True
 
             if player.colliderect(ghost):
                 print("Caught by Ghost! You Lose.")
                 quest_result = "lose"
-                run = False
+                font_path = "resources/Minecraft.ttf"
+                dialogue_text = "Oops! You got caught by the ghost. Press E to exit."
+                dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_fail")
+                showing_dialogue = True
 
             if player.colliderect(ghost2):
                 print("Caught by Second Ghost! You Lose.")
                 quest_result = "lose"
-                run = False
+                font_path = "resources/Minecraft.ttf"
+                dialogue_text = "Oops! You got caught by the ghost. Press E to exit."
+                dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_fail")
+                showing_dialogue = True
 
         win.blit(background, (0, 0))
 
@@ -328,6 +341,9 @@ def play_second_quest():
         pygame.draw.rect(win, PLAYER_COLOR, player)
         pygame.draw.rect(win, GHOST1_COLOR, ghost)
         pygame.draw.rect(win, GHOST2_COLOR, ghost2)
+        if showing_dialogue:
+            dialogue_box.update()
+            dialogue_box.draw(win)
 
         pygame.display.update()
 
@@ -488,6 +504,8 @@ def play_third_quest():
         draw()
 
     return result
+
+play_third_quest()
 
 import pygame
 from misc import *

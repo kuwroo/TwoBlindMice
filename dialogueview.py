@@ -18,6 +18,9 @@ class DialogueView:
         self.load_text_box(self.dialogue_boxes[self.current_box_index])
         self.can_close = False
         
+        if self.mode in ("quest_win", "quest_fail"):
+                self.skip_typing()
+                self.can_close = True
 
     def parse_dialogue(self, raw_dialogue, max_chars_per_box=120, max_chars_per_line=50):
         # Step 1: Manually split by new box delimiter first
@@ -145,9 +148,9 @@ class DialogueView:
         elif self.mode == "quest_fail":
             if self.can_close and (pygame.time.get_ticks() // 500) % 2 == 0:
                 close = self.font.render("Press E to exit", True, (255, 255, 255))
-                enter = self.font.render("Press ENTER to restart", True, (255, 255, 255))
+                # enter = self.font.render("Press ENTER to restart", True, (255, 255, 255))
                 screen.blit(close, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 100))
-                screen.blit(enter, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 140))
+                # screen.blit(enter, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 140))
 
 def test_dialogue_view():
     pygame.init()
