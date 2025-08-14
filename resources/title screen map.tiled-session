@@ -28,6 +28,10 @@
         "/Users/chloe/Desktop/Downloads/twt.tsx": {
             "scaleInDock": 1
         },
+        "10_17.tsx": {
+            "scaleInDock": 0.191,
+            "scaleInEditor": 0.3802
+        },
         "C:/Users/jacel/Documents/sewer.tsx": {
             "scaleInDock": 1
         },
@@ -62,6 +66,9 @@
             "scaleInEditor": 1
         },
         "Ending.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
             "scale": 0.3929,
             "selectedLayer": 2,
             "viewCenter": {
@@ -71,17 +78,14 @@
         },
         "Screenshot_2025-08-14_at_5.45.09 PM.tsx": {
             "scaleInDock": 0.1788,
-            "scaleInEditor": 1
+            "scaleInEditor": 0.61
         },
         "TESTTEST.tmx": {
-            "expandedObjectLayers": [
-                3
-            ],
-            "scale": 0.5487,
+            "scale": 0.3663,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 618.7351922726446,
-                "y": 171.3140149444141
+                "x": 615.6156156156158,
+                "y": 177.45017745017742
             }
         },
         "ba3c9b7cbaf1e926f609461f54600304.tsx": {
@@ -89,6 +93,9 @@
             "scaleInEditor": 0.3686
         },
         "credits.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
             "scale": 0.5,
             "selectedLayer": 3,
             "viewCenter": {
@@ -208,6 +215,7 @@
     "property.type": "string",
     "recentFiles": [
         "Screenshot_2025-08-14_at_5.45.09 PM.tsx",
+        "10_17.tsx",
         "e67e510aa0f8ff31e642980d0ab0d41a.tsx",
         "detailed-pixel-art-city-sunset-featuring-futuristic-buildings-retro-vibes-blend-warm-cool-tones-nostalgic-visually-361000327.jpg.tsx",
         "ba3c9b7cbaf1e926f609461f54600304.tsx",
@@ -217,8 +225,7 @@
         "sewer.tsx",
         "entry.tmx",
         "title.tmx",
-        "sewermap.tsx",
-        "C:/Users/jacel/Downloads/fann.tsx"
+        "sewermap.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
