@@ -25,7 +25,7 @@ class NPC():
         # Create dialogue box
         font_path = "resources/Minecraft.ttf"
         self.original_dialogue_text = dialogue_text
-        self.dialogue = DialogueView(font_path, self.original_dialogue_text)
+        self.dialogue = DialogueView(font_path, self.original_dialogue_text, mode="default")
         self.showing_dialogue = False
 
     def update(self, current_time):
@@ -54,7 +54,7 @@ class NPC():
     def interact(self):
         """Always restart dialogue when interacting"""
         font_path = "resources/Minecraft.ttf"
-        self.dialogue = DialogueView(font_path, self.original_dialogue_text)
+        self.dialogue = DialogueView(font_path, self.original_dialogue_text, mode="default")
         self.showing_dialogue = True
         
             

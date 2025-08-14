@@ -16,36 +16,34 @@ def play_first_quest():
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Rabbit-hole!")
     FPS = 60
+    clock = pygame.time.Clock()
 
     # Load TMX map
     tmx = TileMap("resources/quest1map.tmx")
 
-    # Setup variables
-    obstacles = []
+    # Prepare tiles, obstacles, and special objects
     floor_tiles = []
-    player = None
-    bottom_rect = None  # NEW: landing trigger object
+    obstacles = []
+    player_spawn = None
+    bottom_rect = None
 
-    # Find spawn point and bottom object
     for obj in tmx.interactables:
         obj_type = obj["type"].lower()
         rect = obj["rect"]
         if obj_type == "spawn":
             PLAYER_SIZE = 32
-            player = pygame.Rect(rect.x, rect.y, PLAYER_SIZE, PLAYER_SIZE)
+            player_spawn = pygame.Rect(rect.x, rect.y, PLAYER_SIZE, PLAYER_SIZE)
         elif obj_type == "bottom":
-            bottom_rect = rect  # Use this for landing detection
+            bottom_rect = rect
 
-    if player is None:
-        raise ValueError("No 'spawn' object found in TMX map. Cannot start quest.")
-    if bottom_rect is None:
-        raise ValueError("No 'bottom' object found in TMX map. Cannot detect landing.")
+    if not player_spawn or not bottom_rect:
+        raise ValueError("TMX map missing 'spawn' or 'bottom' object.")
 
-    # Player sprite setup
+    # Initialize player sprite
     player_sprite = PlayerMovement(WIDTH, HEIGHT, WIDTH)
-    player_sprite.player_x = player.x
-    player_sprite.player_y = player.y
-    player_sprite.rect.topleft = (player.x, player.y)
+    player_sprite.player_x = player_spawn.x
+    player_sprite.player_y = player_spawn.y
+    player_sprite.rect.topleft = (player_spawn.x, player_spawn.y)
 
     # Load floor tiles
     tilewidth = tmx.tmx_data.tilewidth
@@ -55,32 +53,30 @@ def play_first_quest():
         if gid:
             floor_tiles.append(pygame.Rect(x*tilewidth, y*tileheight, tilewidth, tileheight))
 
-    # Load obstacles (if layer exists)
+    # Load obstacles if layer exists
     try:
         obs_layer = tmx.tmx_data.get_layer_by_name("obs")
-    except ValueError:
-        obs_layer = None
-    if obs_layer:
         for x, y, gid in obs_layer:
             if gid:
                 obstacles.append(pygame.Rect(x*tilewidth, y*tileheight, tilewidth, tileheight))
+    except ValueError:
+        pass
 
     # Game loop variables
     camera_offset_y = 0
-    clock = pygame.time.Clock()
     run = True
     falling = False
     on_floor = False
     quest_result = None
     showing_dialogue = False
     dialogue_box = None
-
-    # Map height in pixels
     map_height_px = tmx.tmx_data.height * tileheight
 
+    # Game loop
     while run:
         clock.tick(FPS)
         win.fill(WHITE)
+        keys = pygame.key.get_pressed()
 
         # Event handling
         for event in pygame.event.get():
@@ -88,23 +84,20 @@ def play_first_quest():
                 run = False
                 quest_result = "quit"
             elif event.type == pygame.KEYDOWN and showing_dialogue:
-                result = dialogue_box.handle_input(event.key)
-                if result == "CLOSE":
+                if dialogue_box.handle_input(event.key) == "CLOSE":
                     showing_dialogue = False
                     run = False
                     quest_result = "win"
 
-        keys = pygame.key.get_pressed()
-
-        # Only allow movement if dialogue is not showing
+        # Player movement
         if not showing_dialogue:
             player_sprite.handle_input(keys)
             player_sprite.apply_gravity()
             player_sprite.update_position(floor_tiles, [])
             player_sprite.update_animation(keys)
 
-        # Begin falling check
-        if not falling:
+        # Begin falling check only if not already falling and not on floor
+        if not falling and not on_floor:
             feet_rect = player_sprite.rect.copy()
             feet_rect.y += 1
             if not any(feet_rect.colliderect(tile) for tile in floor_tiles):
@@ -115,40 +108,49 @@ def play_first_quest():
             if player_sprite.rect.bottom >= bottom_rect.top:
                 on_floor = True
                 player_sprite.rect.bottom = bottom_rect.top  # snap on bottom object
-                # Trigger dialogue immediately after landing
+                # Trigger dialogue after landing
                 font_path = "resources/Minecraft.ttf"
                 dialogue_text = "Congrats! You landed safely. Press E to exit."
                 dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
                 showing_dialogue = True
 
-        # Camera follow player
+        # Camera follow
         target_offset = player_sprite.rect.centery - HEIGHT // 2
         camera_offset_y = max(0, min(target_offset, map_height_px - HEIGHT))
 
-        # Draw map and player
+        # Draw map, player, and dialogue
         tmx.draw(win, pygame.Vector2(0, camera_offset_y))
         tmx.draw_texts(win, pygame.Vector2(0, camera_offset_y))
         player_sprite.draw(win, keys, pygame.Vector2(0, camera_offset_y))
-
-        # Draw dialogue if active
         if showing_dialogue:
             dialogue_box.update()
             dialogue_box.draw(win)
 
-        # Obstacle collisions
+        # Define buffer for leniency
+        BUFFER = 5
+
+        # Compute player collision rect
+        player_collision_rect = pygame.Rect(
+            player_sprite.rect.x + (player_sprite.PLAYER_WIDTH - player_sprite.COLLISION_WIDTH) // 2 + BUFFER//2,
+            player_sprite.rect.y + (player_sprite.PLAYER_HEIGHT - player_sprite.COLLISION_HEIGHT) // 2 + BUFFER//2,
+            player_sprite.COLLISION_WIDTH - BUFFER,
+            player_sprite.COLLISION_HEIGHT - BUFFER
+        )
+
+        # Check collision against obstacles with buffer
         for obs in obstacles:
-            obs_screen = obs.copy()
-            obs_screen.y -= camera_offset_y
-            if player_sprite.rect.colliderect(obs_screen):
+            # Shrink the obstacle rect by BUFFER on all sides
+            obs_buf = obs.inflate(-BUFFER, -BUFFER)
+            if player_collision_rect.colliderect(obs_buf):
                 print("You hit an obstacle. Game over!")
                 quest_result = "lose"
                 run = False
+                break
 
         pygame.display.update()
 
     return quest_result
 
-play_first_quest()
 
 def play_second_quest():
     pygame.init()

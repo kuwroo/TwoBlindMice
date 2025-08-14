@@ -296,7 +296,7 @@ class GameScene(Scene):
                                 else:
                                     dialogue_text = "You have not enough cheese to offer the Mouse God!"
                                     font_path = "resources/Minecraft.ttf"
-                                    dialogue_box = DialogueView (font_path, dialogue_text)
+                                    dialogue_box = DialogueView (font_path, dialogue_text, mode = "default")
                                     dialogue_box.draw(self.screen)
                             return "QUEST_STARTED"
                         return result
