@@ -7,6 +7,8 @@ from tilemap import TileMap
 from spritesheet_loader import SpriteSheet
 from colours import *
 from spritesheet_loader import *
+from player import PlayerMovement
+from dialogueview import DialogueView
 import pytmx
 
 def play_first_quest():
@@ -21,129 +23,132 @@ def play_first_quest():
     # Setup variables
     obstacles = []
     floor_tiles = []
-    player = None  # Default to None in case spawn isn't found
+    player = None
+    bottom_rect = None  # NEW: landing trigger object
 
-    # Find spawn point from object layer
+    # Find spawn point and bottom object
     for obj in tmx.interactables:
         obj_type = obj["type"].lower()
         rect = obj["rect"]
         if obj_type == "spawn":
             PLAYER_SIZE = 32
             player = pygame.Rect(rect.x, rect.y, PLAYER_SIZE, PLAYER_SIZE)
+        elif obj_type == "bottom":
+            bottom_rect = rect  # Use this for landing detection
 
     if player is None:
         raise ValueError("No 'spawn' object found in TMX map. Cannot start quest.")
+    if bottom_rect is None:
+        raise ValueError("No 'bottom' object found in TMX map. Cannot detect landing.")
 
-    # === LOAD FLOOR AND OBSTACLE TILES FROM LAYERS ===
+    # Player sprite setup
+    player_sprite = PlayerMovement(WIDTH, HEIGHT, WIDTH)
+    player_sprite.player_x = player.x
+    player_sprite.player_y = player.y
+    player_sprite.rect.topleft = (player.x, player.y)
+
+    # Load floor tiles
     tilewidth = tmx.tmx_data.tilewidth
     tileheight = tmx.tmx_data.tileheight
-
-    # Get floor tiles (pick the lowest one for landing logic)
-    # Get floor tiles (now store all of them)
     floor_layer = tmx.tmx_data.get_layer_by_name("floor")
     for x, y, gid in floor_layer:
         if gid:
-            rect = pygame.Rect(x * tilewidth, y * tileheight, tilewidth, tileheight)
-            floor_tiles.append(rect)
+            floor_tiles.append(pygame.Rect(x*tilewidth, y*tileheight, tilewidth, tileheight))
 
-    # Get obstacle tiles (touch = lose)
-    obs_layer = tmx.tmx_data.get_layer_by_name("obs")
-    for x, y, gid in obs_layer:
-        if gid:
-            rect = pygame.Rect(x * tilewidth, y * tileheight, tilewidth, tileheight)
-            obstacles.append(rect)
+    # Load obstacles (if layer exists)
+    try:
+        obs_layer = tmx.tmx_data.get_layer_by_name("obs")
+    except ValueError:
+        obs_layer = None
+    if obs_layer:
+        for x, y, gid in obs_layer:
+            if gid:
+                obstacles.append(pygame.Rect(x*tilewidth, y*tileheight, tilewidth, tileheight))
 
-    # Game loop vars
-    camera_offset = 0
+    # Game loop variables
+    camera_offset_y = 0
     clock = pygame.time.Clock()
     run = True
     falling = False
     on_floor = False
-    scroll_speed = 8
-    player_speed = 7
     quest_result = None
-    font = pygame.font.SysFont(None, 24)
+    showing_dialogue = False
+    dialogue_box = None
+
+    # Map height in pixels
+    map_height_px = tmx.tmx_data.height * tileheight
 
     while run:
         clock.tick(FPS)
         win.fill(WHITE)
 
+        # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 quest_result = "quit"
+            elif event.type == pygame.KEYDOWN and showing_dialogue:
+                result = dialogue_box.handle_input(event.key)
+                if result == "CLOSE":
+                    showing_dialogue = False
+                    run = False
+                    quest_result = "win"
 
-        # Movement logic — no walking through floor tile (not used currently but kept for consistency)
-        def can_move(new_rect):
-            for tile in floor_tiles:
-                tile_shifted = tile.copy()
-                tile_shifted.y -= camera_offset
-                if new_rect.colliderect(tile_shifted):
-                    return False
-            return True
-
-        # Input
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a]:
-            new_pos = player.move(-player_speed, 0)
-            if can_move(new_pos):
-                player = new_pos
-        if keys[pygame.K_d]:
-            new_pos = player.move(player_speed, 0)
-            if can_move(new_pos):
-                player = new_pos
 
-        # Begin falling
+        # Only allow movement if dialogue is not showing
+        if not showing_dialogue:
+            player_sprite.handle_input(keys)
+            player_sprite.apply_gravity()
+            player_sprite.update_position(floor_tiles, [])
+            player_sprite.update_animation(keys)
+
+        # Begin falling check
         if not falling:
-            # Check if no floor is under the player
-            feet_rect = player.copy()
-            feet_rect.y += 1  # One pixel below player
-            on_platform = any(feet_rect.colliderect(tile) for tile in floor_tiles)
-            if not on_platform:
+            feet_rect = player_sprite.rect.copy()
+            feet_rect.y += 1
+            if not any(feet_rect.colliderect(tile) for tile in floor_tiles):
                 falling = True
 
-
-
-        # Simulate falling by scrolling upward
+        # Landing check using bottom object
         if falling and not on_floor:
-            # Check collision with any floor tile
-            player_feet = player.copy()
-            player_feet.y += 1
-            for tile in floor_tiles:
-                if player_feet.colliderect(tile.move(0, -camera_offset)):
-                    on_floor = True
-                    print("You landed on the floor! Press E to leave.")
-                    break
-            else:
-                camera_offset += scroll_speed
+            if player_sprite.rect.bottom >= bottom_rect.top:
+                on_floor = True
+                player_sprite.rect.bottom = bottom_rect.top  # snap on bottom object
+                # Trigger dialogue immediately after landing
+                font_path = "resources/Minecraft.ttf"
+                dialogue_text = "Congrats! You landed safely. Press E to exit."
+                dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
+                showing_dialogue = True
 
+        # Camera follow player
+        target_offset = player_sprite.rect.centery - HEIGHT // 2
+        camera_offset_y = max(0, min(target_offset, map_height_px - HEIGHT))
 
-        # --- DRAW EVERYTHING ---
-        tmx.draw(win, pygame.Vector2(0, camera_offset))
-        tmx.draw_texts(win, pygame.Vector2(0, camera_offset))
-        
-        # Check collision with obstacles
+        # Draw map and player
+        tmx.draw(win, pygame.Vector2(0, camera_offset_y))
+        tmx.draw_texts(win, pygame.Vector2(0, camera_offset_y))
+        player_sprite.draw(win, keys, pygame.Vector2(0, camera_offset_y))
+
+        # Draw dialogue if active
+        if showing_dialogue:
+            dialogue_box.update()
+            dialogue_box.draw(win)
+
+        # Obstacle collisions
         for obs in obstacles:
             obs_screen = obs.copy()
-            obs_screen.y -= camera_offset
-            if player.colliderect(obs_screen):
+            obs_screen.y -= camera_offset_y
+            if player_sprite.rect.colliderect(obs_screen):
                 print("You hit an obstacle. Game over!")
                 quest_result = "lose"
                 run = False
-
-        # Draw player
-        pygame.draw.rect(win, PLAYER_COLOR, player)
-
-        # Win condition
-        if on_floor and keys[pygame.K_e]:
-            print("You completed the quest!")
-            quest_result = "win"
-            run = False
 
         pygame.display.update()
 
     return quest_result
 
+play_first_quest()
 
 def play_second_quest():
     pygame.init()

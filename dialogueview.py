@@ -5,10 +5,11 @@ from misc import SCREEN_WIDTH, SCREEN_HEIGHT
 SCALE = 4
 
 class DialogueView:
-    def __init__(self, font_path, raw_text):
+    def __init__(self, font_path, raw_text, mode):
         self.font = pygame.font.Font(font_path, 24)
         self.dialogue_boxes = self.parse_dialogue(raw_text)
         self.current_box_index = 0
+        self.mode = mode  # "default" or "quest_win"
 
         self.surface = pygame.image.load("resources/dialogue_box.png").convert_alpha()
         self.surface = pygame.transform.scale(self.surface, (200 * SCALE, 150 * SCALE))
@@ -125,20 +126,28 @@ class DialogueView:
             text_surface = self.font.render(line, True, (255, 255, 255))
             screen.blit(text_surface, (80, 430 + i * 40))
             
-        
-        if not self.typing and not self.can_close:
-            # Optional: show "[SPACE] Skip"
-            if (pygame.time.get_ticks() // 500) % 2 == 0:
-                skip = self.font.render("Press SPACE", True, (255, 255, 255))
-                screen.blit(skip, (SCREEN_WIDTH - 230, SCREEN_HEIGHT - 100))
-        elif self.can_close:
-            # Show "[E] to close"
-            if (pygame.time.get_ticks() // 500) % 2 == 0:
-                close = self.font.render("Press E to close", True, (255, 255, 255))
-                enter = self.font.render("Press ENTER to start", True, (255, 255, 255))
+        # Customize button prompts based on mode
+        if self.mode == "default":
+            if not self.typing and not self.can_close:
+                if (pygame.time.get_ticks() // 500) % 2 == 0:
+                    skip = self.font.render("Press SPACE", True, (255, 255, 255))
+                    screen.blit(skip, (SCREEN_WIDTH - 230, SCREEN_HEIGHT - 100))
+            elif self.can_close:
+                if (pygame.time.get_ticks() // 500) % 2 == 0:
+                    close = self.font.render("Press E to close", True, (255, 255, 255))
+                    enter = self.font.render("Press ENTER to start", True, (255, 255, 255))
+                    screen.blit(close, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 100))
+                    screen.blit(enter, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 140))
+        elif self.mode == "quest_win":
+            if self.can_close and (pygame.time.get_ticks() // 500) % 2 == 0:
+                close = self.font.render("Press E to exit", True, (255, 255, 255))
+                screen.blit(close, (SCREEN_WIDTH - 250, SCREEN_HEIGHT - 100))
+        elif self.mode == "quest_fail":
+            if self.can_close and (pygame.time.get_ticks() // 500) % 2 == 0:
+                close = self.font.render("Press E to exit", True, (255, 255, 255))
+                enter = self.font.render("Press ENTER to restart", True, (255, 255, 255))
                 screen.blit(close, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 100))
                 screen.blit(enter, (SCREEN_WIDTH - 320, SCREEN_HEIGHT - 140))
-
 
 def test_dialogue_view():
     pygame.init()
