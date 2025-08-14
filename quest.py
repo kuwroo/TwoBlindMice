@@ -71,8 +71,8 @@ def play_first_quest():
     showing_dialogue = False
     dialogue_box = None
     map_height_px = tmx.tmx_data.height * tileheight
+    BUFFER = 5  # leniency for obstacle collision
 
-    # Game loop
     while run:
         clock.tick(FPS)
         win.fill(WHITE)
@@ -86,29 +86,28 @@ def play_first_quest():
             elif event.type == pygame.KEYDOWN and showing_dialogue:
                 if dialogue_box.handle_input(event.key) == "CLOSE":
                     showing_dialogue = False
-                    run = False
-                    quest_result = "win"
+                    run = False  # end loop after dialogue
 
-        # Player movement
+        # Player movement only if not showing dialogue
         if not showing_dialogue:
             player_sprite.handle_input(keys)
             player_sprite.apply_gravity()
             player_sprite.update_position(floor_tiles, [])
             player_sprite.update_animation(keys)
 
-        # Begin falling check only if not already falling and not on floor
+        # Falling check
         if not falling and not on_floor:
             feet_rect = player_sprite.rect.copy()
             feet_rect.y += 1
             if not any(feet_rect.colliderect(tile) for tile in floor_tiles):
                 falling = True
 
-        # Landing check using bottom object
+        # Landing check
         if falling and not on_floor:
             if player_sprite.rect.bottom >= bottom_rect.top:
                 on_floor = True
-                player_sprite.rect.bottom = bottom_rect.top  # snap on bottom object
-                # Trigger dialogue after landing
+                player_sprite.rect.bottom = bottom_rect.top
+                quest_result = "win"  # player successfully landed
                 font_path = "resources/Minecraft.ttf"
                 dialogue_text = "Congrats! You landed safely. Press E to exit."
                 dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
@@ -118,7 +117,7 @@ def play_first_quest():
         target_offset = player_sprite.rect.centery - HEIGHT // 2
         camera_offset_y = max(0, min(target_offset, map_height_px - HEIGHT))
 
-        # Draw map, player, and dialogue
+        # Draw everything
         tmx.draw(win, pygame.Vector2(0, camera_offset_y))
         tmx.draw_texts(win, pygame.Vector2(0, camera_offset_y))
         player_sprite.draw(win, keys, pygame.Vector2(0, camera_offset_y))
@@ -126,10 +125,7 @@ def play_first_quest():
             dialogue_box.update()
             dialogue_box.draw(win)
 
-        # Define buffer for leniency
-        BUFFER = 5
-
-        # Compute player collision rect
+        # Obstacle collisions with buffer
         player_collision_rect = pygame.Rect(
             player_sprite.rect.x + (player_sprite.PLAYER_WIDTH - player_sprite.COLLISION_WIDTH) // 2 + BUFFER//2,
             player_sprite.rect.y + (player_sprite.PLAYER_HEIGHT - player_sprite.COLLISION_HEIGHT) // 2 + BUFFER//2,
@@ -137,20 +133,22 @@ def play_first_quest():
             player_sprite.COLLISION_HEIGHT - BUFFER
         )
 
-        # Check collision against obstacles with buffer
         for obs in obstacles:
-            # Shrink the obstacle rect by BUFFER on all sides
             obs_buf = obs.inflate(-BUFFER, -BUFFER)
             if player_collision_rect.colliderect(obs_buf):
-                print("You hit an obstacle. Game over!")
                 quest_result = "lose"
-                run = False
+                font_path = "resources/Minecraft.ttf"
+                dialogue_text = "Oops! You hit an obstacle. Press E to exit."
+                dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_fail")
+                showing_dialogue = True
+                falling = False  # stop gravity/movement
                 break
 
         pygame.display.update()
 
     return quest_result
 
+play_first_quest()
 
 def play_second_quest():
     pygame.init()
