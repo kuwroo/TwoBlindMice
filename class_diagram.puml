@@ -1,0 +1,402 @@
+@startuml TwoBlindMice_ClassDiagram
+
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontSize 10
+skinparam classFontStyle bold
+skinparam packageFontSize 12
+skinparam packageFontStyle bold
+
+package "Core Game Engine" {
+    class Main {
+        +main()
+        +setup()
+        +gameLoop()
+        +handleInput()
+        +update()
+        +render()
+    }
+    
+    class SceneManager {
+        -scene_stack: List[Scene]
+        +current_scene: Scene
+        +switch_to(scene: Scene)
+        +push(scene: Scene)
+        +pop()
+        +update()
+        +draw(screen)
+        +handle_event(event)
+    }
+    
+    class GlobalSettings {
+        +volume: float
+        +music_volume: float
+        +sfx_volume: float
+        +controls: Dict
+        +graphics: Dict
+        +save_file: str
+        +save_settings()
+        +load_settings()
+        +save_game(game_data)
+        +load_game()
+    }
+    
+    class GlobalSettingsMenu {
+        +active: bool
+        +current_tab: str
+        +handle_event(event)
+        +draw(screen)
+        +switch_tab(tab)
+    }
+}
+
+package "Scene System" {
+    abstract class Scene {
+        +screen: pygame.Surface
+        +tile_map: TileMap
+        +player: PlayerMovement
+        +cursor: Cursor
+        +fog: FogOfWar
+        +camera: Camera
+        +font: pygame.font.Font
+        +handle_input_and_gravity(keys)
+        +update_player_position(keys)
+        +center_camera_on_player()
+        +draw_prompt(screen)
+        +handle_event(event): str
+        +update(): str
+        +draw(screen)
+    }
+    
+    class TitleScene {
+        +is_mouse: bool
+        +start_button: Button
+        +game_button: Button
+        +npcs: List[NPC]
+        +NPC_interacted: bool
+        +handle_event(event)
+        +update()
+        +draw(screen)
+    }
+    
+    class GameScene {
+        +cheese_count: int
+        +boss_entry_zone: pygame.Rect
+        +quest1_completed: bool
+        +quest2_completed: bool
+        +quest3_completed: bool
+        +quest4_completed: bool
+        +save_game()
+        +load_game()
+        +handle_event(event)
+        +update()
+        +draw(screen)
+    }
+    
+    class Entry {
+        +fog: FogOfWar
+        +all_sprites: pygame.sprite.Group
+        +npcs: List[NPC]
+        +handle_event(event)
+        +update()
+        +draw(screen)
+    }
+    
+    class MouseGodBoss {
+        +WIDTH: int
+        +HEIGHT: int
+        +game_state: str
+        +pause_menu_active: bool
+        +boss: Dict
+        +fire_cheeseballs: List
+        +boss_frames: List
+        +attack_frames: List
+        +death_frames: List
+        +init_game()
+        +load_spritesheet()
+        +handle_event(event)
+        +try_player_attack()
+        +update()
+        +update_player()
+        +update_boss()
+        +shoot_fire_cheeseball()
+        +update_projectiles()
+        +check_collisions()
+        +draw(screen)
+        +draw_game()
+        +draw_ui()
+        +draw_pause_menu()
+        +restart_game()
+    }
+}
+
+package "Player System" {
+    class PlayerMovement {
+        +SCREEN_WIDTH: int
+        +SCREEN_HEIGHT: int
+        +PLAYER_WIDTH: int
+        +PLAYER_HEIGHT: int
+        +PLAYER_SPEED: int
+        +JUMP_POWER: int
+        +GRAVITY: float
+        +player_x: float
+        +player_y: float
+        +player_velocity_x: float
+        +player_velocity_y: float
+        +is_jumping: bool
+        +on_ground: bool
+        +at_ladder: bool
+        +on_ladder: bool
+        +climbing: bool
+        +allow_attack: bool
+        +is_attacking: bool
+        +can_move: bool
+        +current_frame: int
+        +frame_timer: int
+        +frame_delay: int
+        +last_direction_left: bool
+        +idle_frames: List
+        +movement_frames: List
+        +climbing_frames: List
+        +attack_frames: List
+        +jumping_frames: List
+        +rect: pygame.Rect
+        +image: pygame.Surface
+        +handle_input(keys)
+        +apply_gravity()
+        +update_position(floor_rects, ladder_rects)
+        +update_animation(keys)
+        +draw(screen, keys, camera_offset)
+        +load_spritesheet()
+    }
+}
+
+package "Rendering System" {
+    class Camera {
+        +player: PlayerMovement
+        +map_width: int
+        +map_height: int
+        +offset: pygame.Vector2
+        +method: str
+        +scroll(): pygame.Vector2
+        +setmethod(method: str)
+    }
+    
+    class FogOfWar {
+        +fog_surface: pygame.Surface
+        +visibility_radius: int
+        +update(player_pos, camera_offset)
+        +draw(screen)
+    }
+    
+    class Cursor {
+        +is_mouse: bool
+        +rect: pygame.Rect
+        +update()
+        +draw(screen)
+    }
+}
+
+package "World System" {
+    class TileMap {
+        +tmx_data: pytmx.TiledMap
+        +width: int
+        +height: int
+        +interactables: List
+        +floor_rects: List
+        +ladder_rects: List
+        +npcs: List[NPC]
+        +font: pygame.font.Font
+        +load_interactables()
+        +get_floor_rectangles()
+        +get_ladder_rectangles()
+        +load_npcs()
+        +get_interaction_prompt(player_rect)
+        +draw(screen, camera_offset)
+    }
+    
+    class NPC {
+        +rect: pygame.Rect
+        +name: str
+        +sprite_frames: List
+        +current_frame: int
+        +frame_timer: int
+        +FRAME_DURATION: int
+        +idle_frames: List
+        +current_animation: List
+        +dialogue: DialogueView
+        +showing_dialogue: bool
+        +update(current_time)
+        +draw(screen, camera_offset)
+        +is_near_player(player_rect): bool
+        +interact()
+    }
+    
+    class DialogueView {
+        +font: pygame.font.Font
+        +text: str
+        +lines: List[str]
+        +current_line: int
+        +char_index: int
+        +typing_speed: int
+        +typing_timer: int
+        +is_typing: bool
+        +is_complete: bool
+        +update()
+        +draw(screen)
+        +handle_input(key)
+        +reset()
+    }
+}
+
+package "UI System" {
+    class Button {
+        +rect: pygame.Rect
+        +text: str
+        +color: tuple
+        +hover_color: tuple
+        +font: pygame.font.Font
+        +is_hovered: bool
+        +draw(screen)
+        +handle_event(event): bool
+        +update(mouse_pos)
+    }
+}
+
+package "Save System" {
+    class SaveManager {
+        +save_file_path: str
+        +current_state: Dict
+        +save_game(game_state, quest_completions, cheese_count): bool
+        +load_game(): Dict
+        +delete_save(): bool
+        +has_save_file(): bool
+    }
+}
+
+package "Testing Framework" {
+    class TestPlayerMovement {
+        +setUp()
+        +tearDown()
+        +test_player_initialization()
+        +test_player_movement_left()
+        +test_player_movement_right()
+        +test_player_jump()
+        +test_player_gravity()
+        +test_player_collision()
+    }
+    
+    class TestBossFight {
+        +setUp()
+        +tearDown()
+        +test_boss_initialization()
+        +test_boss_movement()
+        +test_boss_phase_progression()
+        +test_player_attack_damage()
+        +test_fireball_creation()
+        +test_collision_detection()
+    }
+    
+    class TestPauseSystem {
+        +setUp()
+        +tearDown()
+        +test_pause_toggle()
+        +test_pause_menu_display()
+        +test_restart_functionality()
+        +test_quit_functionality()
+    }
+    
+    class TestGlobalSettings {
+        +setUp()
+        +tearDown()
+        +test_settings_save_load()
+        +test_controls_configuration()
+        +test_graphics_settings()
+        +test_volume_settings()
+    }
+    
+    class TestSceneSystem {
+        +setUp()
+        +tearDown()
+        +test_scene_transitions()
+        +test_scene_stack_management()
+        +test_event_handling()
+        +test_scene_lifecycle()
+    }
+    
+    class TestIntegration {
+        +setUp()
+        +tearDown()
+        +test_complete_game_flow()
+        +test_pause_system_integration()
+        +test_settings_integration()
+        +test_save_load_integration()
+    }
+    
+    class TestSystemRequirements {
+        +test_python_version()
+        +test_pygame_installation()
+        +test_memory_usage()
+        +test_performance_metrics()
+    }
+    
+    class TestPerformance {
+        +setUp()
+        +tearDown()
+        +test_frame_rate()
+        +test_memory_usage()
+        +test_collision_performance()
+        +test_rendering_performance()
+    }
+}
+
+' Inheritance Relationships
+Scene <|-- TitleScene
+Scene <|-- GameScene
+Scene <|-- Entry
+Scene <|-- MouseGodBoss
+
+' Associations
+Main --> SceneManager
+Main --> GlobalSettings
+Main --> GlobalSettingsMenu
+
+SceneManager --> Scene
+SceneManager --> TitleScene
+SceneManager --> GameScene
+SceneManager --> Entry
+SceneManager --> MouseGodBoss
+
+Scene --> PlayerMovement
+Scene --> Camera
+Scene --> FogOfWar
+Scene --> Cursor
+Scene --> TileMap
+Scene --> Button
+
+TitleScene --> Button
+TitleScene --> NPC
+
+GameScene --> NPC
+GameScene --> DialogueView
+
+MouseGodBoss --> PlayerMovement
+
+TileMap --> NPC
+NPC --> DialogueView
+
+' Testing Associations
+TestPlayerMovement --> PlayerMovement
+TestBossFight --> MouseGodBoss
+TestPauseSystem --> MouseGodBoss
+TestGlobalSettings --> GlobalSettings
+TestSceneSystem --> SceneManager
+TestIntegration --> Main
+TestSystemRequirements --> Main
+TestPerformance --> Main
+
+' Save System
+Main --> SaveManager
+GameScene --> SaveManager
+
+@enduml 

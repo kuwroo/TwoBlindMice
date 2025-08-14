@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "titleTEST.tmx",
+    "activeFile": "entry.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -65,10 +65,21 @@
             "dynamicWrapping": true,
             "scaleInDock": 1
         },
+        "entry.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 0.2696,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 829.0059347181009,
+                "y": 485.9050445103858
+            }
+        },
         "sewer.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInDock": 0.5774,
+            "scaleInEditor": 0.7
         },
         "sewermap.tmx": {
             "scale": 0.3384375,
@@ -98,11 +109,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 0.42,
+            "scale": 0.28,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 515.4761904761904,
-                "y": 604.7619047619048
+                "x": 1008.9285714285716,
+                "y": 925
             }
         },
         "titleTEST.tmx#dank": {
@@ -118,13 +129,15 @@
     "map.width": 60,
     "openFiles": [
         "titleTEST.tmx",
-        "sewer.tsx"
+        "sewer.tsx",
+        "entry.tmx"
     ],
     "project": "title screen map.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "sewer.tsx",
         "titleTEST.tmx",
+        "sewer.tsx",
+        "entry.tmx",
         "title.tmx",
         "sewermap.tsx",
         "C:/Users/jacel/Downloads/fann.tsx",
