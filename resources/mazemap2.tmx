@@ -113,7 +113,7 @@
     <property name="start_direction" value="up"/>
    </properties>
   </object>
-  <object id="3" name="cat" type="cat" x="320" y="256" width="32" height="32">
+  <object id="3" name="cat" type="cat" x="384" y="256" width="32" height="32">
    <properties>
     <property name="direction" value="horizontal"/>
     <property name="patrol_length" type="int" value="4"/>

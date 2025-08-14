@@ -358,16 +358,61 @@ def play_third_quest():
 
     tmx = TileMap("resources/mazemap2.tmx")
 
+    # === Define spritesheet loading function ===
+    def load_spritesheet_local(image_path, frame_count, frame_width, frame_height):
+        spritesheet = pygame.image.load(image_path)
+        sprite_width, sprite_height = spritesheet.get_size()
+        
+        # Debug print to see actual dimensions
+        print(f"Loading {image_path}: {sprite_width}x{sprite_height}, expecting {frame_count} frames of {frame_width}x{frame_height}")
+        
+        frames = []
+        for i in range(frame_count):
+            x = i * frame_width
+            # Check if we're trying to go outside the image bounds
+            if x + frame_width > sprite_width or frame_height > sprite_height:
+                print(f"Warning: Frame {i} would be outside image bounds. Skipping.")
+                break
+            
+            frame = spritesheet.subsurface(pygame.Rect(x, 0, frame_width, frame_height))
+            frames.append(frame)
+        
+        if not frames:
+            # Fallback: create a single frame from the whole image
+            print(f"No valid frames found, using whole image as single frame")
+            frames = [spritesheet]
+            
+        return frames
+
     # === Load NPC animation frames and pre-flip for left movement ===
-    cat_frames_raw = load_spritesheet('resources/quest2npc.png', 8, 32, 32)
+    cat_frames_raw = load_spritesheet_local('resources/quest2npc.png', 8, 32, 32)
+    print(f"Loaded {len(cat_frames_raw)} cat frames")
     cat_frames_left = [pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE)) for frame in cat_frames_raw]
     cat_frames_right = [pygame.transform.flip(frame, True, False) for frame in cat_frames_left]
 
+    # Load player animations
+    player_idle_frames = load_spritesheet_local('resources/idle.png', 4, 32, 32)
+    player_movement_frames = load_spritesheet_local('resources/MOUSE.png', 8, 32, 32)
+    
+    # Scale player frames to match game size
+    PLAYER_SPRITE_SIZE = 48  # Increased from 32 to make player bigger
+    player_idle_frames = [pygame.transform.scale(frame, (PLAYER_SPRITE_SIZE, PLAYER_SPRITE_SIZE)) for frame in player_idle_frames]
+    player_movement_frames = [pygame.transform.scale(frame, (PLAYER_SPRITE_SIZE, PLAYER_SPRITE_SIZE)) for frame in player_movement_frames]
     
     player = None
     exit_rects = []
     cats = []
     walls = tmx.floor_rects
+
+    # Player animation variables
+    player_animation = {
+        "current_frame": 0,
+        "frame_timer": 0,
+        "frame_delay": 8,  # Adjust speed of animation
+        "last_direction_left": False,
+        "velocity_x": 0,
+        "velocity_y": 0
+    }
 
     for obj in tmx.interactables:
         if obj["type"].lower() == "spawn":
@@ -400,16 +445,65 @@ def play_third_quest():
         if not any(next_rect.colliderect(w) for w in walls):
             rect.x += dx
             rect.y += dy
+            return True
+        return False
 
     def update_player():
         keys = pygame.key.get_pressed()
         dx = dy = 0
-        if keys[pygame.K_a]: dx = -TILE_SIZE // 6
-        if keys[pygame.K_d]: dx = TILE_SIZE // 6
-        if keys[pygame.K_w]: dy = -TILE_SIZE // 6
-        if keys[pygame.K_s]: dy = TILE_SIZE // 6
+        player_animation["velocity_x"] = 0
+        player_animation["velocity_y"] = 0
+        
+        if keys[pygame.K_a]: 
+            dx = -TILE_SIZE // 6
+            player_animation["velocity_x"] = dx
+            player_animation["last_direction_left"] = True
+        if keys[pygame.K_d]: 
+            dx = TILE_SIZE // 6
+            player_animation["velocity_x"] = dx
+            player_animation["last_direction_left"] = False
+        if keys[pygame.K_w]: 
+            dy = -TILE_SIZE // 6
+            player_animation["velocity_y"] = dy
+        if keys[pygame.K_s]: 
+            dy = TILE_SIZE // 6
+            player_animation["velocity_y"] = dy
+            
         if dx or dy:
             move_player(player, dx, dy)
+
+    def update_player_animation():
+        # Check if player is moving
+        is_moving = player_animation["velocity_x"] != 0 or player_animation["velocity_y"] != 0
+        
+        player_animation["frame_timer"] += 1
+        if player_animation["frame_timer"] >= player_animation["frame_delay"]:
+            player_animation["frame_timer"] = 0
+            
+            if is_moving:
+                # Use movement animation
+                player_animation["current_frame"] = (player_animation["current_frame"] + 1) % len(player_movement_frames)
+            else:
+                # Use idle animation
+                player_animation["current_frame"] = (player_animation["current_frame"] + 1) % len(player_idle_frames)
+
+    def draw_player(screen):
+        # Determine which animation to use
+        is_moving = player_animation["velocity_x"] != 0 or player_animation["velocity_y"] != 0
+        
+        if is_moving:
+            frame = player_movement_frames[player_animation["current_frame"] % len(player_movement_frames)]
+        else:
+            frame = player_idle_frames[player_animation["current_frame"] % len(player_idle_frames)]
+        
+        # Flip sprite if moving left or last moved left
+        if player_animation["velocity_x"] < 0 or (player_animation["velocity_x"] == 0 and player_animation["last_direction_left"]):
+            frame = pygame.transform.flip(frame, True, False)
+        
+        # Center the sprite on the collision rectangle
+        sprite_x = player.x - (PLAYER_SPRITE_SIZE - PLAYER_SIZE) // 2
+        sprite_y = player.y - (PLAYER_SPRITE_SIZE - PLAYER_SIZE) // 2
+        screen.blit(frame, (sprite_x, sprite_y))
 
     def is_wall_blocking(cat_rect, player_rect, axis):
         start = cat_rect.center
@@ -461,7 +555,7 @@ def play_third_quest():
 
             # Animation timing
             cat["frame_timer"] += 1
-            if cat["frame_timer"] >= 10:  # change frame every 10 ticks
+            if cat["frame_timer"] >= 15:  # Slower animation (was 10)
                 cat["frame_timer"] = 0
                 cat["frame_index"] = (cat["frame_index"] + 1) % len(cat_frames_right)
 
@@ -473,7 +567,9 @@ def play_third_quest():
     def draw():
         screen.fill(BLACK)
         tmx.draw(screen, pygame.Vector2(0, 0))
-        pygame.draw.rect(screen, WHITE, player)
+        
+        # Draw animated player instead of white rectangle
+        draw_player(screen)
 
         for cat in cats:
             frames = cat_frames_right if cat["facing_right"] else cat_frames_left
@@ -492,6 +588,7 @@ def play_third_quest():
                 running = False
 
         update_player()
+        update_player_animation()  # Update player animation
         npc_result = update_npcs()
         if npc_result == "lose":
             result = "lose"
@@ -502,7 +599,6 @@ def play_third_quest():
         draw()
 
     return result
-
 
 
 play_third_quest()
