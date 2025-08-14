@@ -358,44 +358,42 @@ def play_third_quest():
 
     tmx = TileMap("resources/mazemap2.tmx")
 
+    # === Load NPC animation frames and pre-flip for left movement ===
+    cat_frames_raw = load_spritesheet('resources/quest2npc.png', 8, 32, 32)
+    cat_frames_left = [pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE)) for frame in cat_frames_raw]
+    cat_frames_right = [pygame.transform.flip(frame, True, False) for frame in cat_frames_left]
+
+    
     player = None
     exit_rects = []
-    npcs = []
-    walls = tmx.floor_rects 
+    cats = []
+    walls = tmx.floor_rects
 
     for obj in tmx.interactables:
         if obj["type"].lower() == "spawn":
-            PLAYER_SIZE = 32  # or any value you want
+            PLAYER_SIZE = 32
             player = pygame.Rect(obj["rect"].x, obj["rect"].y, PLAYER_SIZE, PLAYER_SIZE)
         elif obj["type"].lower() == "exit":
             exit_rects.append(obj["rect"])
-        elif obj["type"].lower() == "npc":
-            print("Raw NPC object:", obj)  # <-- Add this line
+        elif obj["type"].lower() == "cat":
             props = obj.get("properties", {})
             patrol_tiles = int(props.get("patrol_length", props.get("patrol length", 1)))
             direction = props.get("direction", "horizontal").lower()
             start_dir = props.get("start_direction", "right").lower()
 
-            print(f"NPC {obj.get('name', f'npc{len(npcs)+1}')}: direction={direction}, patrol_range={patrol_tiles}, start_direction={start_dir}")
-
-            npc = {
-                "name": obj.get("name", f"npc{len(npcs)+1}"),
+            cat = {
+                "name": obj.get("name", f"npc{len(cats)+1}"),
                 "rect": pygame.Rect(obj["rect"].x, obj["rect"].y, TILE_SIZE, TILE_SIZE),
                 "origin": (obj["rect"].x, obj["rect"].y),
                 "axis": direction,
                 "direction": 1 if start_dir in ("right", "down") else -1,
                 "patrol_range": patrol_tiles * TILE_SIZE,
                 "speed": 1,
-                "start_direction": start_dir
+                "frame_index": 0,
+                "frame_timer": 0,
+                "facing_right": True
             }
-            npcs.append(npc)
-
-    print("Player spawn:", player)
-    print("Exits loaded:", exit_rects)
-    print("NPCs loaded:", npcs)
-
-    for i, npc in enumerate(npcs):
-        print(f"{npc['name']}: pos={npc['rect'].topleft}, axis={npc['axis']}, patrol_range={npc['patrol_range']}, direction={npc['direction']}")
+            cats.append(cat)
 
     def move_player(rect, dx, dy):
         next_rect = rect.move(dx, dy)
@@ -413,31 +411,27 @@ def play_third_quest():
         if dx or dy:
             move_player(player, dx, dy)
 
-    def is_wall_blocking(npc_rect, player_rect, axis):
-        # Use center points for raycast
-        start = npc_rect.center
+    def is_wall_blocking(cat_rect, player_rect, axis):
+        start = cat_rect.center
         end = player_rect.center
-
-        # Number of steps for the ray (higher = more accurate)
         steps = int(max(abs(end[0] - start[0]), abs(end[1] - start[1])) // 4)
         if steps == 0:
-            return False  # Same position
-
+            return False
         for i in range(steps + 1):
             t = i / steps
             x = int(start[0] + (end[0] - start[0]) * t)
             y = int(start[1] + (end[1] - start[1]) * t)
-            point_rect = pygame.Rect(x, y, 4, 4)  # Small box for collision
+            point_rect = pygame.Rect(x, y, 4, 4)
             if any(point_rect.colliderect(w) for w in walls):
-                return True  # Wall blocks vision
-        return False  # No wall blocks vision
+                return True
+        return False
 
-    def npc_vision_rect(npc):
-        rect = npc["rect"]
-        direction = npc["direction"]
-        length = TILE_SIZE * 5  # Vision length (how far the NPC can see)
-        width = TILE_SIZE       # Vision width (same as NPC width)
-        if npc["axis"] == "horizontal":
+    def npc_vision_rect(cat):
+        rect = cat["rect"]
+        direction = cat["direction"]
+        length = TILE_SIZE * 5
+        width = TILE_SIZE
+        if cat["axis"] == "horizontal":
             x = rect.right if direction > 0 else rect.left - length
             return pygame.Rect(x, rect.centery - width // 2, length, width)
         else:
@@ -445,46 +439,50 @@ def play_third_quest():
             return pygame.Rect(rect.centerx - width // 2, y, width, length)
 
     def update_npcs():
-        for npc in npcs:
-            rect = npc["rect"]
-            axis = npc["axis"]
-            speed = npc["speed"]
-            dir = npc["direction"]
-            ox, oy = npc["origin"]
+        for cat in cats:
+            rect = cat["rect"]
+            axis = cat["axis"]
+            speed = cat["speed"]
+            dir = cat["direction"]
+            ox, oy = cat["origin"]
 
             if axis == "horizontal":
                 rect.x += dir * speed
-                if abs(rect.x - ox) >= npc["patrol_range"]:
-                    npc["direction"] *= -1
+                if abs(rect.x - ox) >= cat["patrol_range"]:
+                    cat["direction"] *= -1
             else:
                 rect.y += dir * speed
-                if abs(rect.y - oy) >= npc["patrol_range"]:
-                    npc["direction"] *= -1
+                if abs(rect.y - oy) >= cat["patrol_range"]:
+                    cat["direction"] *= -1
 
-            vis = npc_vision_rect(npc)
+            # Update facing direction
+            if axis == "horizontal":
+                cat["facing_right"] = cat["direction"] > 0
+
+            # Animation timing
+            cat["frame_timer"] += 1
+            if cat["frame_timer"] >= 10:  # change frame every 10 ticks
+                cat["frame_timer"] = 0
+                cat["frame_index"] = (cat["frame_index"] + 1) % len(cat_frames_right)
+
+            vis = npc_vision_rect(cat)
             if vis.colliderect(player) and not is_wall_blocking(rect, player, "x" if axis == "horizontal" else "y"):
-                print(f"{npc['rect']} spotted the player!")
                 return "lose"
         return None
 
     def draw():
         screen.fill(BLACK)
-        # Draw all tile layers from the map
         tmx.draw(screen, pygame.Vector2(0, 0))
-
-        # Draw player
         pygame.draw.rect(screen, WHITE, player)
 
-        # Draw NPCs and their vision
-        for npc in npcs:
-            pygame.draw.rect(screen, RED, npc["rect"])
-            pygame.draw.rect(screen, MAGENTA, npc_vision_rect(npc), 2)
+        for cat in cats:
+            frames = cat_frames_right if cat["facing_right"] else cat_frames_left
+            screen.blit(frames[cat["frame_index"]], cat["rect"].topleft)
+            pygame.draw.rect(screen, MAGENTA, npc_vision_rect(cat), 2)
 
-        # Draw any map texts
         tmx.draw_texts(screen, pygame.Vector2(0, 0))
         pygame.display.flip()
 
-    # Game loop
     result = None
     running = True
     while running:
@@ -504,6 +502,8 @@ def play_third_quest():
         draw()
 
     return result
+
+
 
 play_third_quest()
 

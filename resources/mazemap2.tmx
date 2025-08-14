@@ -99,35 +99,35 @@
 </data>
  </layer>
  <objectgroup id="5" name="Object Layer 1">
-  <object id="1" name="npc" type="NPC" x="416" y="96" width="32" height="32">
+  <object id="1" name="cat" type="cat" x="416" y="96" width="32" height="32">
    <properties>
     <property name="direction" value="horizontal"/>
     <property name="patrol_length" type="int" value="7"/>
     <property name="start_direction" value="bottom"/>
    </properties>
   </object>
-  <object id="2" name="npc" type="NPC" x="672" y="352" width="32" height="32">
+  <object id="2" name="cat" type="cat" x="672" y="320" width="32" height="32">
    <properties>
     <property name="direction" value="vertical"/>
-    <property name="patrol_length" type="int" value="4"/>
+    <property name="patrol_length" type="int" value="3"/>
     <property name="start_direction" value="up"/>
    </properties>
   </object>
-  <object id="3" name="npc" type="NPC" x="160" y="416" width="32" height="32">
+  <object id="3" name="cat" type="cat" x="320" y="256" width="32" height="32">
    <properties>
     <property name="direction" value="horizontal"/>
     <property name="patrol_length" type="int" value="4"/>
     <property name="start_direction" value="right"/>
    </properties>
   </object>
-  <object id="4" name="npc" type="NPC" x="544" y="512" width="32" height="32">
+  <object id="4" name="cat" type="cat" x="544" y="512" width="32" height="32">
    <properties>
     <property name="direction" value="horizontal"/>
     <property name="patrol_length" type="int" value="4"/>
     <property name="start_direction" value="left"/>
    </properties>
   </object>
-  <object id="5" name="npc" type="NPC" x="96" y="256" width="32" height="32">
+  <object id="5" name="cat" type="cat" x="96" y="232" width="32" height="32">
    <properties>
     <property name="direction" value="vertical"/>
     <property name="patrol_length" type="int" value="3"/>
