@@ -34,6 +34,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         self.is_attacking = False
         self.death = False
 
+
         # Initial player position and velocity
         self.player_x = 300
         self.player_y = screen_height // 2  # Start in middle of screen, will fall to floor
@@ -140,11 +141,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         else:
             self.is_attacking = False
             
-        #death handling
-        if self.death:
-            self.player_velocity_x = 0
-            self.player_velocity_y = 0
-            
+        
             
 
     def apply_gravity(self):
@@ -268,8 +265,7 @@ class PlayerMovement(pygame.sprite.Sprite):
             self.frame_timer = 0
             if is_idle:
                 self.current_frame = (self.current_frame + 1) % self.idle_frame_count
-            elif self.death:
-                self.current_frame = (self.current_frame + 1) % self.death_frame_count
+        
             elif self.is_attacking:
                 self.current_frame = (self.current_frame + 1) % self.attack_frame_count
             elif self.climbing:
@@ -320,9 +316,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         # Ensure frame index is within bounds for climbing animation
             frame_index = min(self.current_frame, len(self.climbing_frames) - 1)
             frame = self.climbing_frames[frame_index]
-        elif self.death:
-            frame_index = self.current_frame % self.death_frame_count
-            frame = self.death_frames[frame_index]
+    
         elif is_idle:
             frame_index = self.current_frame % self.idle_frame_count
             frame = self.idle_frames[frame_index]

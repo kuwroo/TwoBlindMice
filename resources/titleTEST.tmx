@@ -266,7 +266,7 @@ Happy falling!</property>
   </object>
   <object id="57" name="Shrine" type="NPC" x="64" y="96" width="32" height="64">
    <properties>
-    <property name="dialogue" value="You dont have enough cheese to offer the MouseGod!"/>
+    <property name="dialogue" value="Do you have 5 cheese to offer the MouseGod?"/>
    </properties>
   </object>
   <object id="59" name="Wiener" type="NPC" x="640" y="1088" width="64" height="64">

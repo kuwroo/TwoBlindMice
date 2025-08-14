@@ -378,54 +378,42 @@ class Quest1:
 
 class Ending(Scene):
     def __init__(self, screen):
-        super().__init__(screen, "resources/Ending.tmx")
+        super().__init__(screen, "resources/ending.tmx")
+        self.player.player_x = 20
         self.player.player_y = SCREEN_HEIGHT // 4
+        self.player.rect.topleft = (self.player.player_x, self.player.player_y)
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.npcs = self.tile_map.load_npcs()
-
+        self.dialogue_finished = False
         
-    def handle_event(self, event):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            for npc in self.npcs:
-                if npc.is_near_player(self.player.rect):
-                    npc.interact()
-                    return "NPC_INTERACTED"
-                # Implement NPC interaction logic here
-        return None
-    
-    def update(self):
-        keys = pygame.key.get_pressed()
-        # Use common update logic from superclass
-        if any(npc.showing_dialogue for npc in self.npcs):
-            self.player.can_move = False
-        self.handle_input_and_gravity(keys)
-        self.update_player_position(keys)
-        self.center_camera_on_player()
-
-
-
-        return None
-    
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_e, pygame.K_SPACE):
                 for npc in self.npcs:
-                    if npc.is_near_player(self.player.rect):
-                        npc.interact()
                     if npc.showing_dialogue:
                         result = npc.dialogue.handle_input(event.key)
                         if result == "CLOSE":
                             npc.showing_dialogue = False
                             self.player.can_move = True
-                        elif npc.name == "Free":
-                            npc.showing_dialogue = True
-                            self.player.can_move = False
-                            return "FINAL_ENDING"
+                            if npc.name == "Free":
+                                self.dialogue_finished = True
+                                return "FINAL_ENDING"
                         return result
+                    elif npc.is_near_player(self.player.rect):
+                        npc.interact()
+                        self.player.can_move = False
+                        return "NPC_INTERACTED"
         return None
 
-
+    def update(self):
+        keys = pygame.key.get_pressed()
+        if not any(npc.showing_dialogue for npc in self.npcs):
+            self.handle_input_and_gravity(keys)
+            self.update_player_position(keys)
+            self.center_camera_on_player()
+        return None
+    
     def draw(self, screen):
         screen.fill((0, 0, 0))
         self.tile_map.draw(screen, self.camera_offset)
@@ -446,37 +434,35 @@ class FinalEnding(Scene):
         super().__init__(screen, "resources/credits.tmx")
         self.player.player_x = 20
         self.player.player_y = SCREEN_HEIGHT // 4
+        self.player.rect.topleft = (self.player.player_x, self.player.player_y)
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.npcs = self.tile_map.load_npcs()
+        self.dialogue_shown = False
         
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_e, pygame.K_SPACE):
                 for npc in self.npcs:
-                    if npc.is_near_player(self.player.rect):
-                        npc.interact()
                     if npc.showing_dialogue:
                         result = npc.dialogue.handle_input(event.key)
                         if result == "CLOSE":
                             npc.showing_dialogue = False
                             self.player.can_move = True
-                        elif npc.name == "Free":
-                            npc.showing_dialogue = False
-                            self.player.can_move = True
-                            return "CLOSE"
+                            self.dialogue_shown = True
                         return result
+                    elif npc.is_near_player(self.player.rect) and not self.dialogue_shown:
+                        npc.interact()
+                        self.player.can_move = False
+                        return "NPC_INTERACTED"
         return None
     
     def update(self):
         keys = pygame.key.get_pressed()
-        # Use common update logic from superclass
-        if any(npc.showing_dialogue for npc in self.npcs):
-            self.player.can_move = False
-        self.handle_input_and_gravity(keys)
-        self.update_player_position(keys)
-        self.center_camera_on_player()
-
+        if not any(npc.showing_dialogue for npc in self.npcs):
+            self.handle_input_and_gravity(keys)
+            self.update_player_position(keys)
+            self.center_camera_on_player()
         return None
     
     def draw(self, screen):
@@ -620,8 +606,7 @@ class MouseGodBoss(Scene):
         self.attack_frames = self.load_spritesheet('resources/attack.png', 7, 32, 32)
         self.attack_frames = [pygame.transform.scale(frame, (32*4, 32*4)) for frame in self.attack_frames]
         
-        self.death_frames = self.load_spritesheet('resources/death.png', 7, 32, 32)
-        self.death_frames = [pygame.transform.scale(frame, (32*4, 32*4)) for frame in self.death_frames]
+    
 
         # Animation state variables
         self.boss_current_frame = 0
@@ -633,10 +618,7 @@ class MouseGodBoss(Scene):
         self.is_boss_dead = False
         self.end_state_timer = 0
         
-        # Death animation state
-        self.death_animation_complete = False
-        self.death_frame_count = 7  # Number of frames in death animation
-        self.current_death_frame = 0
+        
         
         self.init_game()
     
@@ -742,21 +724,8 @@ class MouseGodBoss(Scene):
             self.check_collisions()
             
             # Handle death animation
-            if self.player.death:
-                if self.current_death_frame < self.death_frame_count:
-                    self.frame_timer += 1
-                    if self.frame_timer >= self.frame_delay:
-                        self.frame_timer = 0
-                        self.current_death_frame += 1
-                else:
-                    self.death_animation_complete = True
-                    self.game_state = "dead"  # Only switch to dead state after animation
-                    
-        elif self.game_state == "victory":
-            self.end_state_timer += 1
-            if self.end_state_timer > 120:  # 2 seconds at 60fps
-                return "POP_SCENE"
-        return None
+         
+       
 
     def update_player(self):
         """Update player movement and physics"""
@@ -870,9 +839,10 @@ class MouseGodBoss(Scene):
                                         cheeseball['y'] - cheeseball['size']//2,
                                         cheeseball['size']*0.4, cheeseball['size']*0.4)
             if player_rect.colliderect(cheeseball_rect):
-                self.player.death = True  # Trigger death animation
-                if not self.death_animation_complete:
-                    self.current_death_frame = 0
+                self.player.death = True
+                self.game_state = "dead"
+                print("Player hit by fire-cheeseball! Game over.")
+                break
 
     def draw(self, screen):
         """Draw the boss fight scene"""
