@@ -123,7 +123,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 795.346628679962,
-                "y": 52.23171889838568
+                "y": -52.23171889838568
             }
         },
         "maze tile set.tsx": {
@@ -166,7 +166,7 @@
             "selectedLayer": 0,
             "viewCenter": {
                 "x": -31.32977488976553,
-                "y": -236.71385472267343
+                "y": -287.76978417266196
             }
         },
         "shrine.tsx": {
@@ -185,14 +185,11 @@
             "scaleInDock": 1
         },
         "titleTEST.tmx": {
-            "expandedObjectLayers": [
-                8
-            ],
-            "scale": 0.4497,
-            "selectedLayer": -1,
+            "scale": 0.7032,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 703.802535023349,
-                "y": 1183.0108961529909
+                "x": 80.34698521046647,
+                "y": 127.98634812286696
             }
         },
         "titleTEST.tmx#dank": {
