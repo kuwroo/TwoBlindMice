@@ -88,6 +88,14 @@
             "scaleInDock": 1,
             "scaleInEditor": 0.3686
         },
+        "credits.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 613,
+                "y": 168
+            }
+        },
         "dank.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1
@@ -186,7 +194,7 @@
     },
     "frame.defaultDuration": 120,
     "last.externalTilesetPath": "C:/Users/jacel/Downloads",
-    "last.imagePath": "/Users/chloe/Downloads",
+    "last.imagePath": "/Users/chloe/Desktop/2blindmice/TwoBlindMice/resources",
     "map.fixedSize": true,
     "map.height": 15,
     "map.lastUsedFormat": "tmx",
