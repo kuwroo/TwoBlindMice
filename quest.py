@@ -577,31 +577,46 @@ def play_third_quest():
             pygame.draw.rect(screen, MAGENTA, npc_vision_rect(cat), 2)
 
         tmx.draw_texts(screen, pygame.Vector2(0, 0))
+
+        # Draw dialogue box if showing
+        if showing_dialogue:
+            dialogue_box.update()
+            dialogue_box.draw(screen)
+
         pygame.display.flip()
 
-    result = None
+    showing_dialogue = False
+    dialogue_box = None
+    quest_result = None
     running = True
     while running:
         dt = clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN and showing_dialogue:
+                if dialogue_box.handle_input(event.key) == "CLOSE":
+                    showing_dialogue = False
+                    running = False
 
         update_player()
         update_player_animation()  # Update player animation
         npc_result = update_npcs()
         if npc_result == "lose":
-            result = "lose"
-            break
+            quest_result = "lose"
+            font_path = "resources/Minecraft.ttf"
+            dialogue_text = "Oops! You got caught. Press E to exit."
+            dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_fail")
+            showing_dialogue = True
         if any(player.colliderect(exit_rect) for exit_rect in exit_rects):
-            result = "win"
-            break
+            quest_result = "win"
+            font_path = "resources/Minecraft.ttf"
+            dialogue_text = "Congrats! You made it! Press E to exit."
+            dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
+            showing_dialogue = True
         draw()
 
-    return result
-
-
-play_third_quest()
+    return quest_result
 
 import pygame
 from misc import *
