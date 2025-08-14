@@ -38,18 +38,22 @@ class NPC():
         if self.showing_dialogue:
             self.dialogue.update()
 
-
-
-    def draw(self, screen, camera_offset):
-        # Draw NPC sprite using current animation frame
+    def draw_sprite(self, screen, camera_offset):
+        # Draw only NPC sprite
         screen_x = self.rect.x - camera_offset.x
         screen_y = self.rect.y - camera_offset.y
         current_sprite = self.current_animation[self.current_frame]
         screen.blit(current_sprite, (screen_x, screen_y))
 
-        # Draw dialogue if active
+    def draw_dialogue(self, screen):
+        # Draw only dialogue if active
         if self.showing_dialogue:
             self.dialogue.draw(screen)
+
+    def draw(self, screen, camera_offset):
+        # For backwards compatibility
+        self.draw_sprite(screen, camera_offset)
+        self.draw_dialogue(screen)
 
     def interact(self):
         """Always restart dialogue when interacting"""

@@ -56,6 +56,36 @@ class GlobalSettings:
         except Exception as e:
             print(f"Failed to save game: {e}")
     
+    def restart_game(self):
+        """Restart the game by resetting settings and clearing all save files."""
+        # Reset settings to defaults
+        self.volume = 0.7
+        self.music_volume = 0.5
+        self.sfx_volume = 0.8
+        self.controls = {
+            'move_left': pygame.K_a,
+            'move_right': pygame.K_d,
+            'jump': pygame.K_SPACE,
+            'attack': pygame.K_LSHIFT,
+            'pause': pygame.K_ESCAPE
+        }
+        self.graphics = {
+            'fullscreen': False,
+            'vsync': True
+        }
+        
+        # Clear all save files
+        save_files = ["savegame.dat", "savegame.sav", "settings.dat"]
+        for file in save_files:
+            if os.path.exists(file):
+                try:
+                    os.remove(file)
+                    print(f"Deleted save file: {file}")
+                except Exception as e:
+                    print(f"Failed to delete {file}: {e}")
+        
+        print("Game restarted and all save files cleared.")
+    
     def load_game(self):
         try:
             with open(self.save_file, "rb") as f:
@@ -82,9 +112,11 @@ class GlobalSettingsMenu:
                 # Cycle through tabs
                 current_index = self.tabs.index(self.current_tab)
                 self.current_tab = self.tabs[(current_index + 1) % len(self.tabs)]
-            elif event.key == pygame.K_s:
-                if self.current_tab == "Save/Load":
-                    self.settings.save_settings()
+            elif event.key == pygame.K_s and self.current_tab == "Save/Load":
+                self.settings.save_settings()
+            elif event.key == pygame.K_x and self.current_tab == "Save/Load":
+                self.active = False
+                return "RESTART_GAME"
         return None
     
     def draw(self, screen):
@@ -196,7 +228,8 @@ class GlobalSettingsMenu:
             "Press S to Save Settings",
             "Press L to Load Settings",
             "Press G to Save Game",
-            "Press R to Load Game"
+            "Press R to Load Game",
+            "Press X to Restart Game"
         ]
         
         for i, option in enumerate(options):
@@ -226,7 +259,6 @@ async def main():
     running = True
 
     while running:
-        # Handle all events first
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -237,8 +269,18 @@ async def main():
                 result = settings_menu.handle_event(event)
                 if result == "CLOSE_SETTINGS":
                     settings_menu.active = False
+                elif result == "RESTART_GAME":
+                    # Clear save file and reset settings
+                    global_settings.restart_game()
+                    # Create fresh instances of scenes
+                    title_scene = TitleScene(screen)
+                    game_scene = GameScene(screen)
+                    boss_scene = MouseGodBoss(screen)
+                    # Switch back to title scene
+                    scene_manager.switch_to(title_scene)
+                    settings_menu.active = False
                 continue
-                
+
             # Handle global ESC key for settings
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and not settings_menu.active == True:
                 settings_menu.active = True
