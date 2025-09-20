@@ -303,12 +303,6 @@ async def main():
                     boss_scene = MouseGodBoss(screen)
                     scene_manager.push(boss_scene)
                     break
-                elif result == "ENDING":
-                    ending_scene = Ending(screen)
-                    scene_manager.switch_to(ending_scene)
-                elif result == "FINAL_ENDING":
-                    final_ending_scene = FinalEnding(screen)
-                    scene_manager.switch_to(final_ending_scene)
                 elif result == "OPEN_GLOBAL_SETTINGS":
                     settings_menu.active = True
 

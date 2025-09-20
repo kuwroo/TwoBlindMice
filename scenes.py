@@ -54,7 +54,7 @@ class Scene:
             text = font.render(prompt_text, True, (255, 255, 255))
             text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50))
             screen.blit(text, text_rect)
-    
+
     def draw(self, screen):
         screen.fill((30, 30, 30))
         self.tile_map.draw(screen, self.camera_offset)
@@ -298,14 +298,9 @@ class GameScene(Scene):
                                     self.save_game()
                             elif npc.name == "Shrine":  # example NPC name, adapt as needed
                                 if self.cheese_count >= 5:
-                                    dialogue_text = "You knock, there is no response. n/ You creak the door ajar and step inside the shrine. //The Mouse God awaits you."
-                                    font_path = "resources/Minecraft.ttf"
-                                    dialogue_box = DialogueView (font_path, dialogue_text, mode='default')
-                                    dialogue_box.draw(self.screen)
                                     print("Entering Boss Battle...")
-                                    self.save_game()
                                     return "ENTER_SHRINE"
-                                    
+                                    self.save_game()
                                 else:
                                     dialogue_text = "You have not enough cheese to offer the Mouse God!"
                                     font_path = "resources/Minecraft.ttf"
@@ -376,44 +371,57 @@ class GameScene(Scene):
 class Quest1:
     pass
 
-class Ending(Scene):
+class Entry(Scene):
     def __init__(self, screen):
-        super().__init__(screen, "resources/ending.tmx")
-        self.player.player_x = 20
+        super().__init__(screen, "resources/entry.tmx")
+        self.fog = FogOfWar()
+        self.fog.visibility_radius = 0 # Set initial visibility radius idk why this doesnt work
         self.player.player_y = SCREEN_HEIGHT // 4
-        self.player.rect.topleft = (self.player.player_x, self.player.player_y)
+        self.fog = FogOfWar()
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
         self.npcs = self.tile_map.load_npcs()
-        self.dialogue_finished = False
+
         
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+            for npc in self.npcs:
+                if npc.is_near_player(self.player.rect):
+                    npc.interact()
+                    return "NPC_INTERACTED"
+                # Implement NPC interaction logic here
+        return None
+    
+    def update(self):
+        keys = pygame.key.get_pressed()
+        # Use common update logic from superclass
+        if any(npc.showing_dialogue for npc in self.npcs):
+            self.player.can_move = False
+        self.handle_input_and_gravity(keys)
+        self.update_player_position(keys)
+        self.center_camera_on_player()
+
+
+
+        return None
+    
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_e, pygame.K_SPACE):
                 for npc in self.npcs:
+                    if npc.is_near_player(self.player.rect):
+                        npc.interact()
                     if npc.showing_dialogue:
                         result = npc.dialogue.handle_input(event.key)
                         if result == "CLOSE":
                             npc.showing_dialogue = False
                             self.player.can_move = True
-                            if npc.name == "Free":
-                                self.dialogue_finished = True
-                                return "FINAL_ENDING"
                         return result
-                    elif npc.is_near_player(self.player.rect):
-                        npc.interact()
-                        self.player.can_move = False
-                        return "NPC_INTERACTED"
+
+           
         return None
 
-    def update(self):
-        keys = pygame.key.get_pressed()
-        if not any(npc.showing_dialogue for npc in self.npcs):
-            self.handle_input_and_gravity(keys)
-            self.update_player_position(keys)
-            self.center_camera_on_player()
-        return None
-    
+
     def draw(self, screen):
         screen.fill((0, 0, 0))
         self.tile_map.draw(screen, self.camera_offset)
@@ -423,58 +431,11 @@ class Ending(Scene):
         current_time = pygame.time.get_ticks()
         for npc in self.npcs:
             npc.update(current_time)
-            npc.draw_sprite(screen, self.camera_offset)   
-        # Draw dialogues and prompts (over fog)
-        self.draw_prompt(screen)
-        for npc in self.npcs:
-            npc.draw_dialogue(screen)
-            
-class FinalEnding(Scene):
-    def __init__(self, screen):
-        super().__init__(screen, "resources/credits.tmx")
-        self.player.player_x = 20
-        self.player.player_y = SCREEN_HEIGHT // 4
-        self.player.rect.topleft = (self.player.player_x, self.player.player_y)
-        self.all_sprites = pygame.sprite.Group()
-        self.all_sprites.add(self.player)
-        self.npcs = self.tile_map.load_npcs()
-        self.dialogue_shown = False
+            npc.draw_sprite(screen, self.camera_offset)
         
-    def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_e, pygame.K_SPACE):
-                for npc in self.npcs:
-                    if npc.showing_dialogue:
-                        result = npc.dialogue.handle_input(event.key)
-                        if result == "CLOSE":
-                            npc.showing_dialogue = False
-                            self.player.can_move = True
-                            self.dialogue_shown = True
-                        return result
-                    elif npc.is_near_player(self.player.rect) and not self.dialogue_shown:
-                        npc.interact()
-                        self.player.can_move = False
-                        return "NPC_INTERACTED"
-        return None
-    
-    def update(self):
-        keys = pygame.key.get_pressed()
-        if not any(npc.showing_dialogue for npc in self.npcs):
-            self.handle_input_and_gravity(keys)
-            self.update_player_position(keys)
-            self.center_camera_on_player()
-        return None
-    
-    def draw(self, screen):
-        screen.fill((0, 0, 0))
-        self.tile_map.draw(screen, self.camera_offset)
-        self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
-        
-        # Draw NPC sprites (under fog)
-        current_time = pygame.time.get_ticks()
-        for npc in self.npcs:
-            npc.update(current_time)
-            npc.draw_sprite(screen, self.camera_offset)   
+        # Update and draw fog of war
+        self.fog.update((self.player.rect.centerx, self.player.rect.centery), self.camera_offset)
+        self.fog.draw(screen)
         
         # Draw dialogues and prompts (over fog)
         self.draw_prompt(screen)
@@ -606,7 +567,8 @@ class MouseGodBoss(Scene):
         self.attack_frames = self.load_spritesheet('resources/attack.png', 7, 32, 32)
         self.attack_frames = [pygame.transform.scale(frame, (32*4, 32*4)) for frame in self.attack_frames]
         
-    
+        self.death_frames = self.load_spritesheet('resources/death.png', 7, 32, 32)
+        self.death_frames = [pygame.transform.scale(frame, (32*4, 32*4)) for frame in self.death_frames]
 
         # Animation state variables
         self.boss_current_frame = 0
@@ -617,8 +579,6 @@ class MouseGodBoss(Scene):
         self.death_anim_timer = 0
         self.is_boss_dead = False
         self.end_state_timer = 0
-        
-        
         
         self.init_game()
     
@@ -682,8 +642,6 @@ class MouseGodBoss(Scene):
             elif self.game_state == "playing":
                 if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
                     self.try_player_attack()
-            elif event.key == pygame.K_q and self.game_state != "playing":
-                return "ENDING"
         return None
 
     def try_player_attack(self):
@@ -722,10 +680,11 @@ class MouseGodBoss(Scene):
             self.update_boss()
             self.update_projectiles()
             self.check_collisions()
-            
-            # Handle death animation
-         
-       
+        elif self.game_state == "victory":
+            self.end_state_timer += 1
+            if self.end_state_timer > 120:  # 2 seconds at 60fps
+                return "POP_SCENE"
+        return None
 
     def update_player(self):
         """Update player movement and physics"""
@@ -839,10 +798,7 @@ class MouseGodBoss(Scene):
                                         cheeseball['y'] - cheeseball['size']//2,
                                         cheeseball['size']*0.4, cheeseball['size']*0.4)
             if player_rect.colliderect(cheeseball_rect):
-                self.player.death = True
                 self.game_state = "dead"
-                print("Player hit by fire-cheeseball! Game over.")
-                break
 
     def draw(self, screen):
         """Draw the boss fight scene"""
@@ -858,7 +814,6 @@ class MouseGodBoss(Scene):
             self.draw_game()  # Draw the game in background
             self.draw_pause_menu()  # Draw pause menu on top
         elif self.game_state == "dead":
-            
             self.draw_game_over()
         elif self.game_state == "victory":
             self.draw_victory()
@@ -955,9 +910,6 @@ class MouseGodBoss(Scene):
         restart_text = self.small_font.render("Press R to play again", True, self.WHITE)
         text_rect = restart_text.get_rect(center=(self.WIDTH//2, self.HEIGHT//2 + 50))
         self.screen.blit(restart_text, text_rect)
-        restart_text = self.small_font.render("Press Q to quit", True, self.WHITE)
-        text_rect = restart_text.get_rect(center=(self.WIDTH//2, self.HEIGHT//2 + 80))
-        self.screen.blit(restart_text, text_rect)
 
     def draw_pause_menu(self):
         """Draw the pause menu"""
@@ -1009,9 +961,6 @@ class MouseGodBoss(Scene):
         self.player.allow_attack = True
         self.fire_cheeseballs.clear()
         self.end_state_timer = 0
-        self.death_animation_complete = False
-        self.current_death_frame = 0
-        self.player.death = False
         self.init_game()
 
 

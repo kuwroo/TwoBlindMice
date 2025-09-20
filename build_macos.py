@@ -3,6 +3,52 @@ import os
 import shutil
 import subprocess
 import plistlib
+from PIL import Image
+
+def create_icns(png_path, icns_path):
+    """Convert PNG to ICNS file with multiple sizes"""
+    if not os.path.exists(png_path):
+        print(f"Warning: Icon file {png_path} not found")
+        return False
+        
+    # Create temporary iconset directory
+    iconset_path = os.path.join(os.path.dirname(icns_path), 'icon.iconset')
+    if os.path.exists(iconset_path):
+        shutil.rmtree(iconset_path)
+    os.makedirs(iconset_path)
+    
+    # Generate different icon sizes
+    sizes = [
+        (16, 16), (32, 32), (64, 64), (128, 128),
+        (256, 256), (512, 512), (1024, 1024)
+    ]
+    
+    try:
+        for size in sizes:
+            img = Image.open(png_path)
+            # Regular size
+            icon_path = os.path.join(iconset_path, f'icon_{size[0]}x{size[0]}.png')
+            img.resize(size, Image.Resampling.LANCZOS).save(icon_path)
+            # @2x size
+            icon_path = os.path.join(iconset_path, f'icon_{size[0]}x{size[0]}@2x.png')
+            img.resize((size[0]*2, size[1]*2), Image.Resampling.LANCZOS).save(icon_path)
+            
+        # Use iconutil to convert iconset to icns
+        subprocess.run(['iconutil', '-c', 'icns', iconset_path], check=True)
+        
+        # Move the generated icns file to desired location
+        generated_icns = os.path.join(os.path.dirname(iconset_path), 'icon.icns')
+        if os.path.exists(generated_icns):
+            shutil.move(generated_icns, icns_path)
+            
+        # Clean up
+        shutil.rmtree(iconset_path)
+        return True
+    except Exception as e:
+        print(f"Error creating icon: {e}")
+        if os.path.exists(iconset_path):
+            shutil.rmtree(iconset_path)
+        return False
 
 def create_app_bundle():
     # App bundle name
@@ -22,53 +68,7 @@ def create_app_bundle():
     os.makedirs(macos_path, exist_ok=True)
     os.makedirs(resources_path, exist_ok=True)
     
-    # Create Info.plist
-    info_plist = {
-        'CFBundleName': 'TwoBlindMice',
-        'CFBundleDisplayName': 'Two Blind Mice',
-        'CFBundleIdentifier': 'com.game.twoblindmice',
-        'CFBundleVersion': '1.0.0',
-        'CFBundleExecutable': 'game_launcher',
-        'CFBundleIconFile': 'AppIcon',
-        'CFBundlePackageType': 'APPL',
-        'LSMinimumSystemVersion': '10.10.0',
-    }
-    
-    with open(os.path.join(contents_path, 'Info.plist'), 'wb') as f:
-        plistlib.dump(info_plist, f)
-    
-    # Create launcher script
-    launcher_script = '''#!/bin/bash
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$DIR/../Resources"
-./python/bin/python3 main.py
-'''
-    
-    with open(os.path.join(macos_path, 'game_launcher'), 'w') as f:
-        f.write(launcher_script)
-    
-    # Make launcher executable
-    os.chmod(os.path.join(macos_path, 'game_launcher'), 0o755)
-    
-    # Copy game files to Resources
-    game_files = [f for f in os.listdir('.') if f.endswith('.py')]
-    game_files.append('requirements.txt')  # Add requirements.txt to files to copy
-    for file in game_files:
-        shutil.copy2(file, resources_path)
-    
-    # Copy resources folder
-    shutil.copytree('resources', os.path.join(resources_path, 'resources'))
-    
-    # Create Python virtual environment in the bundle
-    subprocess.run(['python3', '-m', 'venv', 
-                   os.path.join(resources_path, 'python')], check=True)
-    
-    # Install dependencies in the bundled Python environment
-    pip_path = os.path.join(resources_path, 'python', 'bin', 'pip')
-    subprocess.run([pip_path, 'install', '-r', 
-                   os.path.join(resources_path, 'requirements.txt')], check=True)
-    
-    print(f"Created app bundle at {bundle_path}")
+    # Create and add application icon
     print("You can now run the game by double-clicking TwoBlindMice.app")
 
 if __name__ == '__main__':

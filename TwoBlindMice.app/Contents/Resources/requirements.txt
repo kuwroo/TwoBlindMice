@@ -1,3 +1,4 @@
 pygame>=2.5.0
 pytmx>=3.31
 asyncio>=3.4.3
+pyinstaller>=5.13.0

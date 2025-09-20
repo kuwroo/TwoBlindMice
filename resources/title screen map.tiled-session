@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "entry.tmx",
+    "activeFile": "sewermap.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -27,6 +27,10 @@
         },
         "/Users/chloe/Desktop/Downloads/twt.tsx": {
             "scaleInDock": 1
+        },
+        "10_17 2.tsx": {
+            "scaleInDock": 0.1948,
+            "scaleInEditor": 1
         },
         "10_17.tsx": {
             "scaleInDock": 0.191,
@@ -76,8 +80,12 @@
                 "y": 185.79791295495045
             }
         },
+        "Screenshot 2025-08-14 at 5.45.09 PM.tsx": {
+            "scaleInDock": 0.5664,
+            "scaleInEditor": 1
+        },
         "Screenshot_2025-08-14_at_5.45.09 PM.tsx": {
-            "scaleInDock": 0.1788,
+            "scaleInDock": 0.1705,
             "scaleInEditor": 0.61
         },
         "TESTTEST.tmx": {
@@ -123,8 +131,12 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 795.346628679962,
-                "y": -52.23171889838568
+                "y": 52.23171889838568
             }
+        },
+        "images.tsx": {
+            "scaleInDock": 0.1587,
+            "scaleInEditor": 1
         },
         "maze tile set.tsx": {
             "scaleInDock": 1
@@ -140,10 +152,16 @@
         "mazetile.tsx": {
             "scaleInDock": 1
         },
+        "quest1mansion.tsx": {
+            "scaleInDock": 1
+        },
+        "quest1well.tsx": {
+            "scaleInDock": 0.7835
+        },
         "sewer.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 0.5774,
-            "scaleInEditor": 0.7
+            "scaleInEditor": 1
         },
         "sewermap.tmx": {
             "expandedObjectLayers": [
@@ -185,6 +203,9 @@
             "scaleInDock": 1
         },
         "titleTEST.tmx": {
+            "expandedObjectLayers": [
+                8
+            ],
             "scale": 0.7032,
             "selectedLayer": 5,
             "viewCenter": {
@@ -206,23 +227,32 @@
     "openFiles": [
         "titleTEST.tmx",
         "sewer.tsx",
-        "entry.tmx"
+        "entry.tmx",
+        "sewermap.tmx",
+        "shrine.tmx",
+        "images.tsx",
+        "TESTTEST.tmx",
+        "Screenshot 2025-08-14 at 5.45.09 PM.tsx",
+        "Ending.tmx",
+        "credits.tmx",
+        "10_17 2.tsx",
+        "detailed-pixel-art-city-sunset-featuring-futuristic-buildings-retro-vibes-blend-warm-cool-tones-nostalgic-visually-361000327.jpg.tsx"
     ],
     "project": "title screen map.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "Screenshot_2025-08-14_at_5.45.09 PM.tsx",
-        "10_17.tsx",
-        "e67e510aa0f8ff31e642980d0ab0d41a.tsx",
-        "detailed-pixel-art-city-sunset-featuring-futuristic-buildings-retro-vibes-blend-warm-cool-tones-nostalgic-visually-361000327.jpg.tsx",
-        "ba3c9b7cbaf1e926f609461f54600304.tsx",
-        "shrine.tsx",
-        "mazemap2.tmx",
         "titleTEST.tmx",
         "sewer.tsx",
         "entry.tmx",
-        "title.tmx",
-        "sewermap.tsx"
+        "detailed-pixel-art-city-sunset-featuring-futuristic-buildings-retro-vibes-blend-warm-cool-tones-nostalgic-visually-361000327.jpg.tsx",
+        "10_17 2.tsx",
+        "credits.tmx",
+        "Ending.tmx",
+        "Screenshot 2025-08-14 at 5.45.09 PM.tsx",
+        "TESTTEST.tmx",
+        "images.tsx",
+        "shrine.tmx",
+        "sewermap.tmx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
