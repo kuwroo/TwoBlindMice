@@ -50,7 +50,7 @@ def play_fourth_quest():
     def load(filename):
         rects = []
         mixer.init()
-        mixer.music.load(filename + ".mp3")
+        mixer.music.load(filename + ".ogg")
         mixer.music.play()
         f = open(filename + ".txt", "r")
         data = f.readlines()

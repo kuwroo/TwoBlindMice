@@ -1,8 +1,15 @@
+# /// script
+# dependencies = [
+#   "pytmx",
+# ]
+# ///
 import pygame
 import asyncio
 from scenes import *
 from scene_manager import SceneManager
 from misc import SCREEN_WIDTH, SCREEN_HEIGHT
+from quest import play_first_quest, play_second_quest, play_third_quest
+from p4 import play_fourth_quest
 import pickle
 import os
 
@@ -238,7 +245,7 @@ class GlobalSettingsMenu:
 
 async def main():
     pygame.init()
-    screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT], pygame.SRCALPHA, 32)
+    screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
     pygame.display.set_caption("2 Blind Mice")
     clock = pygame.time.Clock()
     
@@ -251,11 +258,28 @@ async def main():
     
     # Create scene manager and start with title scene
     scene_manager = SceneManager()
-    title_scene = TitleScene(screen)
-    game_scene = GameScene(screen)
-    boss_scene = MouseGodBoss(screen)
-    shrine_scene = ShrineScene(screen)
-    scene_manager.switch_to(title_scene)
+    try:
+        title_scene = TitleScene(screen)
+        scene_manager.switch_to(title_scene)
+    except Exception as e:
+        import traceback
+        error_text = traceback.format_exc()
+        print("STARTUP ERROR:", error_text)
+        font = pygame.font.Font(None, 24)
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            screen.fill((0, 0, 0))
+            y = 10
+            for line in error_text.splitlines():
+                surf = font.render(line[:80], True, (255, 80, 80))
+                screen.blit(surf, (10, y))
+                y += 22
+            pygame.display.flip()
+            await asyncio.sleep(0)
+        return
     
     running = True
 
@@ -273,11 +297,7 @@ async def main():
                 elif result == "RESTART_GAME":
                     # Clear save file and reset settings
                     global_settings.restart_game()
-                    # Create fresh instances of scenes
                     title_scene = TitleScene(screen)
-                    game_scene = GameScene(screen)
-                    boss_scene = MouseGodBoss(screen)
-                    # Switch back to title scene
                     scene_manager.switch_to(title_scene)
                     settings_menu.active = False
                 continue
@@ -304,13 +324,25 @@ async def main():
                     scene_manager.push(boss_scene)
                     break
                 elif result == "ENDING":
-                    ending_scene = Ending(screen)
-                    scene_manager.switch_to(ending_scene)
+                    try:
+                        ending_scene = Ending(screen)
+                        scene_manager.switch_to(ending_scene)
+                    except Exception as e:
+                        import traceback; print("ENDING ERROR:", traceback.format_exc())
                 elif result == "FINAL_ENDING":
-                    final_ending_scene = FinalEnding(screen)
-                    scene_manager.switch_to(final_ending_scene)
+                    try:
+                        final_ending_scene = FinalEnding(screen)
+                        scene_manager.switch_to(final_ending_scene)
+                    except Exception as e:
+                        import traceback; print("FINAL_ENDING ERROR:", traceback.format_exc())
                 elif result == "OPEN_GLOBAL_SETTINGS":
                     settings_menu.active = True
+                elif result in ("START_QUEST_1", "START_QUEST_2", "START_QUEST_3", "START_QUEST_4"):
+                    quest_num = int(result[-1])
+                    quest_fn = [None, play_first_quest, play_second_quest, play_third_quest, play_fourth_quest][quest_num]
+                    quest_result = await quest_fn(screen)
+                    if hasattr(scene_manager.current_scene, "on_quest_complete"):
+                        scene_manager.current_scene.on_quest_complete(quest_num, quest_result)
 
         # Update current scene
         if scene_manager.current_scene and not settings_menu.active:
@@ -331,7 +363,6 @@ async def main():
             settings_menu.draw(screen)
         
         pygame.display.flip()
-        clock.tick(60)
         await asyncio.sleep(0)
     
     # Save settings before quitting

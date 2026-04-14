@@ -1,17 +1,14 @@
 import pygame
+import asyncio
 from misc import *
 from pygame import mixer
 from pygame import font
 import math
 
-def play_fourth_quest():
-    pygame.font.init()
-    pygame.init()
-
+async def play_fourth_quest(screen):
     clock = pygame.time.Clock()
-    win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) 
-    pygame.display.set_caption("RAT AND ROLL!") 
-    print("RAT AND ROLL!") 
+    win = screen
+    print("RAT AND ROLL!")
 
     # Game constants
     HIT_ZONE_Y = SCREEN_HEIGHT - 100
@@ -149,7 +146,7 @@ def play_fourth_quest():
     def load(filename):
         rects = []
         mixer.init()
-        mixer.music.load(filename + ".mp3")
+        mixer.music.load(filename + ".ogg")
         mixer.music.play()
         f = open(filename + ".txt", "r")
         data = f.readlines()
@@ -226,29 +223,28 @@ def play_fourth_quest():
         print("Could not load song file, using empty map")
         map_rects = []
 
-    def pause():
+    async def pause():
         paused = True
         pygame.mixer.music.pause()
         while paused:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
+                    return
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE:
                         paused = False
                         pygame.mixer.music.unpause()
-            
+
             win.fill((0, 0, 0))
             font_obj = pygame.font.Font(font_path, 74)
             text = font_obj.render("PAUSED", True, (255, 255, 255))
             win.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 - text.get_height() // 2))
-            
+
             resume_text = pygame.font.Font(font_path, 36).render("Press SPACE or ESC to resume", True, (200, 200, 200))
             win.blit(resume_text, (SCREEN_WIDTH // 2 - resume_text.get_width() // 2, SCREEN_HEIGHT // 2 + 50))
-            
+
             pygame.display.update()
-            clock.tick(FPS)
+            await asyncio.sleep(0)
 
     # Main game loop
     while run:
@@ -257,10 +253,11 @@ def play_fourth_quest():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE:
-                    pause()
+                if quest_result is not None:
+                    run = False
+                elif event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE:
+                    await pause()
 
         k = pygame.key.get_pressed()
         
@@ -363,28 +360,33 @@ def play_fourth_quest():
             win.blit(retry_text, retry_rect)
             
             quest_result = 'lose'
-        
+            exit_text = font_small.render("Press any key to exit", True, (200, 200, 200))
+            exit_rect = exit_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 120))
+            win.blit(exit_text, exit_rect)
+
         elif len(map_rects) == 0 and music_started:
             # Display final score
             draw_background()
             final_text = font_large.render("SONG COMPLETE!", True, (255, 255, 100))
             final_rect = final_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
             win.blit(final_text, final_rect)
-            
+
             score_text = font_medium.render(f"Final Score: {score:,}", True, (255, 255, 255))
             score_rect = score_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
             win.blit(score_text, score_rect)
-            
-            
+
             max_combo_text = font_medium.render(f"Max Combo: {max_combo}", True, (255, 255, 255))
             max_combo_rect = max_combo_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60))
             win.blit(max_combo_text, max_combo_rect)
-            
+
+            exit_text = font_small.render("Press any key to exit", True, (200, 200, 200))
+            exit_rect = exit_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 120))
+            win.blit(exit_text, exit_rect)
+
             quest_result = 'win'
             
         
+        await asyncio.sleep(0)
         pygame.display.update()
         clock.tick(FPS)
     return quest_result
-
-play_fourth_quest()

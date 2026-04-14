@@ -1,12 +1,5 @@
 [tool.pygbag]
-assets = ["resources/assets"]
+assets = ["resources"]
 
 [build]
-assets = [
-    "resources/sewer.tsx",
-    "resources/sewermap.tmx",
-    "resources/MOUSE.png",
-    "resources/idle.png",
-    "resources/title.tmx"
-]
 entrypoint = "main.py"

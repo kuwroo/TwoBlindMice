@@ -264,38 +264,14 @@ class GameScene(Scene):
                         elif result == "PLAY_QUEST":
                             npc.showing_dialogue = False
                             self.player.can_move = True
-                            # Start the quest related to this NPC
-                            if npc.name == "Frog":  # example NPC name, adapt as needed
-                                print("Starting Pac-mouse...")
-                                result = play_second_quest()
-                                if result == "win" and not self.quest2_completed:
-                                    self.cheese_count += 1
-                                    self.quest2_completed = True
-                                    self.save_game()
-                                    
-                            elif npc.name == "Rabbit":  # example NPC name, adapt as needed
-                                print("Starting Rabbit-hole...")
-                                result = play_first_quest()
-                                if result == "win" and not self.quest1_completed:
-                                    self.cheese_count += 1
-                                    self.quest1_completed = True
-                                    self.save_game()
-
-                            elif npc.name == "Rat":  # example NPC name, adapt as needed
-                                print("Starting Mouse-Heist...")
-                                result = play_third_quest()
-                                if result == "win" and not self.quest3_completed:
-                                    self.cheese_count += 1
-                                    self.quest3_completed = True
-                                    self.save_game()
-
-                            elif npc.name == "Wiener":  # example NPC name, adapt as needed
-                                print("Starting Wiener Mouse...")
-                                result = play_fourth_quest()
-                                if result == "win" and not self.quest4_completed:
-                                    self.cheese_count += 1
-                                    self.quest4_completed = True
-                                    self.save_game()
+                            if npc.name == "Frog":
+                                return "START_QUEST_2"
+                            elif npc.name == "Rabbit":
+                                return "START_QUEST_1"
+                            elif npc.name == "Rat":
+                                return "START_QUEST_3"
+                            elif npc.name == "Wiener":
+                                return "START_QUEST_4"
                             elif npc.name == "Shrine":  # example NPC name, adapt as needed
                                 if self.cheese_count >= 5:
                                     dialogue_text = "You knock, there is no response. n/ You creak the door ajar and step inside the shrine. //The Mouse God awaits you."
@@ -327,10 +303,16 @@ class GameScene(Scene):
 
         return None
 
-   
+    def on_quest_complete(self, quest_num, result):
+        completed_attr = f"quest{quest_num}_completed"
+        if result == "win" and not getattr(self, completed_attr):
+            self.cheese_count += 1
+            setattr(self, completed_attr, True)
+            self.save_game()
+
     def update(self):
         keys = pygame.key.get_pressed()
-        
+
         # Use common update logic from superclass
         if any(npc.showing_dialogue for npc in self.npcs):
             self.player.can_move = False
@@ -396,9 +378,8 @@ class Ending(Scene):
                         if result == "CLOSE":
                             npc.showing_dialogue = False
                             self.player.can_move = True
-                            if npc.name == "Free":
-                                self.dialogue_finished = True
-                                return "FINAL_ENDING"
+                            self.dialogue_finished = True
+                            return "FINAL_ENDING"
                         return result
                     elif npc.is_near_player(self.player.rect):
                         npc.interact()
@@ -413,22 +394,22 @@ class Ending(Scene):
             self.update_player_position(keys)
             self.center_camera_on_player()
         return None
-    
+
     def draw(self, screen):
         screen.fill((0, 0, 0))
         self.tile_map.draw(screen, self.camera_offset)
         self.player.draw(screen, pygame.key.get_pressed(), self.camera_offset)
-        
+
         # Draw NPC sprites (under fog)
         current_time = pygame.time.get_ticks()
         for npc in self.npcs:
             npc.update(current_time)
-            npc.draw_sprite(screen, self.camera_offset)   
+            npc.draw_sprite(screen, self.camera_offset)
         # Draw dialogues and prompts (over fog)
         self.draw_prompt(screen)
         for npc in self.npcs:
             npc.draw_dialogue(screen)
-            
+
 class FinalEnding(Scene):
     def __init__(self, screen):
         super().__init__(screen, "resources/credits.tmx")

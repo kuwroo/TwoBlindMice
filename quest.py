@@ -1,4 +1,5 @@
 import pygame
+import asyncio
 import random
 from misc import SCREEN_WIDTH as WIDTH, SCREEN_HEIGHT as HEIGHT, TILE_SIZE
 import sys
@@ -11,10 +12,7 @@ from player import PlayerMovement
 from dialogueview import DialogueView
 import pytmx
 
-def play_first_quest():
-    pygame.init()
-    win = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Rabbit-hole!")
+async def play_first_quest(screen):
     FPS = 60
     clock = pygame.time.Clock()
 
@@ -75,7 +73,7 @@ def play_first_quest():
 
     while run:
         clock.tick(FPS)
-        win.fill(WHITE)
+        screen.fill(WHITE)
         keys = pygame.key.get_pressed()
 
         # Event handling
@@ -118,12 +116,12 @@ def play_first_quest():
         camera_offset_y = max(0, min(target_offset, map_height_px - HEIGHT))
 
         # Draw everything
-        tmx.draw(win, pygame.Vector2(0, camera_offset_y))
-        tmx.draw_texts(win, pygame.Vector2(0, camera_offset_y))
-        player_sprite.draw(win, keys, pygame.Vector2(0, camera_offset_y))
+        tmx.draw(screen, pygame.Vector2(0, camera_offset_y))
+        tmx.draw_texts(screen, pygame.Vector2(0, camera_offset_y))
+        player_sprite.draw(screen, keys, pygame.Vector2(0, camera_offset_y))
         if showing_dialogue:
             dialogue_box.update()
-            dialogue_box.draw(win)
+            dialogue_box.draw(screen)
 
         # Obstacle collisions with buffer
         player_collision_rect = pygame.Rect(
@@ -144,14 +142,12 @@ def play_first_quest():
                 falling = False  # stop gravity/movement
                 break
 
+        await asyncio.sleep(0)
         pygame.display.update()
 
     return quest_result
 
-def play_second_quest():
-    pygame.init()
-    win = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Pac-Mouse!")
+async def play_second_quest(screen):
 
     WALL_COLOR = (0, 0, 255)
     DOT_COLOR = (255, 255, 255)
@@ -288,7 +284,7 @@ def play_second_quest():
         if not game_started and keys[pygame.K_SPACE]:
             game_started = True
 
-        if game_started:
+        if game_started and quest_result is None:
             if keys[pygame.K_a]:
                 move(player, -1, 0)
             if keys[pygame.K_d]:
@@ -302,20 +298,19 @@ def play_second_quest():
             if ghost_move_timer >= ghost_move_interval:
                 ghost_chase(ghost, ignore_ghost=ghost)
                 ghost_chase(ghost2, ignore_ghost=ghost2)
-
                 ghost_move_timer = 0
 
             points = [p for p in points if not player.colliderect(p)]
 
-            if not points:
+            if quest_result is None and not points:
                 print("You Win!")
                 quest_result = "win"
                 font_path = "resources/Minecraft.ttf"
-                dialogue_text = "Congrats! You landed safely. Press E to exit."
+                dialogue_text = "Congrats! You collected all the cheese! Press E to exit."
                 dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
                 showing_dialogue = True
 
-            if player.colliderect(ghost):
+            if quest_result is None and player.colliderect(ghost):
                 print("Caught by Ghost! You Lose.")
                 quest_result = "lose"
                 font_path = "resources/Minecraft.ttf"
@@ -323,7 +318,7 @@ def play_second_quest():
                 dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_fail")
                 showing_dialogue = True
 
-            if player.colliderect(ghost2):
+            if quest_result is None and player.colliderect(ghost2):
                 print("Caught by Second Ghost! You Lose.")
                 quest_result = "lose"
                 font_path = "resources/Minecraft.ttf"
@@ -331,29 +326,27 @@ def play_second_quest():
                 dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_fail")
                 showing_dialogue = True
 
-        win.blit(background, (0, 0))
+        screen.blit(background, (0, 0))
 
         for wall in walls:
-            pygame.draw.rect(win, WALL_COLOR, wall)
+            pygame.draw.rect(screen, WALL_COLOR, wall)
         for p in points:
-            pygame.draw.rect(win, DOT_COLOR, p)
+            pygame.draw.rect(screen, DOT_COLOR, p)
 
-        pygame.draw.rect(win, PLAYER_COLOR, player)
-        pygame.draw.rect(win, GHOST1_COLOR, ghost)
-        pygame.draw.rect(win, GHOST2_COLOR, ghost2)
+        pygame.draw.rect(screen, PLAYER_COLOR, player)
+        pygame.draw.rect(screen, GHOST1_COLOR, ghost)
+        pygame.draw.rect(screen, GHOST2_COLOR, ghost2)
         if showing_dialogue:
             dialogue_box.update()
-            dialogue_box.draw(win)
+            dialogue_box.draw(screen)
 
+        await asyncio.sleep(0)
         pygame.display.update()
 
     return quest_result
 
-def play_third_quest():
-    pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+async def play_third_quest(screen):
     clock = pygame.time.Clock()
-    pygame.display.set_caption("Stealth Heist")
     FPS = 60
 
     tmx = TileMap("resources/mazemap2.tmx")
@@ -615,6 +608,7 @@ def play_third_quest():
             dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
             showing_dialogue = True
         draw()
+        await asyncio.sleep(0)
 
     return quest_result
 

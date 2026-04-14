@@ -12,8 +12,14 @@ class NPC():
         # Load sprite frames
         sprite_path = f'resources/{name}.png'
         print(f"Loading spritesheet from: {sprite_path}")
-        self.sprite_frames = load_spritesheet(f'resources/{name}.png', 4, 32, 32)
-        self.sprite_frames = [pygame.transform.scale(frame, (32*4, 32*4)) for frame in self.sprite_frames]
+        try:
+            self.sprite_frames = load_spritesheet(f'resources/{name}.png', 4, 32, 32)
+            self.sprite_frames = [pygame.transform.scale(frame, (32*4, 32*4)) for frame in self.sprite_frames]
+        except Exception as e:
+            print(f"Warning: could not load sprite for NPC '{name}': {e}")
+            placeholder = pygame.Surface((128, 128))
+            placeholder.fill((200, 0, 200))
+            self.sprite_frames = [placeholder]
         
         # Animation variables
         self.current_frame = 0

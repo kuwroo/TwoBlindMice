@@ -18,7 +18,7 @@ class PlayerMovement(pygame.sprite.Sprite):
         # Player details 
         self.PLAYER_WIDTH = 50
         self.PLAYER_HEIGHT = 50
-        self.PLAYER_SPEED = 5
+        self.PLAYER_SPEED = 7
         self.JUMP_POWER = 15
         self.CLIMB_SPEED = 4
 
