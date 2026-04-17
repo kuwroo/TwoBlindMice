@@ -346,164 +346,216 @@ async def play_second_quest(screen):
     return quest_result
 
 async def play_third_quest(screen):
+    import pygame
+    import asyncio
+
+    def load_spritesheet_local(image_path, frame_count, frame_width, frame_height):
+        spritesheet = pygame.image.load(image_path).convert_alpha()
+        frames = []
+
+        for i in range(frame_count):
+            x = i * frame_width
+            frame = spritesheet.subsurface(pygame.Rect(x, 0, frame_width, frame_height))
+            frames.append(frame)
+
+        return frames
+
     clock = pygame.time.Clock()
     FPS = 60
 
-    tmx = TileMap("resources/mazemap2.tmx")
+    BLACK = (0, 0, 0)
+    MAGENTA = (255, 0, 255)
 
-    # === Define spritesheet loading function ===
-    def load_spritesheet_local(image_path, frame_count, frame_width, frame_height):
-        spritesheet = pygame.image.load(image_path)
-        sprite_width, sprite_height = spritesheet.get_size()
-        
-        # Debug print to see actual dimensions
-        print(f"Loading {image_path}: {sprite_width}x{sprite_height}, expecting {frame_count} frames of {frame_width}x{frame_height}")
-        
-        frames = []
-        for i in range(frame_count):
-            x = i * frame_width
-            # Check if we're trying to go outside the image bounds
-            if x + frame_width > sprite_width or frame_height > sprite_height:
-                print(f"Warning: Frame {i} would be outside image bounds. Skipping.")
-                break
-            
-            frame = spritesheet.subsurface(pygame.Rect(x, 0, frame_width, frame_height))
-            frames.append(frame)
-        
-        if not frames:
-            # Fallback: create a single frame from the whole image
-            print(f"No valid frames found, using whole image as single frame")
-            frames = [spritesheet]
-            
-        return frames
+    draw_offset_x = 80
+    draw_offset_y = 48
 
-    # === Load NPC animation frames and pre-flip for left movement ===
-    cat_frames_raw = load_spritesheet_local('resources/quest2npc.png', 8, 32, 32)
+    maze_data = [
+    "11111111111111111111",
+    "1S000000000100000001",
+    "10001110000000000101",
+    "10001110011101000101",
+    "10000000011101000001",
+    "10111000000000011101",
+    "10111011100111000101",
+    "10000011100000000001",
+    "10000000000001110001",
+    "10111100111100000001",
+    "10000000100000000001",
+    "11100110100011000101",
+    "10000110000011000001",
+    "10000000011100000001",
+    "10111100000101111001",
+    "100000000000000000E1",
+    "11111111111111111111",
+]
+
+    wall_img = pygame.image.load("resources/newquest3/wall.png").convert_alpha()
+    floor_img = pygame.image.load("resources/newquest3/floor.png").convert_alpha()
+    exit_img = pygame.image.load("resources/newquest3/exit.png").convert_alpha()
+
+    wall_img = pygame.transform.scale(wall_img, (TILE_SIZE, TILE_SIZE))
+    floor_img = pygame.transform.scale(floor_img, (TILE_SIZE, TILE_SIZE))
+    exit_img = pygame.transform.scale(exit_img, (TILE_SIZE, TILE_SIZE))
+    cat_frames_raw = load_spritesheet_local("resources/newquest3/cat.png", 4, 32, 32)
     print(f"Loaded {len(cat_frames_raw)} cat frames")
-    cat_frames_left = [pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE)) for frame in cat_frames_raw]
-    cat_frames_right = [pygame.transform.flip(frame, True, False) for frame in cat_frames_left]
 
-    # Load player animations
-    player_idle_frames = load_spritesheet_local('resources/idle.png', 4, 32, 32)
-    player_movement_frames = load_spritesheet_local('resources/MOUSE.png', 8, 32, 32)
-    
-    # Scale player frames to match game size
-    PLAYER_SPRITE_SIZE = 48  # Increased from 32 to make player bigger
+    vision_right_img = pygame.image.load("resources/newquest3/light_right.png").convert_alpha()
+    vision_left_img = pygame.image.load("resources/newquest3/light_left.png").convert_alpha()
+    vision_up_img = pygame.image.load("resources/newquest3/light_up.png").convert_alpha()
+    vision_down_img = pygame.image.load("resources/newquest3/light_down.png").convert_alpha()
+
+    cat_img_left = [pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE)) for frame in cat_frames_raw]
+    cat_img_right = [pygame.transform.flip(frame, True, False) for frame in cat_img_left]
+
+    player_idle_frames = load_spritesheet_local("resources/idle.png", 4, 32, 32)
+    player_movement_frames = load_spritesheet_local("resources/MOUSE.png", 8, 32, 32)
+
+    PLAYER_SIZE = 24
+    PLAYER_SPRITE_SIZE = 48
     player_idle_frames = [pygame.transform.scale(frame, (PLAYER_SPRITE_SIZE, PLAYER_SPRITE_SIZE)) for frame in player_idle_frames]
     player_movement_frames = [pygame.transform.scale(frame, (PLAYER_SPRITE_SIZE, PLAYER_SPRITE_SIZE)) for frame in player_movement_frames]
-    
-    player = None
+    GREY = (100, 100, 100)
+    walls = []
     exit_rects = []
-    cats = []
-    walls = tmx.floor_rects
+    player = None
 
-    # Player animation variables
+    for y, row in enumerate(maze_data):
+        for x, cell in enumerate(row):
+            tile_rect = pygame.Rect(
+                draw_offset_x + x * TILE_SIZE,
+                draw_offset_y + y * TILE_SIZE,
+                TILE_SIZE,
+                TILE_SIZE
+            )
+
+            if cell == "1":
+                walls.append(tile_rect)
+            elif cell == "S":
+                player = pygame.Rect(
+                    draw_offset_x + x * TILE_SIZE + (TILE_SIZE - PLAYER_SIZE) // 2,
+                    draw_offset_y + y * TILE_SIZE + (TILE_SIZE - PLAYER_SIZE) // 2,
+                    PLAYER_SIZE,
+                    PLAYER_SIZE
+                )
+            elif cell == "E":
+                exit_rects.append(tile_rect)
+
+    cats = [
+        {
+            "name": "guard1",
+            "rect": pygame.Rect(draw_offset_x + 10 * TILE_SIZE + 4, draw_offset_y + 2 * TILE_SIZE + 4, TILE_SIZE - 8, TILE_SIZE - 8),
+            "path": [(10, 2), (15, 2), (15, 9), (10, 5)],
+            "path_index": 1,
+            "speed": 1,
+            "direction_x": 1,
+            "direction_y": 0,
+            "facing_right": True,
+            "stuck_frames": 0,
+            "frame_index": 0,
+            "frame_timer": 0,
+            "frame_delay": 10,
+        },
+        {
+            "name": "guard2",
+            "rect": pygame.Rect(draw_offset_x + 15 * TILE_SIZE + 4, draw_offset_y + 7 * TILE_SIZE + 4, TILE_SIZE - 8, TILE_SIZE - 8),
+            "path": [(15, 7), (24, 7), (24, 10), (15, 10)],
+            "path_index": 1,
+            "speed": 1,
+            "direction_x": 1,
+            "direction_y": 0,
+            "facing_right": True,
+            "stuck_frames": 0,
+            "frame_index": 0,
+            "frame_timer": 0,
+            "frame_delay": 10,
+        },
+        {
+            "name": "guard3",
+            "rect": pygame.Rect(draw_offset_x + 5 * TILE_SIZE + 4, draw_offset_y + 8 * TILE_SIZE + 4, TILE_SIZE - 8, TILE_SIZE - 8),
+            "path": [(5, 8), (8, 8), (8, 10), (5, 10)],
+            "path_index": 1,
+            "speed": 1,
+            "direction_x": 1,
+            "direction_y": 0,
+            "facing_right": True,
+            "stuck_frames": 0,
+            "frame_index": 0,
+            "frame_timer": 0,
+            "frame_delay": 10,
+        }
+    ]
+
     player_animation = {
         "current_frame": 0,
         "frame_timer": 0,
-        "frame_delay": 8,  # Adjust speed of animation
+        "frame_delay": 8,
         "last_direction_left": False,
         "velocity_x": 0,
         "velocity_y": 0
     }
 
-    for obj in tmx.interactables:
-        if obj["type"].lower() == "spawn":
-            PLAYER_SIZE = 32
-            player = pygame.Rect(obj["rect"].x, obj["rect"].y, PLAYER_SIZE, PLAYER_SIZE)
-        elif obj["type"].lower() == "exit":
-            exit_rects.append(obj["rect"])
-        elif obj["type"].lower() == "cat":
-            props = obj.get("properties", {})
-            patrol_tiles = int(props.get("patrol_length", props.get("patrol length", 1)))
-            direction = props.get("direction", "horizontal").lower()
-            start_dir = props.get("start_direction", "right").lower()
-
-            cat = {
-                "name": obj.get("name", f"npc{len(cats)+1}"),
-                "rect": pygame.Rect(obj["rect"].x, obj["rect"].y, TILE_SIZE, TILE_SIZE),
-                "origin": (obj["rect"].x, obj["rect"].y),
-                "axis": direction,
-                "direction": 1 if start_dir in ("right", "down") else -1,
-                "patrol_range": patrol_tiles * TILE_SIZE,
-                "speed": 1,
-                "frame_index": 0,
-                "frame_timer": 0,
-                "facing_right": True
-            }
-            cats.append(cat)
-
     def move_player(rect, dx, dy):
-        next_rect = rect.move(dx, dy)
-        if not any(next_rect.colliderect(w) for w in walls):
-            rect.x += dx
-            rect.y += dy
-            return True
-        return False
+        moved = False
+
+        if dx != 0:
+            next_rect = rect.move(dx, 0)
+            if not any(next_rect.colliderect(w) for w in walls):
+                rect.x += dx
+                moved = True
+
+        if dy != 0:
+            next_rect = rect.move(0, dy)
+            if not any(next_rect.colliderect(w) for w in walls):
+                rect.y += dy
+                moved = True
+
+        return moved
 
     def update_player():
         keys = pygame.key.get_pressed()
         dx = dy = 0
         player_animation["velocity_x"] = 0
         player_animation["velocity_y"] = 0
-        
-        if keys[pygame.K_a]: 
-            dx = -TILE_SIZE // 6
+
+        step = TILE_SIZE // 6
+
+        if keys[pygame.K_a]:
+            dx = -step
             player_animation["velocity_x"] = dx
             player_animation["last_direction_left"] = True
-        if keys[pygame.K_d]: 
-            dx = TILE_SIZE // 6
+        if keys[pygame.K_d]:
+            dx = step
             player_animation["velocity_x"] = dx
             player_animation["last_direction_left"] = False
-        if keys[pygame.K_w]: 
-            dy = -TILE_SIZE // 6
+        if keys[pygame.K_w]:
+            dy = -step
             player_animation["velocity_y"] = dy
-        if keys[pygame.K_s]: 
-            dy = TILE_SIZE // 6
+        if keys[pygame.K_s]:
+            dy = step
             player_animation["velocity_y"] = dy
-            
-        if dx or dy:
-            move_player(player, dx, dy)
+
+        move_player(player, dx, dy)
 
     def update_player_animation():
-        # Check if player is moving
         is_moving = player_animation["velocity_x"] != 0 or player_animation["velocity_y"] != 0
-        
+
         player_animation["frame_timer"] += 1
         if player_animation["frame_timer"] >= player_animation["frame_delay"]:
             player_animation["frame_timer"] = 0
-            
+
             if is_moving:
-                # Use movement animation
                 player_animation["current_frame"] = (player_animation["current_frame"] + 1) % len(player_movement_frames)
             else:
-                # Use idle animation
                 player_animation["current_frame"] = (player_animation["current_frame"] + 1) % len(player_idle_frames)
-
-    def draw_player(screen):
-        # Determine which animation to use
-        is_moving = player_animation["velocity_x"] != 0 or player_animation["velocity_y"] != 0
-        
-        if is_moving:
-            frame = player_movement_frames[player_animation["current_frame"] % len(player_movement_frames)]
-        else:
-            frame = player_idle_frames[player_animation["current_frame"] % len(player_idle_frames)]
-        
-        # Flip sprite if moving left or last moved left
-        if player_animation["velocity_x"] < 0 or (player_animation["velocity_x"] == 0 and player_animation["last_direction_left"]):
-            frame = pygame.transform.flip(frame, True, False)
-        
-        # Center the sprite on the collision rectangle
-        sprite_x = player.x - (PLAYER_SPRITE_SIZE - PLAYER_SIZE) // 2
-        sprite_y = player.y - (PLAYER_SPRITE_SIZE - PLAYER_SIZE) // 2
-        screen.blit(frame, (sprite_x, sprite_y))
 
     def is_wall_blocking(cat_rect, player_rect, axis):
         start = cat_rect.center
         end = player_rect.center
         steps = int(max(abs(end[0] - start[0]), abs(end[1] - start[1])) // 4)
+
         if steps == 0:
             return False
+
         for i in range(steps + 1):
             t = i / steps
             x = int(start[0] + (end[0] - start[0]) * t)
@@ -511,70 +563,164 @@ async def play_third_quest(screen):
             point_rect = pygame.Rect(x, y, 4, 4)
             if any(point_rect.colliderect(w) for w in walls):
                 return True
+
         return False
 
     def npc_vision_rect(cat):
         rect = cat["rect"]
-        direction = cat["direction"]
-        length = TILE_SIZE * 5
+        length = TILE_SIZE * 6
         width = TILE_SIZE
-        if cat["axis"] == "horizontal":
-            x = rect.right if direction > 0 else rect.left - length
-            return pygame.Rect(x, rect.centery - width // 2, length, width)
+
+        dx = cat["direction_x"]
+        dy = cat["direction_y"]
+
+        if abs(dx) >= abs(dy):
+            if dx >= 0:
+                return pygame.Rect(rect.right, rect.centery - width // 2, length, width)
+            else:
+                return pygame.Rect(rect.left - length, rect.centery - width // 2, length, width)
         else:
-            y = rect.bottom if direction > 0 else rect.top - length
-            return pygame.Rect(rect.centerx - width // 2, y, width, length)
+            if dy >= 0:
+                return pygame.Rect(rect.centerx - width // 2, rect.bottom, width, length)
+            else:
+                return pygame.Rect(rect.centerx - width // 2, rect.top - length, width, length)
+
+    def move_guard_towards(cat, target_px, target_py):
+        rect = cat["rect"]
+        speed = cat["speed"]
+
+        dx = target_px - rect.x
+        dy = target_py - rect.y
+
+        move_x = 0
+        move_y = 0
+
+        if abs(dx) > 2:
+            move_x = speed if dx > 0 else -speed
+        if abs(dy) > 2:
+            move_y = speed if dy > 0 else -speed
+
+        if move_x != 0:
+            next_rect = rect.move(move_x, 0)
+            if not any(next_rect.colliderect(w) for w in walls):
+                rect.x = next_rect.x
+                cat["direction_x"] = 1 if move_x > 0 else -1
+                cat["direction_y"] = 0
+                cat["facing_right"] = move_x > 0
+                return True
+
+        if move_y != 0:
+            next_rect = rect.move(0, move_y)
+            if not any(next_rect.colliderect(w) for w in walls):
+                rect.y = next_rect.y
+                cat["direction_x"] = 0
+                cat["direction_y"] = 1 if move_y > 0 else -1
+                return True
+
+        return False
 
     def update_npcs():
         for cat in cats:
-            rect = cat["rect"]
-            axis = cat["axis"]
-            speed = cat["speed"]
-            dir = cat["direction"]
-            ox, oy = cat["origin"]
+            target_tile = cat["path"][cat["path_index"]]
+            target_px = draw_offset_x + target_tile[0] * TILE_SIZE + 4
+            target_py = draw_offset_y + target_tile[1] * TILE_SIZE + 4
 
-            if axis == "horizontal":
-                rect.x += dir * speed
-                if abs(rect.x - ox) >= cat["patrol_range"]:
-                    cat["direction"] *= -1
+            moved = move_guard_towards(cat, target_px, target_py)
+
+            if abs(cat["rect"].x - target_px) <= 4 and abs(cat["rect"].y - target_py) <= 4:
+                cat["path_index"] = (cat["path_index"] + 1) % len(cat["path"])
+                cat["stuck_frames"] = 0
             else:
-                rect.y += dir * speed
-                if abs(rect.y - oy) >= cat["patrol_range"]:
-                    cat["direction"] *= -1
+                if not moved:
+                    cat["stuck_frames"] += 1
+                else:
+                    cat["stuck_frames"] = 0
 
-            # Update facing direction
-            if axis == "horizontal":
-                cat["facing_right"] = cat["direction"] > 0
+                if cat["stuck_frames"] > 20:
+                    cat["path_index"] = (cat["path_index"] + 1) % len(cat["path"])
+                    cat["stuck_frames"] = 0
 
-            # Animation timing
             cat["frame_timer"] += 1
-            if cat["frame_timer"] >= 15:  # Slower animation (was 10)
+            if cat["frame_timer"] >= cat["frame_delay"]:
                 cat["frame_timer"] = 0
-                cat["frame_index"] = (cat["frame_index"] + 1) % len(cat_frames_right)
+                cat["frame_index"] = (cat["frame_index"] + 1) % len(cat_img_right)
 
             vis = npc_vision_rect(cat)
-            if vis.colliderect(player) and not is_wall_blocking(rect, player, "x" if axis == "horizontal" else "y"):
+            axis = "x" if abs(cat["direction_x"]) >= abs(cat["direction_y"]) else "y"
+
+            if vis.colliderect(player) and not is_wall_blocking(cat["rect"], player, axis):
                 return "lose"
+
         return None
+
+    def draw_player():
+        is_moving = player_animation["velocity_x"] != 0 or player_animation["velocity_y"] != 0
+
+        if is_moving:
+            frame = player_movement_frames[player_animation["current_frame"] % len(player_movement_frames)]
+        else:
+            frame = player_idle_frames[player_animation["current_frame"] % len(player_idle_frames)]
+
+        if player_animation["velocity_x"] < 0 or (player_animation["velocity_x"] == 0 and player_animation["last_direction_left"]):
+            frame = pygame.transform.flip(frame, True, False)
+
+        sprite_x = player.x - (PLAYER_SPRITE_SIZE - PLAYER_SIZE) // 2
+        sprite_y = player.y - (PLAYER_SPRITE_SIZE - PLAYER_SIZE) // 2
+        screen.blit(frame, (sprite_x, sprite_y))
 
     def draw():
         screen.fill(BLACK)
-        tmx.draw(screen, pygame.Vector2(0, 0))
-        
-        # Draw animated player instead of white rectangle
-        draw_player(screen)
+
+        for y, row in enumerate(maze_data):
+            for x, cell in enumerate(row):
+                rect = pygame.Rect(
+                    draw_offset_x + x * TILE_SIZE,
+                    draw_offset_y + y * TILE_SIZE,
+                    TILE_SIZE,
+                    TILE_SIZE
+                )
+
+                if cell == "1":
+                    screen.blit(wall_img, rect.topleft)
+                else:
+                    screen.blit(floor_img, rect.topleft)
+
+        for exit_rect in exit_rects:
+            screen.blit(exit_img, exit_rect.topleft)
+
+        draw_player()
 
         for cat in cats:
-            frames = cat_frames_right if cat["facing_right"] else cat_frames_left
-            screen.blit(frames[cat["frame_index"]], cat["rect"].topleft)
-            pygame.draw.rect(screen, MAGENTA, npc_vision_rect(cat), 2)
+            vis_rect = npc_vision_rect(cat)
 
-        tmx.draw_texts(screen, pygame.Vector2(0, 0))
+            # pick vision image first
+            if abs(cat["direction_x"]) >= abs(cat["direction_y"]):
+                if cat["direction_x"] >= 0:
+                    vision_img = vision_right_img
+                    current_cat_frame = cat_img_right[cat["frame_index"]]
+                else:
+                    vision_img = vision_left_img
+                    current_cat_frame = cat_img_left[cat["frame_index"]]
+            else:
+                if cat["direction_y"] >= 0:
+                    vision_img = vision_down_img
+                    current_cat_frame = cat_img_right[cat["frame_index"]]
+                else:
+                    vision_img = vision_up_img
+                    current_cat_frame = cat_img_left[cat["frame_index"]]
 
-        # Draw dialogue box if showing
-        if showing_dialogue:
-            dialogue_box.update()
-            dialogue_box.draw(screen)
+            # now scale only after vision_img definitely exists
+            scaled_vision = pygame.transform.scale(vision_img, (vis_rect.width, vis_rect.height))
+            scaled_vision.set_alpha(120)
+            screen.blit(scaled_vision, vis_rect.topleft)
+
+            sprite_x = cat["rect"].x - (TILE_SIZE - cat["rect"].width) // 2
+            sprite_y = cat["rect"].y - (TILE_SIZE - cat["rect"].height) // 2
+            screen.blit(current_cat_frame, (sprite_x, sprite_y))
+
+            if showing_dialogue:
+                dialogue_box.update()
+                dialogue_box.draw(screen)
 
         pygame.display.flip()
 
@@ -582,31 +728,38 @@ async def play_third_quest(screen):
     dialogue_box = None
     quest_result = None
     running = True
+
     while running:
-        dt = clock.tick(FPS)
+        clock.tick(FPS)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             elif event.type == pygame.KEYDOWN and showing_dialogue:
                 if dialogue_box.handle_input(event.key) == "CLOSE":
                     showing_dialogue = False
                     running = False
+    
+        if not showing_dialogue:
+            update_player()
+            update_player_animation()
+            npc_result = update_npcs()
 
-        update_player()
-        update_player_animation()  # Update player animation
-        npc_result = update_npcs()
-        if npc_result == "lose":
-            quest_result = "lose"
-            font_path = "resources/Minecraft.ttf"
-            dialogue_text = "Oops! You got caught. Press E to exit."
-            dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_fail")
-            showing_dialogue = True
-        if any(player.colliderect(exit_rect) for exit_rect in exit_rects):
-            quest_result = "win"
-            font_path = "resources/Minecraft.ttf"
-            dialogue_text = "Congrats! You made it! Press E to exit."
-            dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
-            showing_dialogue = True
+            if npc_result == "lose":
+                quest_result = "lose"
+                font_path = "resources/Minecraft.ttf"
+                dialogue_text = "Oops! You got caught. Press E to exit."
+                dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_fail")
+                showing_dialogue = True
+
+            if any(player.colliderect(exit_rect) for exit_rect in exit_rects):
+                quest_result = "win"
+                font_path = "resources/Minecraft.ttf"
+                dialogue_text = "Congrats! You made it! Press E to exit."
+                dialogue_box = DialogueView(font_path, dialogue_text, mode="quest_win")
+                showing_dialogue = True
+
         draw()
         await asyncio.sleep(0)
 
